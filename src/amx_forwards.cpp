@@ -1,0 +1,16 @@
+#include <amxxmodule.h>
+
+#include "amx_forwards.h"
+
+const char* g_ForwardsNames[] = {
+	{ "OnBotReady" },
+	{ "OnMessageCreated" },
+};
+
+ForwardsMap g_Forwards = ForwardsMap();
+
+void RegisterForwards()
+{
+	g_Forwards[ON_BOT_READY]			= MF_RegisterForward(g_ForwardsNames[ON_BOT_READY], ET_IGNORE, FP_STRING, FP_DONE);
+	g_Forwards[ON_MESSAGE_CREATED]		= MF_RegisterForward(g_ForwardsNames[ON_MESSAGE_CREATED], ET_IGNORE, FP_STRING, FP_STRING, FP_DONE);
+}

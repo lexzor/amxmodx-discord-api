@@ -30,3 +30,9 @@
 *.exe
 *.out
 *.app
+
+.vs
+libssrc
+out
+build
+vendor/share
