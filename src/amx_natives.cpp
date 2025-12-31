@@ -12,13 +12,13 @@ cell AMX_NATIVE_CALL CreateBot(AMX* amx, cell* params)
 
 	if (len >= MAX_IDENTIFIER_LENGTH)
 	{
-		MF_LogError(amx, AMX_ERR_NATIVE, "(CreateBot) Discord bot identifier max length exceeded. Max: %s", MAX_IDENTIFIER_LENGTH);
+		MF_LogError(amx, AMX_ERR_NATIVE, "(CreateBot) Discord bot identifier max length exceeded. Max: %i", MAX_IDENTIFIER_LENGTH);
 		return FALSE;
 	}
 
 	if (len >= MAX_TOKEN_LENGTH)
 	{
-		MF_LogError(amx, AMX_ERR_NATIVE, "(CreateBot) Discord bot token max length exceeded. Max: %s", MAX_TOKEN_LENGTH);
+		MF_LogError(amx, AMX_ERR_NATIVE, "(CreateBot) Discord bot token max length exceeded. Max: %i", MAX_TOKEN_LENGTH);
 		return FALSE;
 	}
 

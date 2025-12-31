@@ -9,12 +9,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libstdc++ -static-libgcc")
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -static-libstdc++ -static-libgcc")
 
-add_compile_definitions(
-    HAVE_STDINT_H
-    _CRT_SECURE_NO_WARNINGS
-    NO_MSVC8_AUTO_COMPAT
-    NOMINMAN
-)
 
 include_directories(
     vendor/include/amxmodx
