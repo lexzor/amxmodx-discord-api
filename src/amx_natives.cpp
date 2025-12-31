@@ -45,13 +45,6 @@ cell AMX_NATIVE_CALL SetBotOptions(AMX* amx, cell* params)
 	return TRUE;
 }
 
-cell AMX_NATIVE_CALL BotExists(AMX* amx, cell* params)
-{
-	char* identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
-
-	return DiscordBotsManager::get().GetBotRawPtrByIdentifier(identifier) != nullptr ? TRUE : FALSE;
-}
-
 cell AMX_NATIVE_CALL StartBot(AMX* amx, cell* params)
 {
 	const char* identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
@@ -63,8 +56,36 @@ cell AMX_NATIVE_CALL StartBot(AMX* amx, cell* params)
 		MF_LogError(amx, AMX_ERR_NATIVE, "(StartBot) Bot with identifier '%s' does not exists", identifier);
 		return FALSE;
 	}
+
+	if (bot->GetReadyState())
+	{
+		MF_LogError(amx, AMX_ERR_NATIVE, "(StartBot) Bot with identifier '%s' is ready", identifier);
+		return FALSE;
+	}
 	
 	return static_cast<cell>(bot->Start());
+}
+
+cell AMX_NATIVE_CALL BotExists(AMX* amx, cell* params)
+{
+	char* identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
+
+	return DiscordBotsManager::get().GetBotRawPtrByIdentifier(identifier) != nullptr ? TRUE : FALSE;
+}
+
+cell AMX_NATIVE_CALL IsBotReady(AMX* amx, cell* params)
+{
+	const char* identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
+
+	DiscordBot* bot = DiscordBotsManager::get().GetBotRawPtrByIdentifier(identifier);
+
+	if (bot == nullptr)
+	{
+		MF_LogError(amx, AMX_ERR_NATIVE, "(UnregisterSlashCommand) Bot with identifier '%s' does not exists", identifier);
+		return FALSE;
+	}
+
+	return static_cast<cell>(bot->GetReadyState());
 }
 
 cell AMX_NATIVE_CALL StopBot(AMX* amx, cell* params)
@@ -79,7 +100,20 @@ cell AMX_NATIVE_CALL StopBot(AMX* amx, cell* params)
 		return FALSE;
 	}
 
+	if (!bot->GetReadyState())
+	{
+		MF_LogError(amx, AMX_ERR_NATIVE, "(StopBot) Bot with identifier '%s' is not ready yet", identifier);
+		return FALSE;
+	}
+
 	return static_cast<cell>(bot->Stop());
+}
+
+cell AMX_NATIVE_CALL DeleteBot(AMX* amx, cell* params)
+{
+	char* identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
+
+	return static_cast<cell>(DiscordBotsManager::get().DeinitializeBot(identifier));
 }
 
 cell AMX_NATIVE_CALL RegisterGlobalSlashCommand(AMX* amx, cell* params)
@@ -91,6 +125,12 @@ cell AMX_NATIVE_CALL RegisterGlobalSlashCommand(AMX* amx, cell* params)
 	if (bot == nullptr)
 	{
 		MF_LogError(amx, AMX_ERR_NATIVE, "(RegisterGlobalSlashCommand) Bot with identifier '%s' does not exists", identifier);
+		return FALSE;
+	}
+
+	if (!bot->GetReadyState())
+	{
+		MF_LogError(amx, AMX_ERR_NATIVE, "(RegisterGlobalSlashCommand) Bot with identifier '%s' is not ready yet", identifier);
 		return FALSE;
 	}
 
@@ -111,13 +151,6 @@ cell AMX_NATIVE_CALL RegisterGlobalSlashCommand(AMX* amx, cell* params)
 	return TRUE;
 }
 
-cell AMX_NATIVE_CALL DeleteBot(AMX* amx, cell* params)
-{
-	char* identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
-
-	return static_cast<cell>(DiscordBotsManager::get().DeinitializeBot(identifier));
-}
-
 cell AMX_NATIVE_CALL UnregisterGlobalSlashCommand(AMX* amx, cell* params)
 {
 	const char* identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
@@ -127,6 +160,12 @@ cell AMX_NATIVE_CALL UnregisterGlobalSlashCommand(AMX* amx, cell* params)
 	if (bot == nullptr)
 	{
 		MF_LogError(amx, AMX_ERR_NATIVE, "(UnregisterGlobalSlashCommand) Bot with identifier '%s' does not exists", identifier);
+		return FALSE;
+	}
+
+	if (!bot->GetReadyState())
+	{
+		MF_LogError(amx, AMX_ERR_NATIVE, "(UnregisterGlobalSlashCommand) Bot with identifier '%s' is ready", identifier);
 		return FALSE;
 	}
 
@@ -162,6 +201,12 @@ cell AMX_NATIVE_CALL ClearGlobalSlashCommands(AMX* amx, cell* params)
 		return FALSE;
 	}
 
+	if (!bot->GetReadyState())
+	{
+		MF_LogError(amx, AMX_ERR_NATIVE, "(ClearGlobalSlashCommands) Bot with identifier '%s' is ready", identifier);
+		return FALSE;
+	}
+
 	DiscordBot::SlashCommandsMap globalCmdsMap = bot->GetGlobalSlashCommandsMap();
 
 	if (globalCmdsMap.size() == 0)
@@ -180,21 +225,6 @@ cell AMX_NATIVE_CALL ClearGlobalSlashCommands(AMX* amx, cell* params)
 	return TRUE;
 }
 
-cell AMX_NATIVE_CALL IsBotReady(AMX* amx, cell* params)
-{
-	const char* identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
-
-	DiscordBot* bot = DiscordBotsManager::get().GetBotRawPtrByIdentifier(identifier);
-
-	if (bot == nullptr)
-	{
-		MF_LogError(amx, AMX_ERR_NATIVE, "(UnregisterSlashCommand) Bot with identifier '%s' does not exists", identifier);
-		return FALSE;
-	}
-
-	return static_cast<cell>(bot->GetReadyState());
-}
-
 cell AMX_NATIVE_CALL SendReply(AMX* amx, cell* params)
 {
 	const char* identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
@@ -204,6 +234,12 @@ cell AMX_NATIVE_CALL SendReply(AMX* amx, cell* params)
 	if (bot == nullptr)
 	{
 		MF_LogError(amx, AMX_ERR_NATIVE, "(SendReply) Bot with identifier '%s' does not exists", identifier);
+		return FALSE;
+	}
+
+	if (!bot->GetReadyState())
+	{
+		MF_LogError(amx, AMX_ERR_NATIVE, "(SendReply) Bot with identifier '%s' is ready", identifier);
 		return FALSE;
 	}
 
@@ -221,6 +257,12 @@ cell AMX_NATIVE_CALL SendMessageToChannel(AMX* amx, cell* params)
 	if (bot == nullptr)
 	{
 		MF_LogError(amx, AMX_ERR_NATIVE, "(SendMessageToChannel) Bot with identifier '%s' does not exists", identifier);
+		return FALSE;
+	}
+
+	if (!bot->GetReadyState())
+	{
+		MF_LogError(amx, AMX_ERR_NATIVE, "(SendMessageToChannel) Bot with identifier '%s' is ready", identifier);
 		return FALSE;
 	}
 

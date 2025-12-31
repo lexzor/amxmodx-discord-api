@@ -45,7 +45,7 @@ native bool:CreateBot(const identifier[], const token[]);
 * @param identifier         Bot identifier.
 * @param options            Array of Options enum
 *
-* @noreturn
+* @return False if bot does not exists, true otherwise.
 */
 native SetBotOptions(const identifier[], const array[Options]);
 
@@ -59,6 +59,24 @@ native SetBotOptions(const identifier[], const array[Options]);
 * @return True if started successfully, false otherwise.
 */
 native bool:StartBot(const identifier[]);
+
+/**
+* Check if a bot already exist for the provided identifier.
+*
+* @param identifier         Bot identifier.
+*
+* @return True if exists, false otherwise.
+*/
+native bool:BotExists(const identifier[]);
+
+/**
+* Check if a bot it's connected to Discord API.
+*
+* @param identifier         Bot identifier.
+*
+* @return True if exists, false otherwise.
+*/
+native bool:IsBotReady(const identifier[]);
 
 /**
 * Stop a bot.
@@ -83,24 +101,6 @@ native bool:StopBot(const identifier[]);
 native bool:DeleteBot(const identifier[]);
 
 /**
-* Check if a bot already exist for the provided identifier.
-*
-* @param identifier         Bot identifier.
-*
-* @return True if exists, false otherwise.
-*/
-native bool:BotExists(const identifier[]);
-
-/**
-* Check if a bot it's connected to Discord API.
-*
-* @param identifier         Bot identifier.
-*
-* @return True if exists, false otherwise.
-*/
-native bool:IsBotReady(const identifier[]);
-
-/**
 * Register a slash command.
 *
 * @note Callback params: func(const identifier[]). 
@@ -110,9 +110,9 @@ native bool:IsBotReady(const identifier[]);
 * @param description        Command description.
 * @param callback			Public function name to be called when command is used.
 *
-* @return True if command has been registered successfully, false otherwise.
+* @return False if bot does not exists or is not ready, true otherwise.
 */
-native RegisterGlobalSlashCommand(const identifier[], const command[], const description[], const callback[]);
+native bool:RegisterGlobalSlashCommand(const identifier[], const command[], const description[], const callback[]);
 
 /**
 * Unregister a slash command.
@@ -120,25 +120,28 @@ native RegisterGlobalSlashCommand(const identifier[], const command[], const des
 * @param identifier         Bot identifier.
 * @param command         Channel ID.
 *
-* @return True if command has been unregistered successfully, false otherwise.
+* @return False if bot does not exists or is not ready, true otherwise.
 */
-native UnregisterGlobalSlashCommand(const identifier[], const command[]);
+native bool:UnregisterGlobalSlashCommand(const identifier[], const command[]);
 
 /**
 * Delete all slash commands which has been registered for a bot.
 *
 * @param identifier         Bot identifier.
 *
-* @return True if every registered command has been unregistered successfully, false otherwise.
+* @return False if bot does not exists or is not ready, true otherwise.
 */
-native ClearGlobalSlashCommands(const identifier[]);
+native bool:ClearGlobalSlashCommands(const identifier[]);
 
 /**
 * Send reply on last slash command interaction.
 *
 * @param identifier         Bot identifier.
+* @param reply              Text message to send.
+*
+* @return False if bot does not exists, is not ready or there is not any active interaction to reply at, true otherwise.
 */
-native SendReply(const identifier[], const reply[]);
+native bool:SendReply(const identifier[], const reply[]);
 
 /**
 * Send a message to a channel.
@@ -146,8 +149,10 @@ native SendReply(const identifier[], const reply[]);
 * @param identifier         Bot identifier.
 * @param channel_id         Channel ID.
 * @param message			Text message to send.
+*
+* @return False if bot does not exists or is not ready, true otherwise.
 */
-native SendMessageToChannel(const identifier[], const channel_id[], const message[]);
+native bool:SendMessageToChannel(const identifier[], const channel_id[], const message[]);
 
 /**
 * Triggered after a bot has been created in Discord API.
