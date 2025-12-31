@@ -3,59 +3,46 @@
 #include <json>
 #include <discordapi>
 
-new const TOKEN[MAX_TOKEN_LENGTH]               = "YOUR_DISCORD_BOT_TOKEN_HERE"
-new const DISCORD_ID[MAX_SNOWFLAKE_ID_LENGTH]   = "YOUR_DISCORD_BOT_USER_ID_HERE"
-new const CHANNEL_ID[MAX_SNOWFLAKE_ID_LENGTH]   = "YOUR_CHANNEL_ID_HERE"
+#define IDENTIFIER "discord_bot_example"
+#define BOT_ID "YOUR_DISCORD_BOT_ID"
+#define CHANNEL_ID "YOUR_CHANNEL_ID_HERE"
 
-new const IDENTIFIER[MAX_IDENTIFIER_LENGTH]     = "DiscordAPIChannelRelay"
+#pragma semicolon 1
 
 public plugin_init()
 {
-    register_plugin("[DiscordAPI] Chat Relay", "0.1", "lexzor")
-    register_clcmd("say", "cmd_say")
-    register_clcmd("say_team", "cmd_say")
-
-    if(!BotExists(IDENTIFIER))
-    {
-        if(!CreateBot(IDENTIFIER, TOKEN))
-        {
-            set_fail_state("Failed to create Discord BOT!");
-            return;
-        }
-        
-        if(!StartBot(IDENTIFIER))
-        {
-            set_fail_state("Failed to start Discord BOT!");
-        }
-
-        new opt[Options]
-        opt[LOG_LEVEL] = DEFAULT
-        formatex(opt[PREFIX], MAX_CONSOLE_PREFIX_LENGTH - 1, "[DiscordAPIChannelRelay]")
-        SetBotOptions(IDENTIFIER, opt)
-    }
-    else 
-    {
-        log_amx("Discord BOT already exists.");
-    }
+    register_plugin("[DiscordAPI] Chat Relay", "0.1", "lexzor");
+    
+    register_clcmd("say", "cmd_say");
+    register_clcmd("say_team", "cmd_say");
 }
 
 public cmd_say(id)
 {
+    if(!IsBotReady(IDENTIFIER))
+    {
+        return PLUGIN_CONTINUE;
+    }
+
     new message[128];	
-    read_args(message, charsmax(message))
-    remove_quotes(message)
+    read_args(message, charsmax(message));
+    remove_quotes(message);
     trim(message);
 
-    if(strlen(message) > 0)
+    if(strlen(message) == 0)
     {
-        new name[MAX_NAME_LENGTH]
-        get_user_name(id, name, sizeof(name));
-
-        new discordMessage[128];
-        formatex(discordMessage, charsmax(discordMessage), "[%s] %s: %s", get_user_team(id) == 1 ? "T" : "CT", name, message);
-
-        SendMessageToChannel(IDENTIFIER, CHANNEL_ID, discordMessage);
+        return PLUGIN_CONTINUE;
     }
+
+    new name[MAX_NAME_LENGTH + 1];
+    get_user_name(id, name, sizeof(name));
+
+    new discordMessage[128];
+    formatex(discordMessage, charsmax(discordMessage), "[%s] %s: %s", get_user_team(id) == 1 ? "T" : "CT", name, message);
+
+    SendMessageToChannel(IDENTIFIER, CHANNEL_ID, discordMessage);
+
+    return PLUGIN_CONTINUE;
 }
 
 public OnBotReady(const identifier[])
@@ -100,7 +87,7 @@ public OnMessageCreated(const identifier[], const raw_json_event[])
     json_object_get_string(d, "content", content, sizeof(content));
     json_object_get_string(author, "id", authorId, sizeof(authorId));
 
-    if(strcmp(authorId, DISCORD_ID) == 0)
+    if(strcmp(authorId, BOT_ID) == 0)
     {
         goto cleanup;
     }

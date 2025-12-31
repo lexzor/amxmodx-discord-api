@@ -36,3 +36,4 @@ libssrc
 out
 build
 vendor/share
+*.amxx

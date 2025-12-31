@@ -1,6 +1,7 @@
 #if defined _discordapi_included
 	#endinput
 #endif
+
 #define _discordapi_included
 
 #pragma reqlib discordapi
@@ -85,11 +86,19 @@ native bool:DeleteBot(const identifier[]);
 * Check if a bot already exist for the provided identifier.
 *
 * @param identifier         Bot identifier.
-* @param token              Token string from Discord Developer Portal.
 *
 * @return True if exists, false otherwise.
 */
 native bool:BotExists(const identifier[]);
+
+/**
+* Check if a bot it's connected to Discord API.
+*
+* @param identifier         Bot identifier.
+*
+* @return True if exists, false otherwise.
+*/
+native bool:IsBotReady(const identifier[]);
 
 /**
 * Register a slash command.
@@ -97,8 +106,9 @@ native bool:BotExists(const identifier[]);
 * @note Callback params: func(const identifier[]). 
 *
 * @param identifier         Bot identifier.
-* @param channel_id         Channel ID
-* @param callback			Callback for
+* @param command            Command name.
+* @param description        Command description.
+* @param callback			Public function name to be called when command is used.
 *
 * @return True if command has been registered successfully, false otherwise.
 */
@@ -108,7 +118,7 @@ native RegisterGlobalSlashCommand(const identifier[], const command[], const des
 * Unregister a slash command.
 *
 * @param identifier         Bot identifier.
-* @param channel_id         Channel ID
+* @param command         Channel ID.
 *
 * @return True if command has been unregistered successfully, false otherwise.
 */
@@ -124,17 +134,6 @@ native UnregisterGlobalSlashCommand(const identifier[], const command[]);
 native ClearGlobalSlashCommands(const identifier[]);
 
 /**
-* Check if a bot is ready.
-*
-* @note If this returns true in plugin_init, the bot has already been already created and exists in module memory.
-*
-* @param identifier         Bot identifier.
-*
-* @return True bot is ready, false otherwise.
-*/
-native bool:IsBotReady(const identifier[]);
-
-/**
 * Send reply on last slash command interaction.
 *
 * @param identifier         Bot identifier.
@@ -142,7 +141,7 @@ native bool:IsBotReady(const identifier[]);
 native SendReply(const identifier[], const reply[]);
 
 /**
-* Send reply on last slash command interaction.
+* Send a message to a channel.
 *
 * @param identifier         Bot identifier.
 * @param channel_id         Channel ID.
