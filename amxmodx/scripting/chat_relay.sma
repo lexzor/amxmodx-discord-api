@@ -35,7 +35,7 @@ public cmd_say(id)
     }
 
     new name[MAX_NAME_LENGTH + 1];
-    get_user_name(id, name, sizeof(name));
+    get_user_name(id, name, charsmax(name));
 
     new discordMessage[128];
     formatex(discordMessage, charsmax(discordMessage), "[%s] %s: %s", get_user_team(id) == 1 ? "T" : "CT", name, message);
@@ -70,7 +70,7 @@ public OnMessageCreated(const identifier[], const raw_json_event[])
 
     new JSON:d = json_object_get_value(jsonEvent, "d");
     new channel_id[64];
-    json_object_get_string(d, "channel_id", channel_id, sizeof(channel_id));
+    json_object_get_string(d, "channel_id", channel_id, charsmax(channel_id));
 
     if(strcmp(channel_id, CHANNEL_ID) != 0)
     {
@@ -83,9 +83,9 @@ public OnMessageCreated(const identifier[], const raw_json_event[])
     new authorName[MAX_NAME_LENGTH * 2];
     new authorId[64];
     
-    json_object_get_string(author, "username", authorName, sizeof(authorName));
-    json_object_get_string(d, "content", content, sizeof(content));
-    json_object_get_string(author, "id", authorId, sizeof(authorId));
+    json_object_get_string(author, "username", authorName, charsmax(authorName));
+    json_object_get_string(d, "content", content, charsmax(content));
+    json_object_get_string(author, "id", authorId, charsmax(authorId));
 
     if(strcmp(authorId, BOT_ID) == 0)
     {
