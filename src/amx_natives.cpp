@@ -200,6 +200,7 @@ cell AMX_NATIVE_CALL SendReply(AMX* amx, cell* params)
 	const char* identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
 
 	DiscordBot* bot = DiscordBotsManager::get().GetBotRawPtrByIdentifier(identifier);
+
 	if (bot == nullptr)
 	{
 		MF_LogError(amx, AMX_ERR_NATIVE, "(SendReply) Bot with identifier '%s' does not exists", identifier);
