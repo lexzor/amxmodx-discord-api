@@ -26,12 +26,6 @@ cell AMX_NATIVE_CALL CreateBot(AMX* amx, cell* params)
 
 cell AMX_NATIVE_CALL SetBotOptions(AMX* amx, cell* params)
 {
-	enum
-	{
-		LOG_LEVEL = 0,
-		CHAT_PREFIX = 1,
-	};
-
 	const char* identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
 
 	DiscordBot* bot = DiscordBotsManager::get().GetBotRawPtrByIdentifier(identifier);
@@ -239,6 +233,7 @@ AMX_NATIVE_INFO g_DiscordBotNatives[] =
 	{ "CreateBot",							CreateBot },
 	{ "SetBotOptions",						SetBotOptions },
 	{ "BotExists",							BotExists },
+	{ "IsBotReady", 						IsBotReady },
 	{ "StartBot",							StartBot },
 	{ "StopBot",							StopBot },
 	{ "DeleteBot",							DeleteBot },
