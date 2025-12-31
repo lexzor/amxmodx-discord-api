@@ -28,7 +28,7 @@ file(GLOB_RECURSE SOURCES "src/*.cpp" "src/**/*.cpp" "vendor/include/amxmodx/sdk
 add_library(discordapi_amxx_i386 SHARED ${SOURCES})
 
 target_link_libraries(discordapi_amxx_i386
-    -Wl,--whole-archive ${CMAKE_SOURCE_DIR}/vendor/bin/libdpp.a -Wl,--no-whole-archive
+    ${CMAKE_SOURCE_DIR}/vendor/bin/libdpp.a -Wl,--no-whole-archive
     ${CMAKE_SOURCE_DIR}/vendor/bin/libcurl.a
     ${CMAKE_SOURCE_DIR}/vendor/bin/libssl.a
     ${CMAKE_SOURCE_DIR}/vendor/bin/libcrypto.a
@@ -37,6 +37,5 @@ target_link_libraries(discordapi_amxx_i386
 
 set_target_properties(discordapi_amxx_i386 PROPERTIES
     OUTPUT_NAME "discordapi_amxx_i386"
-    #LIBRARY_OUTPUT_DIRECTORY "/home/lexzor/hlds/cstrike/addons/amxmodx/modules"
     PREFIX ""
 )
