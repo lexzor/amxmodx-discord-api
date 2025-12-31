@@ -28,7 +28,7 @@
 #define MODULE_NAME "Discord API"
 #define MODULE_VERSION "0.0.1-BETA"
 #define MODULE_AUTHOR "lexzor"
-#define MODULE_URL ""
+#define MODULE_URL "https://github.com/lexzor/amxmodx-discord-api"
 #define MODULE_LOGTAG "Discord API"
 #define MODULE_LIBRARY "discordapi"
 #define MODULE_LIBCLASS "discordapi"
