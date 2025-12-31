@@ -34,7 +34,7 @@ cell AMX_NATIVE_CALL SetBotOptions(AMX* amx, cell* params)
 
 	const char* identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
 
-	DiscordBot* bot = DiscordBotsManager::get().GetBotPtrByIdentifier(identifier);
+	DiscordBot* bot = DiscordBotsManager::get().GetBotRawPtrByIdentifier(identifier);
 
 	if (bot == nullptr)
 	{
@@ -53,14 +53,14 @@ cell AMX_NATIVE_CALL BotExists(AMX* amx, cell* params)
 {
 	char* identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
 
-	return DiscordBotsManager::get().GetBotPtrByIdentifier(identifier) != nullptr ? TRUE : FALSE;
+	return DiscordBotsManager::get().GetBotRawPtrByIdentifier(identifier) != nullptr ? TRUE : FALSE;
 }
 
 cell AMX_NATIVE_CALL StartBot(AMX* amx, cell* params)
 {
 	const char* identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
 
-	DiscordBot* bot =  DiscordBotsManager::get().GetBotPtrByIdentifier(identifier);
+	DiscordBot* bot =  DiscordBotsManager::get().GetBotRawPtrByIdentifier(identifier);
 	
 	if (bot == nullptr)
 	{
@@ -75,7 +75,7 @@ cell AMX_NATIVE_CALL StopBot(AMX* amx, cell* params)
 {
 	const char* identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
 
-	DiscordBot* bot = DiscordBotsManager::get().GetBotPtrByIdentifier(identifier);
+	DiscordBot* bot = DiscordBotsManager::get().GetBotRawPtrByIdentifier(identifier);
 
 	if (bot == nullptr)
 	{
@@ -90,7 +90,7 @@ cell AMX_NATIVE_CALL RegisterGlobalSlashCommand(AMX* amx, cell* params)
 {
 	const char* identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
 
-	DiscordBot* bot = DiscordBotsManager::get().GetBotPtrByIdentifier(identifier);
+	DiscordBot* bot = DiscordBotsManager::get().GetBotRawPtrByIdentifier(identifier);
 
 	if (bot == nullptr)
 	{
@@ -126,7 +126,7 @@ cell AMX_NATIVE_CALL UnregisterGlobalSlashCommand(AMX* amx, cell* params)
 {
 	const char* identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
 
-	DiscordBot* bot = DiscordBotsManager::get().GetBotPtrByIdentifier(identifier);
+	DiscordBot* bot = DiscordBotsManager::get().GetBotRawPtrByIdentifier(identifier);
 	if (bot == nullptr)
 	{
 		MF_LogError(amx, AMX_ERR_NATIVE, "(UnregisterGlobalSlashCommand) Bot with identifier '%s' does not exists", identifier);
@@ -157,7 +157,7 @@ cell AMX_NATIVE_CALL ClearGlobalSlashCommands(AMX* amx, cell* params)
 {
 	const char* identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
 
-	DiscordBot* bot = DiscordBotsManager::get().GetBotPtrByIdentifier(identifier);
+	DiscordBot* bot = DiscordBotsManager::get().GetBotRawPtrByIdentifier(identifier);
 	if (bot == nullptr)
 	{
 		MF_LogError(amx, AMX_ERR_NATIVE, "(ClearGlobalSlashCommands) Bot with identifier '%s' does not exists", identifier);
@@ -189,7 +189,7 @@ cell AMX_NATIVE_CALL IsBotReady(AMX* amx, cell* params)
 {
 	const char* identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
 
-	DiscordBot* bot = DiscordBotsManager::get().GetBotPtrByIdentifier(identifier);
+	DiscordBot* bot = DiscordBotsManager::get().GetBotRawPtrByIdentifier(identifier);
 	if (bot == nullptr)
 	{
 		MF_LogError(amx, AMX_ERR_NATIVE, "(UnregisterSlashCommand) Bot with identifier '%s' does not exists", identifier);
@@ -203,7 +203,7 @@ cell AMX_NATIVE_CALL SendReply(AMX* amx, cell* params)
 {
 	const char* identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
 
-	DiscordBot* bot = DiscordBotsManager::get().GetBotPtrByIdentifier(identifier);
+	DiscordBot* bot = DiscordBotsManager::get().GetBotRawPtrByIdentifier(identifier);
 	if (bot == nullptr)
 	{
 		MF_LogError(amx, AMX_ERR_NATIVE, "(SendReply) Bot with identifier '%s' does not exists", identifier);
@@ -219,7 +219,7 @@ cell AMX_NATIVE_CALL SendMessageToChannel(AMX* amx, cell* params)
 {
 	const char* identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
 
-	DiscordBot* bot = DiscordBotsManager::get().GetBotPtrByIdentifier(identifier);
+	DiscordBot* bot = DiscordBotsManager::get().GetBotRawPtrByIdentifier(identifier);
 	if (bot == nullptr)
 	{
 		MF_LogError(amx, AMX_ERR_NATIVE, "(SendMessageToChannel) Bot with identifier '%s' does not exists", identifier);

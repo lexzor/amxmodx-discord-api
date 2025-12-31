@@ -29,7 +29,7 @@ bool DiscordBotsManager::DeinitializeBot(const std::string& identifier)
 	return m_BotsMap.erase(identifier) > 0;
 }
 
-DiscordBot* DiscordBotsManager::GetBotPtrByIdentifier(const std::string& identifier)
+DiscordBot* DiscordBotsManager::GetBotRawPtrByIdentifier(const std::string& identifier)
 {
 	DiscordBotMap::iterator it = m_BotsMap.find(identifier);
 

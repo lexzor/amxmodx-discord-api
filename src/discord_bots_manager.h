@@ -13,7 +13,7 @@ public:
 
 	bool				InitializeBot(const std::string& identifier, const char* token);
 	bool				DeinitializeBot(const std::string& identifier);
-	DiscordBot*			GetBotPtrByIdentifier(const std::string& identifier);
+	DiscordBot*			GetBotRawPtrByIdentifier(const std::string& identifier);
 
 private:
 	using DiscordBotMap = std::unordered_map<std::string, std::unique_ptr<DiscordBot>>;
