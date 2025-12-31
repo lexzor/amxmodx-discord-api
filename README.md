@@ -12,3 +12,12 @@ This allows you to integrate Discord features directly within your AMXX plugins 
     This module it's still in BETA version and crashes may occur due to module or AMXX plugins errors.
   </p>
 </div>
+
+# Installation
+Before installing the module, you have to know it may not work on outdated systems (ubuntu18 as an example) because the project uses C++20. If you use pterodactyl to run your server in a docker container update the docker image to `ghcr.io/parkervcp/steamcmd:debian`.
+
+
+1. Download last stable release.
+2. Copy `discordapi_amxx_i386.so` to `/cstrike/addons/amxmodx/modules`.
+3. Enable module in `/cstrike/addons/amxmodx/configs/modules.ini` by typing `discordapi`.
+4. Restart server and type in server console `amxx modules` to check if it was loaded properly
