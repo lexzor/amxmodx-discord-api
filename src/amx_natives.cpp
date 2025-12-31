@@ -11,9 +11,9 @@ cell AMX_NATIVE_CALL CreateBot(AMX* amx, cell* params)
 	const char* identifier = MF_GetAmxString(amx, params[1], 0, &identifierLen);
 	const char* token = MF_GetAmxString(amx, params[2], 1, &tokenLen);
 
-	if (identifierLen == 0)
+	if (identifierLen == 0 || identifierLen >= MAX_IDENTIFIER_LENGTH)
 	{
-		MF_LogError(amx, AMX_ERR_NATIVE, "(CreateBot) Discord bot identifier string can't be empty!");
+		MF_LogError(amx, AMX_ERR_NATIVE, "(CreateBot) Discord bot identifier string can't be empty or longer than %i characters!", MAX_IDENTIFIER_LENGTH);
 		return FALSE;
 	}
 
