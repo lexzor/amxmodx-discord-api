@@ -5,20 +5,21 @@
 
 cell AMX_NATIVE_CALL CreateBot(AMX* amx, cell* params)
 {
-	int len = 0;
-	
-	const char* identifier = MF_GetAmxString(amx, params[1], 0, &len);
-	const char* token = MF_GetAmxString(amx, params[2], 1, &len);
+	int identifierLen = 0;
+	int tokenLen = 0;
 
-	if (len >= MAX_IDENTIFIER_LENGTH)
+	const char* identifier = MF_GetAmxString(amx, params[1], 0, &identifierLen);
+	const char* token = MF_GetAmxString(amx, params[2], 1, &tokenLen);
+
+	if (identifierLen == 0)
 	{
-		MF_LogError(amx, AMX_ERR_NATIVE, "(CreateBot) Discord bot identifier max length exceeded. Max: %i", MAX_IDENTIFIER_LENGTH);
+		MF_LogError(amx, AMX_ERR_NATIVE, "(CreateBot) Discord bot identifier string can't be empty!");
 		return FALSE;
 	}
 
-	if (len >= MAX_TOKEN_LENGTH)
+	if (tokenLen == 0)
 	{
-		MF_LogError(amx, AMX_ERR_NATIVE, "(CreateBot) Discord bot token max length exceeded. Max: %i", MAX_TOKEN_LENGTH);
+		MF_LogError(amx, AMX_ERR_NATIVE, "(CreateBot) Discord bot token string can't be empty!");
 		return FALSE;
 	}
 
