@@ -8,13 +8,14 @@ cell AMX_NATIVE_CALL CreateBot(AMX* amx, cell* params)
 	int len = 0;
 	
 	const char* identifier = MF_GetAmxString(amx, params[1], 0, &len);
+	const char* token = MF_GetAmxString(amx, params[2], 1, &len);
+
 	if (len >= MAX_IDENTIFIER_LENGTH)
 	{
 		MF_LogError(amx, AMX_ERR_NATIVE, "(CreateBot) Discord bot identifier max length exceeded. Max: %s", MAX_IDENTIFIER_LENGTH);
 		return FALSE;
 	}
 
-	const char* token = MF_GetAmxString(amx, params[2], 1, &len);
 	if (len >= MAX_TOKEN_LENGTH)
 	{
 		MF_LogError(amx, AMX_ERR_NATIVE, "(CreateBot) Discord bot token max length exceeded. Max: %s", MAX_TOKEN_LENGTH);
@@ -121,6 +122,7 @@ cell AMX_NATIVE_CALL UnregisterGlobalSlashCommand(AMX* amx, cell* params)
 	const char* identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
 
 	DiscordBot* bot = DiscordBotsManager::get().GetBotRawPtrByIdentifier(identifier);
+
 	if (bot == nullptr)
 	{
 		MF_LogError(amx, AMX_ERR_NATIVE, "(UnregisterGlobalSlashCommand) Bot with identifier '%s' does not exists", identifier);
@@ -152,6 +154,7 @@ cell AMX_NATIVE_CALL ClearGlobalSlashCommands(AMX* amx, cell* params)
 	const char* identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
 
 	DiscordBot* bot = DiscordBotsManager::get().GetBotRawPtrByIdentifier(identifier);
+
 	if (bot == nullptr)
 	{
 		MF_LogError(amx, AMX_ERR_NATIVE, "(ClearGlobalSlashCommands) Bot with identifier '%s' does not exists", identifier);
@@ -184,6 +187,7 @@ cell AMX_NATIVE_CALL IsBotReady(AMX* amx, cell* params)
 	const char* identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
 
 	DiscordBot* bot = DiscordBotsManager::get().GetBotRawPtrByIdentifier(identifier);
+
 	if (bot == nullptr)
 	{
 		MF_LogError(amx, AMX_ERR_NATIVE, "(UnregisterSlashCommand) Bot with identifier '%s' does not exists", identifier);
@@ -214,6 +218,7 @@ cell AMX_NATIVE_CALL SendMessageToChannel(AMX* amx, cell* params)
 	const char* identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
 
 	DiscordBot* bot = DiscordBotsManager::get().GetBotRawPtrByIdentifier(identifier);
+
 	if (bot == nullptr)
 	{
 		MF_LogError(amx, AMX_ERR_NATIVE, "(SendMessageToChannel) Bot with identifier '%s' does not exists", identifier);
