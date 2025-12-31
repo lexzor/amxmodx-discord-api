@@ -222,7 +222,7 @@ cell AMX_NATIVE_CALL SendMessageToChannel(AMX* amx, cell* params)
 	DiscordBot* bot = DiscordBotsManager::get().GetBotPtrByIdentifier(identifier);
 	if (bot == nullptr)
 	{
-		MF_LogError(amx, AMX_ERR_NATIVE, "(SendReply) Bot with identifier '%s' does not exists", identifier);
+		MF_LogError(amx, AMX_ERR_NATIVE, "(SendMessageToChannel) Bot with identifier '%s' does not exists", identifier);
 		return FALSE;
 	}
 
@@ -247,7 +247,6 @@ AMX_NATIVE_INFO g_DiscordBotNatives[] =
 	{ "ClearGlobalSlashCommands",			ClearGlobalSlashCommands },
 	{ "SendReply",							SendReply },
 	{ "SendMessageToChannel",				SendMessageToChannel },
-
 
 	{ NULL, NULL }
 };

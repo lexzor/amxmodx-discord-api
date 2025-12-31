@@ -28,11 +28,11 @@ file(GLOB_RECURSE SOURCES "src/*.cpp" "src/**/*.cpp" "vendor/include/amxmodx/sdk
 add_library(discordapi_amxx_i386 SHARED ${SOURCES})
 
 target_link_libraries(discordapi_amxx_i386
-    -Wl,--whole-archive ${CMAKE_SOURCE_DIR}/vendor/libs/libdpp.a -Wl,--no-whole-archive
-    ${CMAKE_SOURCE_DIR}/vendor/libs/libcurl.a
-    ${CMAKE_SOURCE_DIR}/vendor/libs/libssl.a
-    ${CMAKE_SOURCE_DIR}/vendor/libs/libcrypto.a
-    ${CMAKE_SOURCE_DIR}/vendor/libs/libz.a
+    -Wl,--whole-archive ${CMAKE_SOURCE_DIR}/vendor/bin/libdpp.a -Wl,--no-whole-archive
+    ${CMAKE_SOURCE_DIR}/vendor/bin/libcurl.a
+    ${CMAKE_SOURCE_DIR}/vendor/bin/libssl.a
+    ${CMAKE_SOURCE_DIR}/vendor/bin/libcrypto.a
+    ${CMAKE_SOURCE_DIR}/vendor/bin/libz.a
 )
 
 set_target_properties(discordapi_amxx_i386 PROPERTIES

@@ -17,13 +17,14 @@ public:
 	DiscordBot(const std::string& identifier, const std::string& token);
 	~DiscordBot();
 
+	bool Start();
+	bool Stop();
+
 	void RegisterGlobalSlashCommand		(const std::string& command, const std::string& description, int amx_fw_handle);
 	void UnregisterGlobalSlashCommand	(const dpp::snowflake& snowflake, const std::string& command);
 	void SendMessageToChannel			(const std::string& channel_id, const std::string& message);
 	bool SendReplyToLastInteraction		(const std::string& message);
 	void SetOptions						(const DiscordBotOptions& options);
-	bool Start();
-	bool Stop();
 
 	inline const std::string&		GetConsolePrefix()					const { return m_Options.chat_prefix; }
 	inline const LogLevel			GetLogLevel()						const { return m_Options.log_level; }

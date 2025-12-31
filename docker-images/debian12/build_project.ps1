@@ -1,7 +1,7 @@
-sudo docker run -it --rm \
-  -v "$(pwd)/../..:/workspace" \
-  -w /workspace \
-  debian12-i386 \
+docker run -it --rm `
+    -v "${PWD}/../..:/workspace" `
+    -w /workspace `
+    debian12-i386 `
   bash -c "\
     rm -rf build && \
     mkdir build && \

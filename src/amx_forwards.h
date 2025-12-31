@@ -1,13 +1,14 @@
 #pragma once
 #include <unordered_map>
 
-using ForwardsMap = std::unordered_map<ForwardType, int>;
 
 enum ForwardType
 {
 	ON_BOT_READY,
 	ON_MESSAGE_CREATED,
 };
+
+using ForwardsMap = std::unordered_map<ForwardType, int>;
 
 extern const char* g_ForwardsNames[];
 extern ForwardsMap g_Forwards;

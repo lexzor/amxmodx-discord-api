@@ -3,9 +3,12 @@
 #include "amx_natives.h"
 #include "amx_forwards.h"
 #include "discord_bots_manager.h"
+#include "moduleconfig.h"
 
 void OnAmxxAttach()
 {
+	MF_PrintSrvConsole("[DiscordAPI] Module loaded successfully!\n");
+	MF_PrintSrvConsole("[DiscordAPI] Version %s!\n", MODULE_VERSION);
 	RegisterNatives();
 }
 
@@ -20,5 +23,4 @@ void OnPluginsLoaded()
 
 void OnPluginsUnloaded()
 {
-	MF_PrintSrvConsole("Plugins unloaded\n");
 }

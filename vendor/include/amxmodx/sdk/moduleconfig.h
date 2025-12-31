@@ -30,8 +30,8 @@
 #define MODULE_AUTHOR "lexzor"
 #define MODULE_URL ""
 #define MODULE_LOGTAG "Discord API"
-#define MODULE_LIBRARY "discordbot"
-#define MODULE_LIBCLASS "discordbot"
+#define MODULE_LIBRARY "discordapi"
+#define MODULE_LIBCLASS "discordapi"
 // If you want the module not to be reloaded on mapchange, remove / comment out the next line
 //#define MODULE_RELOAD_ON_MAPCHANGE
 
