@@ -287,7 +287,7 @@ void DiscordBot::RegisterEventsListeners()
     m_BotCluster.on_message_create([this](const dpp::message_create_t& cb) {
         m_CanSendInteractionMessage = true;
 
-        nlohmann::json eventData;
+        nlohmann::json eventData{};
 
         eventData["id"] = cb.msg.id.str();
         eventData["content"] = cb.msg.content;
@@ -310,7 +310,7 @@ void DiscordBot::RegisterEventsListeners()
             });
         }
 
-        ExecuteForward(ON_CHANNEL_MESSAGE_CREATED, m_Identifier.c_str(), cb.msg.channel_id.str(), eventData.dump());
+        ExecuteForward(ON_CHANNEL_MESSAGE_CREATED, m_Identifier.c_str(), cb.msg.channel_id.str().c_str(), eventData.dump().c_str());
 
         if (!m_LastInteractionMessage.empty())
         {
