@@ -1,7 +1,7 @@
-#if defined _discordapi_included
+#if defined _discordapiguilds_included
 	#endinput
 #endif
-#define _discordapi_included
+#define _discordapiguilds_included
 
 #pragma reqlib discordapi
 #if !defined AMXMODX_NOAUTOLOAD

@@ -1,3 +1,11 @@
+/*
+* Discord API Module for AMX Mod X. Below you will find all the natives and forwards provided by the module. 
+*
+* Author: lexzor
+* Website: https://github.com/lexzor/amxmodx-discord-api
+*
+*/
+
 #if defined _discordapi_included
 	#endinput
 #endif
@@ -9,7 +17,8 @@
 	#pragma loadlib discordapi
 #endif
 
-// #include <discordapiguild.inc>
+#include <discordapiguilds>
+#include <discordapichannels>
 
 const MAX_TOKEN_LENGTH 				= 128;
 const MAX_IDENTIFIER_LENGTH			= 32;
@@ -28,6 +37,26 @@ enum Options
 	LogLevel:LOG_LEVEL,
 	PREFIX[MAX_CONSOLE_PREFIX_LENGTH],
 }
+
+/*
+*
+* Forwards
+*
+*/
+
+
+/**
+* Triggered after a bot has been created in Discord API.
+*
+* @param identifier         Bot identifier.
+*/
+forward OnBotReady(const identifier[]);
+
+/*
+*
+* Natives
+*
+*/
 
 /**
 * Create a discord bot.
@@ -142,29 +171,3 @@ native bool:ClearGlobalSlashCommands(const identifier[]);
 * @return False if bot does not exists, is not ready or there is not any active interaction to reply at, true otherwise.
 */
 native bool:SendReply(const identifier[], const reply[]);
-
-/**
-* Send a message to a channel.
-*
-* @param identifier         Bot identifier.
-* @param channel_id         Channel ID.
-* @param message			Text message to send.
-*
-* @return False if bot does not exists or is not ready, true otherwise.
-*/
-native bool:SendMessageToChannel(const identifier[], const channel_id[], const message[]);
-
-/**
-* Triggered after a bot has been created in Discord API.
-*
-* @param identifier         Bot identifier.
-*/
-forward OnBotReady(const identifier[]);
-
-/**
-* Triggered when a message is created.
-*
-* @param identifier         Bot identifier.
-* @param raw_json_event     Raw JSON event string (provided by Discord API).
-*/
-forward OnMessageCreated(const identifier[], const raw_json_event[]);
