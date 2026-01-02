@@ -1,6 +1,6 @@
 # Discord API into Pawn AMX Mod X
 
-A library for AMX Mod X that provides Discord API functionality to AMXX plugins.
+A library for AMX Mod X that provides some of the Discord API functionality to AMXX plugins.
 
 It uses <a href="https://github.com/brainboxdotcc/DPP">D++ (DPP)</a> as the underlying C++ library to interface with Discord, exposing convenient natives that plugin developers can call directly from their AMXX scripts.
 
