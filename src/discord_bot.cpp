@@ -1,6 +1,7 @@
 #include <amxxmodule.h>
 #include "discord_bot.h"
 #include "amx_forwards.h"
+#include "dpp/nlohmann/json.hpp"
 
 DiscordBot::DiscordBot(const std::string& identifier, const std::string& token)
     : m_BotCluster(token, dpp::i_default_intents | dpp::i_message_content, 1), m_Options(DiscordBotOptions()), m_Identifier(identifier)
@@ -286,7 +287,30 @@ void DiscordBot::RegisterEventsListeners()
     m_BotCluster.on_message_create([this](const dpp::message_create_t& cb) {
         m_CanSendInteractionMessage = true;
 
-        ExecuteForward(ON_MESSAGE_CREATED, m_Identifier.c_str(), cb.raw_event.c_str());
+        nlohmann::json eventData;
+
+        eventData["id"] = cb.msg.id.str();
+        eventData["content"] = cb.msg.content;
+        eventData["guild_id"] = cb.msg.guild_id.str();
+        eventData["author"] =
+        {
+            { "id", cb.msg.author.id.str() },
+            { "username", cb.msg.author.username }
+        };
+
+        eventData["mentions"] = nlohmann::json::array();
+
+        for (const auto& pair : cb.msg.mentions)
+        {
+            const dpp::user& user = pair.first;
+
+            eventData["mentions"].push_back({
+                { "id", user.id.str() },
+                { "username", user.username }
+            });
+        }
+
+        ExecuteForward(ON_CHANNEL_MESSAGE_CREATED, m_Identifier.c_str(), cb.msg.channel_id.str(), eventData.dump());
 
         if (!m_LastInteractionMessage.empty())
         {

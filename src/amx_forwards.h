@@ -5,7 +5,8 @@
 enum ForwardType
 {
 	ON_BOT_READY,
-	ON_MESSAGE_CREATED,
+	
+	ON_CHANNEL_MESSAGE_CREATED,
 };
 
 using ForwardsMap = std::unordered_map<ForwardType, int>;
