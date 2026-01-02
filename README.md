@@ -21,6 +21,11 @@ Before installing the module, you have to know it may not work on outdated opera
 3. Enable module in `/cstrike/addons/amxmodx/configs/modules.ini` by typing a new line `discordapi`.
 4. Restart server and type in server console `amxx modules` to check if it was loaded properly.
 
+## Discord Bot Configuration
+Discord bots use <b>intents</b> to specify which events they receive. This module uses the `Message Content Intent` by default for message events. You must enable this intent in the <b>Discord Developer Portal</b>.
+
+It is also recommended to <b>enable all other intents</b> from the portal to ensure the bot works correctly.
+
 <details>
 <summary>Contribution</summary>
 Before diving into the build steps, it’s important to understand that the project is compiled inside a Docker container running a specific Unix-like distribution. This approach was adopted because Half-Life 1 game servers are hosted on a wide variety of operating systems. Currently, testing has only been performed on <a href="https://hostsrc.io/">Hostsrc.io</a> Counter-Strike 1.6 game servers running in a <b>Debian 12 Docker container</b>.
