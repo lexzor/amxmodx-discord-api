@@ -21,8 +21,8 @@ Before installing the module, you have to know it may not work on outdated opera
 3. Enable module in `/cstrike/addons/amxmodx/configs/modules.ini` by typing a new line `discordapi`.
 4. Restart server and type in server console `amxx modules` to check if it was loaded properly.
 
-
-## Contribution
+<details>
+<summary>Contribution</summary>
 To contribute to the development of this project, you need to have <b>Docker for Windows</b> installed on your computer, as it is required to build the project and its dependencies.
 
 ## Building
@@ -58,3 +58,4 @@ Finally, build the project itself:
   1. Open Windows Powershell Terminal.
   2. Navigate to `amxmodx-discord-api\docker-images\debian12`.
   3. Run `build_project.ps1`.
+</details>
