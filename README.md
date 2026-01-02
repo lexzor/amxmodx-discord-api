@@ -37,6 +37,7 @@ The project uses <a href="https://github.com/brainboxdotcc/DPP">D++ (DPP)</a> as
 <details>
   <summary>1. Docker Setup</summary>
   First, you need to <b>build the Docker container</b> that will be used to compile both project and libraries. Currently only <b>Debian12</b> is supported.
+  
     1. Open Windows Powershell Terminal.
     2. Navigate to `amxmodx-discord-api\docker-images\debian12`.
     3. Run `build_container.ps1`.
@@ -47,6 +48,7 @@ After this step, the Docker container should be installed on your computer.
 <details>
   <summary>2. Build Libraries</summary>
   As mentioned earlier, the project statically links libraries so that the <b>AMXX module</b> does not depend on OS-installed libraries at runtime. This step only needs to be done <b>once per Docker container</b>.
+  
     1. Open Windows Powershell Terminal.
     2. Navigate to `amxmodx-discord-api\docker-images\debian12`.
     3. Run `build_libs.ps1`.
@@ -57,6 +59,7 @@ After completion, all required libraries will be copied to the `amxmodx-discord-
 <details>  
   <summary>Build Project</summary>
   Finally, build the project itself:
+  
     1. Open Windows Powershell Terminal.
     2. Navigate to `amxmodx-discord-api\docker-images\debian12`.
     3. Run `build_project.ps1`.
