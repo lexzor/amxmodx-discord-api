@@ -53,38 +53,34 @@ public OnBotReady(const identifier[])
     }
 }
 
-public OnMessageCreated(const identifier[], const raw_json_event[])
+public OnChannelMessageCreated(const identifier[], const channel_id[], const event_data[])
 {
     if(strcmp(identifier, IDENTIFIER, false) != 0)
     {
         return;
     }
 
-    new JSON:jsonEvent = json_parse(raw_json_event);
+    new JSON:jsonEvent = json_parse(event_data);
 
     if(jsonEvent == Invalid_JSON)
     {
-        log_amx("Failed to parse raw json event from OnMessageCreated.");
+        log_amx("Failed to parse raw json event from OnChannelMessageCreated.");
         return;
     }
-
-    new JSON:d = json_object_get_value(jsonEvent, "d");
-    new channel_id[64];
-    json_object_get_string(d, "channel_id", channel_id, charsmax(channel_id));
 
     if(strcmp(channel_id, CHANNEL_ID) != 0)
     {
         goto cleanup;
     }
 
-    new JSON:author = json_object_get_value(d, "author");
+    new JSON:author = json_object_get_value(jsonEvent, "author");
 
     new content[128];
     new authorName[MAX_NAME_LENGTH * 2];
     new authorId[64];
     
     json_object_get_string(author, "username", authorName, charsmax(authorName));
-    json_object_get_string(d, "content", content, charsmax(content));
+    json_object_get_string(jsonEvent, "content", content, charsmax(content));
     json_object_get_string(author, "id", authorId, charsmax(authorId));
 
     if(strcmp(authorId, BOT_ID) == 0)
@@ -98,7 +94,6 @@ public OnMessageCreated(const identifier[], const raw_json_event[])
     server_print(message);
     
 cleanup:
-    json_free(d);
     json_free(author);
     json_free(jsonEvent);
 }
