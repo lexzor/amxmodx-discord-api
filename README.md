@@ -1,23 +1,60 @@
-# (AMXMODX) Discord API
+# Discord API into Pawn AMX Mod X
 
 A library for AMX Mod X that provides Discord API functionality to AMXX plugins.
 
-It uses D++ (DPP) as the underlying C++ library to interface with Discord, exposing convenient natives that plugin developers can call directly from their AMXX scripts.
+It uses <a href="https://github.com/brainboxdotcc/DPP">D++ (DPP)</a> as the underlying C++ library to interface with Discord, exposing convenient natives that plugin developers can call directly from their AMXX scripts.
 
 This allows you to integrate Discord features directly within your AMXX plugins without needing to implement the Discord protocol from scratch or use another virtual machine to host the Discord bot.
 
-<div style="border: 1px solid #f1c40f; padding: 12px; border-radius: 6px; background: #fff8d5;">
+<div style="border: 1px solid #f1c40f; padding: 12px; border-radius: 6px; background: #fff8d5; font-size: 12px;">
   <h3>⚠️ Important Notice</h3>
   <p>
-    This module it's still in BETA version and crashes may occur due to module or AMXX plugins errors.
+    This module it's still in BETA version and crashes may occur due to module or AMXX plugins.
   </p>
 </div>
 
 # Installation
-Before installing the module, you have to know it may not work on outdated systems (ubuntu18 as an example) because the project uses C++20. If you use pterodactyl to run your server in a docker container update the docker image to `ghcr.io/parkervcp/steamcmd:debian`.
-
+Before installing the module, you have to know it may not work on outdated operating system because the project uses <b>C++20</b>. If you use <a href="https://github.com/pterodactyl/panel">Pterodactyl Panel</a> to run your server in a <b>Docker container</b>, you may want to update the docker image to `ghcr.io/parkervcp/steamcmd:debian`.
 
 1. Download last stable release.
 2. Copy `discordapi_amxx_i386.so` to `/cstrike/addons/amxmodx/modules`.
-3. Enable module in `/cstrike/addons/amxmodx/configs/modules.ini` by typing `discordapi`.
-4. Restart server and type in server console `amxx modules` to check if it was loaded properly
+3. Enable module in `/cstrike/addons/amxmodx/configs/modules.ini` by typing a new line `discordapi`.
+4. Restart server and type in server console `amxx modules` to check if it was loaded properly.
+
+
+# Contribution
+To contribute to the development of this project, you need to have <b>Docker for Windows</b> installed on your computer, as it is required to build the project and its dependencies.
+
+# Building
+Before diving into the build steps, it’s important to understand that the project is compiled inside a Docker container running a specific Unix-like distribution. This approach was adopted because Half-Life 1 game servers are hosted on a wide variety of operating systems. Currently, testing has only been performed on <a href="https://hostsrc.io/">Hostsrc.io</a> Counter-Strike 1.6 game servers running in a <b>Debian 12 Docker container</b>.
+
+The project uses <a href="https://github.com/brainboxdotcc/DPP">D++ (DPP)</a> as the underlying C++ library, which requires at least <b>C++17</b>. This project itself is compiled with <b>C++20</b>. D++ relies on additional libraries such as <b>ZLib</b>, <b>OpenSSL</b>, and <b>cURL</b>, which are compiled and statically linked into the project to avoid issues with missing APIs on different operating systems.
+
+<div style="border: 1px solid #f1c40f; padding: 12px; border-radius: 6px; background: #fff8d5; font-size: 12px;">
+  <h3>⚠️ Important Notice</h3>
+  <p>
+    All building steps are intended for Windows users.
+  </p>
+</div>
+
+# Docker Setup
+First, you need to <b>build the Docker container</b> that will be used to compile both project and libraries. Currently only <b>Debian12</b> is supported.
+  1. Open Windows Powershell Terminal.
+  2. Navigate to `amxmodx-discord-api\docker-images\debian12`.
+  3. Run `build_container.ps1`.
+
+After this step, the Docker container should be installed on your computer.
+
+# Build Libraries
+As mentioned earlier, the project statically links libraries so that the <b>AMXX module</b> does not depend on OS-installed libraries at runtime. This step only needs to be done <b>once per Docker container</b>.
+  1. Open Windows Powershell Terminal.
+  2. Navigate to `amxmodx-discord-api\docker-images\debian12`.
+  3. Run `build_libs.ps1`.
+
+After completion, all required libraries will be copied to the `amxmodx-discord-api\vendor\bin` directory.
+
+# Build Project
+Finally, build the project itself:
+  1. Open Windows Powershell Terminal.
+  2. Navigate to `amxmodx-discord-api\docker-images\debian12`.
+  3. Run `build_project.ps1`.
