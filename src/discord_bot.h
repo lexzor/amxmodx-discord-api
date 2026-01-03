@@ -34,7 +34,6 @@ public:
 	inline const bool				GetReadyState()						const { return m_Ready; }
 
 private:
-
 	void							SetReadyState(bool state);
 	void							RegisterEventsListeners();
 	inline const std::string*		GetLastInteractionMessage()			const { return &m_LastInteractionMessage; }

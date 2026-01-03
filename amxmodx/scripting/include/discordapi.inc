@@ -134,6 +134,7 @@ native bool:DeleteBot(const identifier[]);
 * Register a slash command.
 *
 * @note Callback params: func(const identifier[]). 
+* @note Callback function it's an interaction.
 *
 * @param identifier         Bot identifier.
 * @param command            Command name.
@@ -165,6 +166,8 @@ native bool:ClearGlobalSlashCommands(const identifier[]);
 
 /**
 * Send reply on last slash command interaction.
+*
+* @note This function it's used to reply to an interaction.
 *
 * @param identifier         Bot identifier.
 * @param reply              Text message to send.

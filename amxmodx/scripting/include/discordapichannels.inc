@@ -17,6 +17,8 @@
 /**
 * Triggered when a message is created.
 *
+* @note This event is an interaction.
+*
 * @note Event JSON data:
 * {
 *     "id": "80351110224678912",
