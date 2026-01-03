@@ -70,8 +70,8 @@ void DiscordBot::RegisterGlobalSlashCommand(const std::string& command, const st
         [this, command, amx_fw_handle](const dpp::confirmation_callback_t& cb) {
             if (cb.is_error())
             {
-                MF_PrintSrvConsole("%s (RegisterGlobalSlashCommand) ERROR: Failed to register slash command '%s'\n", this->GetConsolePrefix().c_str(), command.c_str());
-                MF_PrintSrvConsole("%s (RegisterGlobalSlashCommand) %s\n", this->GetConsolePrefix().c_str(), cb.get_error().human_readable.c_str());
+                MF_PrintSrvConsole("%s (RegisterGlobalSlashCommand) ERROR: Failed to register slash command '%s'\n", GetConsolePrefix().c_str(), command.c_str());
+                MF_PrintSrvConsole("%s (RegisterGlobalSlashCommand) %s\n", GetConsolePrefix().c_str(), cb.get_error().human_readable.c_str());
             }
             else
             {
@@ -80,9 +80,9 @@ void DiscordBot::RegisterGlobalSlashCommand(const std::string& command, const st
 
                 m_GlobalSlashCommands.emplace(snowflake, SlashCommand(createdSlashCmd, amx_fw_handle));
 
-                if (this->GetLogLevel() == LogLevel::DEFAULT || this->GetLogLevel() == LogLevel::VERBOSE)
+                if (GetLogLevel() == LogLevel::DEFAULT || GetLogLevel() == LogLevel::VERBOSE)
                 {
-                    MF_PrintSrvConsole("%s (RegisterGlobalSlashCommand) Slash command '%s' has been registered succesfully\n", this->GetConsolePrefix().c_str(), command.c_str());
+                    MF_PrintSrvConsole("%s (RegisterGlobalSlashCommand) Slash command '%s' has been registered succesfully\n", GetConsolePrefix().c_str(), command.c_str());
                 }
             }
         }
@@ -101,8 +101,8 @@ void DiscordBot::UnregisterGlobalSlashCommand(const dpp::snowflake& snowflake, c
     m_BotCluster.global_commands_get([this, command, snowflake](const dpp::confirmation_callback_t& cb) {
         if (cb.is_error())
         {
-            MF_PrintSrvConsole("%s (UnregisterGlobalSlashCommand) ERROR: Failed to get global slash commands from Discord API when deleting '%s'\n", this->GetConsolePrefix().c_str(), command.c_str());
-            MF_PrintSrvConsole("%s (UnregisterGlobalSlashCommand) %s\n", this->GetConsolePrefix().c_str(), cb.get_error().human_readable.c_str());
+            MF_PrintSrvConsole("%s (UnregisterGlobalSlashCommand) ERROR: Failed to get global slash commands from Discord API when deleting '%s'\n", GetConsolePrefix().c_str(), command.c_str());
+            MF_PrintSrvConsole("%s (UnregisterGlobalSlashCommand) %s\n", GetConsolePrefix().c_str(), cb.get_error().human_readable.c_str());
         }
         else
         {
@@ -111,19 +111,19 @@ void DiscordBot::UnregisterGlobalSlashCommand(const dpp::snowflake& snowflake, c
 
             if (it == cmdsMap.end())
             {
-                MF_PrintSrvConsole("%s (UnregisterGlobalSlashCommand) Command '%s' it's not registered in Discord API\n", this->GetConsolePrefix().c_str(), command.c_str());
+                MF_PrintSrvConsole("%s (UnregisterGlobalSlashCommand) Command '%s' it's not registered in Discord API\n", GetConsolePrefix().c_str(), command.c_str());
                 return;
             }
 
             m_BotCluster.global_command_delete(snowflake, [this, snowflake, command](const dpp::confirmation_callback_t& cb) {
                 if (cb.is_error())
                 {
-                    MF_PrintSrvConsole("%s (UnregisterGlobalSlashCommand) ERROR: Failed to delete global slash command '%s' from Discord API \n", this->GetConsolePrefix().c_str(), command.c_str());
-                    MF_PrintSrvConsole("%s (UnregisterGlobalSlashCommand) %s\n", this->GetConsolePrefix().c_str(), cb.get_error().human_readable.c_str());
+                    MF_PrintSrvConsole("%s (UnregisterGlobalSlashCommand) ERROR: Failed to delete global slash command '%s' from Discord API \n", GetConsolePrefix().c_str(), command.c_str());
+                    MF_PrintSrvConsole("%s (UnregisterGlobalSlashCommand) %s\n", GetConsolePrefix().c_str(), cb.get_error().human_readable.c_str());
                 }
                 else
                 {
-                    if (this->GetLogLevel() != LogLevel::NONE)
+                    if (GetLogLevel() != LogLevel::NONE)
                     {
                         MF_PrintSrvConsole("%s (UnregisterGlobalSlashCommand) Slash command '%s' has been unregistered succesfully\n", command.c_str());
 
@@ -174,8 +174,8 @@ void DiscordBot::RegisterEventsListeners()
             std::string level = event.severity == dpp::loglevel::ll_critical ? "CRITICAL" : dpp::loglevel::ll_error ? "ERROR" : "WARNING";
 
             MF_PrintSrvConsole("\n----------------------------------\n");
-            MF_PrintSrvConsole("%s %s log! Identifier: %s\n", this->GetConsolePrefix().c_str(), level.c_str(), m_Identifier.c_str());
-            MF_PrintSrvConsole("%s JSON log: %s\n", this->GetConsolePrefix().c_str(), event.message.c_str());
+            MF_PrintSrvConsole("%s %s log! Identifier: %s\n", GetConsolePrefix().c_str(), level.c_str(), m_Identifier.c_str());
+            MF_PrintSrvConsole("%s JSON log: %s\n", GetConsolePrefix().c_str(), event.message.c_str());
             MF_PrintSrvConsole("----------------------------------\n");
             return;
         }
@@ -187,12 +187,12 @@ void DiscordBot::RegisterEventsListeners()
 
         if (GetLogLevel() == LogLevel::DEFAULT && event.severity == dpp::loglevel::ll_info)
         {
-            MF_PrintSrvConsole("%s %s\n", this->GetConsolePrefix().c_str(), event.message.c_str());
+            MF_PrintSrvConsole("%s %s\n", GetConsolePrefix().c_str(), event.message.c_str());
         }
 
         if (GetLogLevel() == LogLevel::VERBOSE)
         {
-            MF_PrintSrvConsole("%s %s\n", this->GetConsolePrefix().c_str(), event.message.c_str());
+            MF_PrintSrvConsole("%s %s\n", GetConsolePrefix().c_str(), event.message.c_str());
         }
     });
 
@@ -203,7 +203,7 @@ void DiscordBot::RegisterEventsListeners()
         }
 
         m_Guilds.emplace(cb.created.id, cb.created);
-        MF_PrintSrvConsole("%s Bot has been added in '%s'\n", this->GetConsolePrefix().c_str(), cb.created.name.c_str());
+        MF_PrintSrvConsole("%s Bot has been added in '%s'\n", GetConsolePrefix().c_str(), cb.created.name.c_str());
     });
 
     m_BotCluster.on_guild_delete([this](const dpp::guild_delete_t& cb) {
@@ -213,13 +213,13 @@ void DiscordBot::RegisterEventsListeners()
         }
         
         if (cb.deleted.is_unavailable()) {
-            MF_PrintSrvConsole("%s '%s' has become unavailable (temporarly)\n", this->GetConsolePrefix().c_str(), cb.deleted.name.c_str());
+            MF_PrintSrvConsole("%s '%s' has become unavailable (temporarly)\n", GetConsolePrefix().c_str(), cb.deleted.name.c_str());
             m_Guilds[cb.deleted.id] = cb.deleted;
         }
         else
         {
             m_Guilds.erase(cb.deleted.id);
-            MF_PrintSrvConsole("%s Bot was removed from '%s'\n", this->GetConsolePrefix().c_str(), cb.deleted.name.c_str());
+            MF_PrintSrvConsole("%s Bot was removed from '%s'\n", GetConsolePrefix().c_str(), cb.deleted.name.c_str());
         }
     });
 
@@ -231,23 +231,23 @@ void DiscordBot::RegisterEventsListeners()
             MF_PrintSrvConsole("%s OnGuildUpdate: \n%s\n", GetConsolePrefix().c_str(), cb.updated.to_json().dump(4).c_str());
         }
 
-        if (this->GetLogLevel() == LogLevel::VERBOSE)
+        if (GetLogLevel() == LogLevel::VERBOSE)
         {
-            MF_PrintSrvConsole("%s Guild '%s' has been updated\n", this->GetConsolePrefix().c_str(), cb.updated.name.c_str());
+            MF_PrintSrvConsole("%s Guild '%s' has been updated\n", GetConsolePrefix().c_str(), cb.updated.name.c_str());
         }
     });
 
     m_BotCluster.on_ready([this](const dpp::ready_t& event) {
-        if (this->GetLogLevel() == LogLevel::VERBOSE)
+        if (GetLogLevel() == LogLevel::VERBOSE)
         {
-            MF_PrintSrvConsole("%s Fetching global slash commands from Discord API...\n", this->GetConsolePrefix().c_str());
+            MF_PrintSrvConsole("%s Fetching global slash commands from Discord API...\n", GetConsolePrefix().c_str());
         }
 
         m_BotCluster.global_commands_get([this](const dpp::confirmation_callback_t& cb) {
             if (cb.is_error())
             {
-                MF_PrintSrvConsole("%s ERROR: Failed to retrieve global slash commands from Discord API\n", this->GetConsolePrefix().c_str());
-                MF_PrintSrvConsole("%s %s\n", this->GetConsolePrefix().c_str(), cb.get_error().human_readable.c_str());
+                MF_PrintSrvConsole("%s ERROR: Failed to retrieve global slash commands from Discord API\n", GetConsolePrefix().c_str());
+                MF_PrintSrvConsole("%s %s\n", GetConsolePrefix().c_str(), cb.get_error().human_readable.c_str());
             }
             else
             {
@@ -261,17 +261,17 @@ void DiscordBot::RegisterEventsListeners()
                         m_GlobalSlashCommands.emplace(key, SlashCommand(value, INVALID_SLASH_COMMAND_AMXX_FW_HANDLE));
                     }
 
-                    if (this->GetLogLevel() == LogLevel::VERBOSE)
+                    if (GetLogLevel() == LogLevel::VERBOSE)
                     {
-                        MF_PrintSrvConsole("%s Retrieved %i global slash command%s from Discord API\n", this->GetConsolePrefix().c_str(), slashCommandsCount, slashCommandsCount == 1 ? "s" : "");
+                        MF_PrintSrvConsole("%s Retrieved %i global slash command%s from Discord API\n", GetConsolePrefix().c_str(), slashCommandsCount, slashCommandsCount == 1 ? "s" : "");
                     }
                 }
-                else if (this->GetLogLevel() == LogLevel::VERBOSE)
+                else if (GetLogLevel() == LogLevel::VERBOSE)
                 {
-                    MF_PrintSrvConsole("%s No global slash commands are registered for this bot on Discord API\n", this->GetConsolePrefix().c_str());
+                    MF_PrintSrvConsole("%s No global slash commands are registered for this bot on Discord API\n", GetConsolePrefix().c_str());
                 }
 
-                this->SetReadyState(true);
+                SetReadyState(true);
                 ExecuteForward(ON_BOT_READY, m_Identifier.c_str());
             }
         });
@@ -287,7 +287,7 @@ void DiscordBot::RegisterEventsListeners()
 
         if (it->second.amx_fw_handle == INVALID_SLASH_COMMAND_AMXX_FW_HANDLE)
         {
-            MF_PrintSrvConsole("%s Slash command issued by user %s, but it does not exists in local slash commands map\n", this->GetConsolePrefix().c_str(), cb.command.usr.username);
+            MF_PrintSrvConsole("%s Slash command issued by user %s, but it does not exists in local slash commands map\n", GetConsolePrefix().c_str(), cb.command.usr.username);
             return;
         }
 
