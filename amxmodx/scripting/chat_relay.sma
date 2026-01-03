@@ -88,6 +88,39 @@ public OnChannelMessageCreated(const identifier[], const channel_id[], const eve
         goto cleanup;
     }
 
+    new JSON:mentionsArray = json_object_get_value(jsonEvent, "mentions");
+    new count = json_array_get_count(mentionsArray);
+
+    if(count > 0)
+    {
+        enum MentionData
+        {
+            Username[MAX_NAME_LENGTH],
+            Id[32],
+        }
+
+        new JSON:mention;
+
+        for(new i = 0, data[MentionData], mentionString[64]; i < count; i++)
+        {
+            mention = json_array_get_value(mentionsArray, i);
+            json_object_get_string(mention, "username", data[Username], charsmax(data[Username]));
+            json_object_get_string(mention, "id", data[Id], charsmax(data[Id]));
+
+            formatex(mentionString, charsmax(mentionString), "<@%s>", data[Id]);
+            new const pos = strfind(content, mentionString);
+
+            if(pos == -1)
+            {
+                continue;
+            }
+
+            replace(content, charsmax(content), mentionString, fmt("^4@%s^1", data[Username]));
+        }
+    
+        json_free(mention);
+    }
+
     new message[128];
     formatex(message, charsmax(message), "^4[Discord]^1 %s^4:^1 %s", authorName, content);
     client_print_color(0, print_team_default, message);
