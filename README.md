@@ -6,6 +6,7 @@ It uses <a href="https://github.com/brainboxdotcc/DPP">D++ (DPP)</a> as the unde
 
 > [!IMPORTANT]
 > This module is still in <b>BETA</b>, so crashes may occur due to the module itself or <b>AMX Mod X</b> plugins you create.
+> If you find any error please open an issue or a PR.
 
 ## Usage
 Before installing the module, you have to know it may not work on outdated operating system because the project uses <b>C++20</b>. If you use <a href="https://github.com/pterodactyl/panel">Pterodactyl Panel</a> to run your server in a <b>Docker container</b>, you may want to update the docker image to `ghcr.io/parkervcp/steamcmd:debian`.
