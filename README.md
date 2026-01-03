@@ -39,7 +39,13 @@ Plugin examples can be found in [scripting folder](https://github.com/lexzor/amx
 </details>
 
 <details>
-  <summary>3. Debugging</summary>
+  <summary>3. Interactions</summary>
+  A topic that should be mentioned is interactions. Some forwards may be marked with <b>Interaction</b>. In these cases, you can use the <b>SendReply</b> native.
+  For example, if you use it in the <b>OnChannelMessageCreated</b> forward, the bot will reply directly to the user’s message with the message you send.
+</details>
+
+<details>
+  <summary>4. Debugging</summary>
   You can set the log level to <b>VERBOSE</b> in the bot options (which can be changed at any time during the bot’s lifecycle). Note that the <b>VERBOSE</b> log level can be overwhelming, as it displays almost all HTTPS or WebSocket data received from the Discord API, but it may be useful when manipulating bot options (for example, global or guild slash commands) to catch errors.
   To debug events without <b>VERBOSE</b> log level, you can use the <b>PRINTS_EVENT_DATA</b> option in the Options array with <b>SetBotOptions</b> (see <b>discordapi.inc</b>) to output the full <b>JSON</b> data received from the Discord API. Note that the printed values do not exactly represent the data passed to AMX Mod X forwards due to plugin limitations.
   If you consider there is not enough data to develop your plugin, you can anytime open an issue or a PR.
