@@ -1,7 +1,6 @@
 #pragma once
 #include <unordered_map>
 
-
 enum ForwardType
 {
 	ON_BOT_READY,
@@ -17,7 +16,7 @@ extern ForwardsMap g_Forwards;
 void RegisterForwards();
 
 template <typename... Args>
-void ExecuteForward(ForwardType forward_type, Args... args)
+void ExecuteForward(ForwardType forward_type, Args&&... args)
 {
 	ForwardsMap::iterator it = g_Forwards.find(forward_type);
 
@@ -27,5 +26,5 @@ void ExecuteForward(ForwardType forward_type, Args... args)
 		return;
 	}
 
-	MF_ExecuteForward(it->second, args...);
+	MF_ExecuteForward(it->second, std::forward<Args>(args)...);
 }
