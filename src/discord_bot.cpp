@@ -19,6 +19,11 @@ void DiscordBot::SetOptions(const DiscordBotOptions& options)
     m_Options = options;
 }
 
+void DiscordBot::SetEventsDataConsolePrinting(const bool state)
+{
+	m_Options.print_events_data = state;
+}
+
 bool DiscordBot::Start()
 {
     if (m_Ready)
@@ -192,11 +197,21 @@ void DiscordBot::RegisterEventsListeners()
     });
 
     m_BotCluster.on_guild_create([this](const dpp::guild_create_t& cb) {
+        if (m_Options.print_events_data || GetLogLevel() == LogLevel::VERBOSE)
+        {
+            MF_PrintSrvConsole("%s OnGuildCreate: \n%s\n", GetConsolePrefix().c_str(), cb.created.to_json().dump(4).c_str());
+        }
+
         m_Guilds.emplace(cb.created.id, cb.created);
         MF_PrintSrvConsole("%s Bot has been added in '%s'\n", this->GetConsolePrefix().c_str(), cb.created.name.c_str());
     });
 
     m_BotCluster.on_guild_delete([this](const dpp::guild_delete_t& cb) {
+        if (m_Options.print_events_data || GetLogLevel() == LogLevel::VERBOSE)
+        {
+            MF_PrintSrvConsole("%s OnGuildDelete: \n%s\n", GetConsolePrefix().c_str(), cb.deleted.to_json().dump(4).c_str());
+        }
+        
         if (cb.deleted.is_unavailable()) {
             MF_PrintSrvConsole("%s '%s' has become unavailable (temporarly)\n", this->GetConsolePrefix().c_str(), cb.deleted.name.c_str());
             m_Guilds[cb.deleted.id] = cb.deleted;
@@ -210,6 +225,11 @@ void DiscordBot::RegisterEventsListeners()
 
     m_BotCluster.on_guild_update([this](const dpp::guild_update_t& cb) {
         m_Guilds[cb.updated.id] = cb.updated;
+
+        if (m_Options.print_events_data || GetLogLevel() == LogLevel::VERBOSE)
+        {
+            MF_PrintSrvConsole("%s OnGuildUpdate: \n%s\n", GetConsolePrefix().c_str(), cb.updated.to_json().dump(4).c_str());
+        }
 
         if (this->GetLogLevel() == LogLevel::VERBOSE)
         {
@@ -273,6 +293,11 @@ void DiscordBot::RegisterEventsListeners()
 
         m_CanSendInteractionMessage = true;
 
+        if (m_Options.print_events_data || GetLogLevel() == LogLevel::VERBOSE)
+        {
+            MF_PrintSrvConsole("%s OnGlobalSlashCommand '%s': \n%s\n", GetConsolePrefix().c_str(), cb.command.get_command_interaction().name.c_str(), cb.command.to_json().dump(4).c_str());
+        }
+
         MF_ExecuteForward(it->second.amx_fw_handle, cb.command.usr.build_json().c_str());
 
         if (!m_LastInteractionMessage.empty())
@@ -287,7 +312,7 @@ void DiscordBot::RegisterEventsListeners()
     m_BotCluster.on_message_create([this](const dpp::message_create_t& cb) {
         m_CanSendInteractionMessage = true;
 
-        nlohmann::json eventData{};
+        dpp::json eventData{};
 
         eventData["id"] = cb.msg.id.str();
         eventData["content"] = cb.msg.content;
@@ -298,7 +323,7 @@ void DiscordBot::RegisterEventsListeners()
             { "username", cb.msg.author.username }
         };
 
-        eventData["mentions"] = nlohmann::json::array();
+        eventData["mentions"] = dpp::json::array();
 
         for (const auto& pair : cb.msg.mentions)
         {
@@ -308,6 +333,11 @@ void DiscordBot::RegisterEventsListeners()
                 { "id", user.id.str() },
                 { "username", user.username }
             });
+        }
+
+        if (m_Options.print_events_data || GetLogLevel() == LogLevel::VERBOSE)
+        {
+            MF_PrintSrvConsole("%s OnChannelMessageCreated: \n%s\n", GetConsolePrefix().c_str(), eventData.dump(4).c_str());
         }
 
         ExecuteForward(ON_CHANNEL_MESSAGE_CREATED, m_Identifier.c_str(), cb.msg.channel_id.str().c_str(), eventData.dump().c_str());

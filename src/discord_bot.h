@@ -25,6 +25,7 @@ public:
 	void SendMessageToChannel			(const std::string& channel_id, const std::string& message);
 	bool SendReplyToLastInteraction		(const std::string& message);
 	void SetOptions						(const DiscordBotOptions& options);
+	void SetEventsDataConsolePrinting	(const bool state);
 
 	inline const std::string&		GetConsolePrefix()					const { return m_Options.chat_prefix; }
 	inline const LogLevel			GetLogLevel()						const { return m_Options.log_level; }
@@ -33,6 +34,7 @@ public:
 	inline const bool				GetReadyState()						const { return m_Ready; }
 
 private:
+
 	void							SetReadyState(bool state);
 	void							RegisterEventsListeners();
 	inline const std::string*		GetLastInteractionMessage()			const { return &m_LastInteractionMessage; }
@@ -46,6 +48,7 @@ private:
 	DiscordBotOptions m_Options;
 
 	bool m_Ready = false;
+	bool m_ShouldPrintEventsData = false;
 	bool m_CanSendInteractionMessage = false;
 	std::string m_LastInteractionMessage;
 };

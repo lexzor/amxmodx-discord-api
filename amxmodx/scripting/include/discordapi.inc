@@ -36,6 +36,7 @@ enum Options
 {
 	LogLevel:LOG_LEVEL,
 	PREFIX[MAX_CONSOLE_PREFIX_LENGTH],
+	PRINTS_EVENT_DATA
 }
 
 /*

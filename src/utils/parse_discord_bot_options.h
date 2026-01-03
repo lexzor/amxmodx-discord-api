@@ -10,6 +10,7 @@ static inline DiscordBotOptions ParseBotOptionsFromAmxArray(const cell* options)
 	{
 		LOG_LEVEL = 0,
 		CONSOLE_PREFIX, // size = MAX_CONSOLE_PREFIX_LENGTH
+		PRINT_EVENTS_DATA
 	};
 
 	uint16_t currentIter = AmxxBotOptionsArray::LOG_LEVEL;
@@ -32,12 +33,13 @@ static inline DiscordBotOptions ParseBotOptionsFromAmxArray(const cell* options)
 		chat_prefix.push_back(c);
 	}
 
-	currentIter += MAX_CONSOLE_PREFIX_LENGTH;
-
 	if (chat_prefix.empty())
 	{
 		chat_prefix = "[DiscordBot]";
 	}
 
-	return DiscordBotOptions(logLevel, chat_prefix);
+	currentIter += MAX_CONSOLE_PREFIX_LENGTH;
+	const bool print_events_data = options[currentIter] != 0;
+
+	return DiscordBotOptions(logLevel, chat_prefix, print_events_data);
 }
