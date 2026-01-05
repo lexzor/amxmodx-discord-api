@@ -34,13 +34,12 @@ enum LogLevel (+=1)
 
 enum Options
 {
-	LogLevel:LOG_LEVEL,
-	PREFIX[MAX_CONSOLE_PREFIX_LENGTH],
-	PRINT_EVENT_DATA
+	LogLevel:LOG_LEVEL,									// Log level for bot console messages.
+	PREFIX[MAX_CONSOLE_PREFIX_LENGTH],					// Console prefix for bot messages in console.
+	bool:PRINT_EVENT_DATA 								// Enable/Disable printing event data in console (for debugging).
 }
 
 /*
-*
 * Forwards
 *
 */
