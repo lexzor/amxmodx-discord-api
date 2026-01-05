@@ -51,7 +51,7 @@ public bot_guilds(id)
         }
         else 
         {
-            client_print(0, print_console, "There are not any guilds to be displayed!");
+            client_print(id, print_console, "There are not any guilds to be displayed!");
         }
 
         return PLUGIN_HANDLED;
@@ -63,7 +63,7 @@ public bot_guilds(id)
     }
     else 
     {
-        client_print(0, print_console, "Guilds: %s", buffer);
+        client_print(id, print_console, "Guilds: %s", buffer);
     }
 
     return PLUGIN_HANDLED;
