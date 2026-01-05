@@ -15,6 +15,8 @@ include_directories(
     vendor/include/amxmodx/sdk
     vendor/include
     src/utils
+    src/natives
+    src
 )
 
 file(GLOB_RECURSE SOURCES "src/*.cpp" "src/**/*.cpp" "vendor/include/amxmodx/sdk/*.cpp")
