@@ -45,6 +45,7 @@ bool DiscordBot::Stop()
     }
 
     m_BotCluster.shutdown();
+	ExecuteForward(ON_BOT_STOPPED, m_Identifier.c_str());
     return true;
 }
 

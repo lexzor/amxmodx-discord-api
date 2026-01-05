@@ -53,6 +53,13 @@ enum Options
 */
 forward OnBotReady(const identifier[]);
 
+/**
+* Triggered when a bot it's stopped.
+*
+* @param identifier         Bot identifier.
+*/
+forward OnBotStopped(const identifier[]);
+
 /*
 *
 * Natives

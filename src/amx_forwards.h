@@ -4,6 +4,7 @@
 enum ForwardType
 {
 	ON_BOT_READY,
+	ON_BOT_STOPPED,
 	
 	ON_CHANNEL_MESSAGE_CREATED,
 };
