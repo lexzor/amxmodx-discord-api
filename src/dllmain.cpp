@@ -1,8 +1,9 @@
 #include <amxxmodule.h>
 
+#include "common.h"
+
 #include "amx_natives.h"
 #include "amx_forwards.h"
-#include "discord_bots_manager.h"
 #include "moduleconfig.h"
 
 void OnAmxxAttach()
