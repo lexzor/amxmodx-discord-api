@@ -58,6 +58,9 @@ forward OnGuildDeleted(const identifier[], const guild_data[]);
 * @note Buffer size must be at least 2. If bot it's not added in any guild,
 *		buffer will be an empty JSON array. 
 *
+* @note An error will be thrown if the buffer length is too small for the
+*		returned data from Discord API.
+*
 * @param identifier         Bot identifier.
 * @param buffer             Buffer where guilds JSON will be copied.
 * @param buffer_len			Buffer size.
