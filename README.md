@@ -1,4 +1,5 @@
-# Discord API into Pawn AMX Mod X
+# Discord API into Pawn
+#### through AMX Mod X
 
 A library for AMX Mod X that provides some of the Discord API functionality to AMXX plugins.
 
@@ -11,16 +12,17 @@ It uses <a href="https://github.com/brainboxdotcc/DPP">D++ (DPP)</a> as the unde
 ## Usage
 Before installing the module, you have to know it may not work on outdated operating system because the project uses <b>C++20</b>. If you use <a href="https://github.com/pterodactyl/panel">Pterodactyl Panel</a> to run your server in a <b>Docker container</b>, you may want to update the docker image to `ghcr.io/parkervcp/steamcmd:debian`.
 
+#### Discord Bot Configuration
+First you have to create a bot in Discord Developer portal and copy it's token.
+Discord bots use <b>intents</b> to specify which events they receive. This module uses the `Message Content Intent` by default for message events. You must enable this intent in the <b>Discord Developer Portal</b>.
+
+It is also recommended to <b>enable all other intents</b> from the portal to ensure the bot works correctly.
+
 #### Installation
 1. Download last stable release.
 2. Copy `discordapi_amxx_i386.so` to `/cstrike/addons/amxmodx/modules`.
 3. Enable module in `/cstrike/addons/amxmodx/configs/modules.ini` by typing a new line `discordapi`.
 4. Restart server and type in server console `amxx modules` to check if it was loaded properly.
-
-#### Discord Bot Configuration
-Discord bots use <b>intents</b> to specify which events they receive. This module uses the `Message Content Intent` by default for message events. You must enable this intent in the <b>Discord Developer Portal</b>.
-
-It is also recommended to <b>enable all other intents</b> from the portal to ensure the bot works correctly.
 
 ## AMX Mod X Scripting
 All natives and forwards can be found in [include folder](https://github.com/lexzor/amxmodx-discord-api/tree/main/amxmodx/scripting/include).
