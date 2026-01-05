@@ -1,5 +1,4 @@
 # Discord API into Pawn
-#### through AMX Mod X
 
 A library for AMX Mod X that provides some of the Discord API functionality to AMXX plugins.
 
