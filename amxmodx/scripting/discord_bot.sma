@@ -25,7 +25,7 @@ public plugin_init()
 
         new opt[Options];
         opt[LOG_LEVEL] = DEFAULT;
-        opt[PRINTS_EVENT_DATA] = false;
+        opt[PRINT_EVENT_DATA] = false;
         formatex(opt[PREFIX], MAX_CONSOLE_PREFIX_LENGTH - 1, "[DiscordAPIChannelRelay]");
         SetBotOptions(IDENTIFIER, opt);
     }

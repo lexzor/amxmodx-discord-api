@@ -36,7 +36,7 @@ enum Options
 {
 	LogLevel:LOG_LEVEL,
 	PREFIX[MAX_CONSOLE_PREFIX_LENGTH],
-	PRINTS_EVENT_DATA
+	PRINT_EVENT_DATA
 }
 
 /*
@@ -44,7 +44,6 @@ enum Options
 * Forwards
 *
 */
-
 
 /**
 * Triggered after a bot has been created in Discord API.
