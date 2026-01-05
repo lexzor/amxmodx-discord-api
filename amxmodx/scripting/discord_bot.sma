@@ -1,5 +1,6 @@
 #include <amxmodx>
 #include <discordapi>
+#include <json>
 
 #define TOKEN "YOUR_DISCORD_BOT_TOKEN_HERE"
 #define IDENTIFIER "discord_bot_example"
@@ -94,7 +95,7 @@ public OnGuildCreated(const identifier[], const guild_data[])
     json_object_get_string(guild, "id", eData[Id], charsmax(eData[Id]));
     json_object_get_string(guild, "name", eData[Name], charsmax(eData[Name]));
 
-    server_print("Bot has been added in guild %s (%s)", eData[Id], eData[Name]);
+    server_print("Bot has been added in guild %s (%s)", eData[Name], eData[Id]);
 }
 
 public OnGuildDeleted(const identifier[], const guild_data[])
@@ -127,7 +128,7 @@ public OnGuildDeleted(const identifier[], const guild_data[])
 
     if(!eData[Unavailable])
     {
-        server_print("Bot has been added in guild %s (%s)", eData[Id], eData[Name]);
+        server_print("Bot has been added in guild %s (%s)", eData[Name], eData[Id]);
     }
     else 
     {

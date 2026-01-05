@@ -9,7 +9,7 @@
 void OnAmxxAttach()
 {
 	MF_PrintSrvConsole("[DiscordAPI] Module loaded successfully!\n");
-	MF_PrintSrvConsole("[DiscordAPI] Version %s compiled %s\n", MODULE_VERSION, __DATE__);
+	MF_PrintSrvConsole("[DiscordAPI] Version %s compiled (%s)\n", MODULE_VERSION, __DATE__);
 	RegisterNatives();
 }
 
