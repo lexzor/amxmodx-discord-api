@@ -61,7 +61,7 @@ void DiscordBot::RegisterGlobalSlashCommand(const std::string& command, const st
                 return;
             }
 
-            MF_PrintSrvConsole("%s (RegisterGlobalSlashCommand) Slash command '%s' already registered.\n");
+            MF_PrintSrvConsole("%s (RegisterGlobalSlashCommand) Slash command '%s' already registered.\n", command.c_str());
             return;
         }
     }
@@ -149,7 +149,7 @@ bool DiscordBot::SendReplyToLastInteraction(const std::string& message)
 {
     if (!m_CanSendInteractionMessage)
     {
-        MF_PrintSrvConsole("%s There is not active interaction which should receive a reply\n", GetConsolePrefix().c_str());
+        MF_PrintSrvConsole("%s There is no active interaction which can receive a reply\n", GetConsolePrefix().c_str());
         return false;
     }
 
@@ -163,7 +163,7 @@ void DiscordBot::SetReadyState(bool state)
 
     if (GetLogLevel() == LogLevel::VERBOSE)
     {
-        MF_PrintSrvConsole("%s Bot hs been marked as %sactive\n", GetConsolePrefix().c_str(), m_Ready ? "" : "in");
+        MF_PrintSrvConsole("%s Bot has been marked as %sactive\n", GetConsolePrefix().c_str(), m_Ready ? "" : "in");
     }
 }
 
@@ -204,7 +204,7 @@ void DiscordBot::RegisterEventsListeners()
         }
 
         m_Guilds.emplace(cb.created.id, cb.created);
-        MF_PrintSrvConsole("%s Bot has been added in '%s'\n", GetConsolePrefix().c_str(), cb.created.name.c_str());
+        MF_PrintSrvConsole("%s Bot has been added in '%s' guild\n", GetConsolePrefix().c_str(), cb.created.name.c_str());
     });
 
     m_BotCluster.on_guild_delete([this](const dpp::guild_delete_t& cb) {
@@ -214,13 +214,13 @@ void DiscordBot::RegisterEventsListeners()
         }
         
         if (cb.deleted.is_unavailable()) {
-            MF_PrintSrvConsole("%s '%s' has become unavailable (temporarly)\n", GetConsolePrefix().c_str(), cb.deleted.name.c_str());
+            MF_PrintSrvConsole("%s '%s' guild has became unavailable (temporarly)\n", GetConsolePrefix().c_str(), cb.deleted.name.c_str());
             m_Guilds[cb.deleted.id] = cb.deleted;
         }
         else
         {
             m_Guilds.erase(cb.deleted.id);
-            MF_PrintSrvConsole("%s Bot was removed from '%s'\n", GetConsolePrefix().c_str(), cb.deleted.name.c_str());
+            MF_PrintSrvConsole("%s Bot was removed from '%s' guild\n", GetConsolePrefix().c_str(), cb.deleted.name.c_str());
         }
     });
 
@@ -288,7 +288,7 @@ void DiscordBot::RegisterEventsListeners()
 
         if (it->second.amx_fw_handle == INVALID_SLASH_COMMAND_AMXX_FW_HANDLE)
         {
-            MF_PrintSrvConsole("%s Slash command issued by user %s, but it does not exists in local slash commands map\n", GetConsolePrefix().c_str(), cb.command.usr.username);
+            MF_PrintSrvConsole("%s Slash command issued by user '%s', but it does not exists in local slash commands map\n", GetConsolePrefix().c_str(), cb.command.usr.username);
             return;
         }
 
