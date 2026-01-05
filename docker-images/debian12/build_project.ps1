@@ -7,6 +7,6 @@ docker run -it --rm `
     mkdir build && \
     cd build && \
     cmake .. && \
-    make && \
+    make -j$nproc && \
     echo 'Press any key to exit the docker container' && \
     read -n 1"
