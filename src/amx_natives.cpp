@@ -1,4 +1,5 @@
 #include "natives/bot.h"
+#include "natives/guilds.h"
 #include "natives/channels.h"
 
 AMX_NATIVE_INFO g_DiscordBotNatives[] =
@@ -15,6 +16,10 @@ AMX_NATIVE_INFO g_DiscordBotNatives[] =
 	{ "UnregisterGlobalSlashCommand", 		UnregisterGlobalSlashCommand },
 	{ "ClearGlobalSlashCommands",			ClearGlobalSlashCommands },
 	{ "SendReply",							SendReply },
+
+	// guilds.h
+
+	{ "GetGuilds",							GetGuilds},
 	
 	// channels.h
 	{ "SendMessageToChannel",				SendMessageToChannel },
