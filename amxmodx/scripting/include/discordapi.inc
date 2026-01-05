@@ -20,10 +20,8 @@
 #include <discordapiguilds>
 #include <discordapichannels>
 
-const MAX_TOKEN_LENGTH 				= 128;
 const MAX_IDENTIFIER_LENGTH			= 32;
 const MAX_CONSOLE_PREFIX_LENGTH 	= 32;
-const MAX_GUILD_ID_LENGTH			= 64;
 
 enum LogLevel (+=1)
 {

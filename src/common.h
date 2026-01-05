@@ -2,8 +2,6 @@
 
 #include "discord_bots_manager.h"
 
-#define DEBUG
-
 #define MAX_IDENTIFIER_LENGTH 32
 #define MAX_CONSOLE_PREFIX_LENGTH 32
 
