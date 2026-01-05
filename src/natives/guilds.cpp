@@ -45,8 +45,8 @@ cell AMX_NATIVE_CALL GetGuilds(AMX* amx, cell* params)
 	for (const auto& [snowflake, guild] : guilds)
 	{
 		jGuilds.push_back({
-			{ "id", guild.id.str()},
-			{ "name", guild.name}
+			{ "id", guild.id.str() },
+			{ "name", guild.name }
 		});
 	}
 
@@ -67,5 +67,5 @@ cell AMX_NATIVE_CALL GetGuilds(AMX* amx, cell* params)
 
 	*destination = 0x0;
 
-	return guilds.size();
+	return static_cast<cell>(guilds.size());
 }
