@@ -22,8 +22,11 @@ public:
 
 	void RegisterGlobalSlashCommand		(const std::string& command, const std::string& description, int amx_fw_handle);
 	void UnregisterGlobalSlashCommand	(const dpp::snowflake& snowflake, const std::string& command);
+	void ClearGlobalSlashCommands		();
+
 	void SendMessageToChannel			(const std::string& channel_id, const std::string& message);
 	bool SendReplyToLastInteraction		(const std::string& message);
+	
 	void SetOptions						(const DiscordBotOptions& options);
 	void SetEventsDataConsolePrinting	(const bool state);
 

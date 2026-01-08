@@ -211,16 +211,13 @@ cell AMX_NATIVE_CALL ClearGlobalSlashCommands(AMX* amx, cell* params)
 
 	if (globalCmdsMap.size() == 0)
 	{
-		MF_PrintSrvConsole("%s (ClearGlobalSlashCommands) Bot '%s' does not have registered slash commands\n", bot->GetConsolePrefix().c_str());
+		MF_PrintSrvConsole("%s (ClearGlobalSlashCommands) Bot '%s' does not have any registered slash commands\n", bot->GetConsolePrefix().c_str());
 		return FALSE;
 	}
 
-	MF_PrintSrvConsole("%s (ClearGlobalSlashCommands) Clearing slash commands from bot...\n", bot->GetConsolePrefix().c_str());
+	MF_PrintSrvConsole("%s (ClearGlobalSlashCommands) Clearing slash commands...\n", bot->GetConsolePrefix().c_str());
 
-	for (const auto& [snowflake, slashcmd] : globalCmdsMap)
-	{
-		bot->UnregisterGlobalSlashCommand(snowflake, slashcmd.slash_command.name);
-	}
+	bot->ClearGlobalSlashCommands();
 
 	return TRUE;
 }

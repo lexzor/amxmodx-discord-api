@@ -136,6 +136,26 @@ void DiscordBot::UnregisterGlobalSlashCommand(const dpp::snowflake& snowflake, c
     });
 }
 
+void DiscordBot::ClearGlobalSlashCommands()
+{
+    m_BotCluster.global_bulk_command_delete([this](const dpp::confirmation_callback_t& cb) {
+        if (cb.is_error())
+        {
+            MF_PrintSrvConsole("%s (ClearGlobalSlashCommands) ERROR: Failed to clear global slash commands\n", GetConsolePrefix().c_str());
+            MF_PrintSrvConsole("%s (ClearGlobalSlashCommands) %s\n", GetConsolePrefix().c_str(), cb.get_error().human_readable.c_str());
+        }
+        else
+        {
+            m_GlobalSlashCommands.clear();
+
+            if (GetLogLevel() == LogLevel::DEFAULT || GetLogLevel() == LogLevel::VERBOSE)
+            {
+                MF_PrintSrvConsole("%s (ClearGlobalSlashCommands) All global slash commands have been removed\n", GetConsolePrefix().c_str());
+            }
+        }
+    });
+}
+
 void DiscordBot::SendMessageToChannel(const std::string& channel_id, const std::string& message)
 {
     const dpp::snowflake channel(channel_id);
