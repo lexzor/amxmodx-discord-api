@@ -55,7 +55,7 @@ public cmd_say(id)
 
 public OnBotReady(const identifier[])
 {
-    if(!strcmp(identifier, IDENTIFIER, false))
+    if(!equal(identifier, IDENTIFIER))
     {
         log_amx("Bot %s is ready!", IDENTIFIER);
     }
@@ -63,7 +63,7 @@ public OnBotReady(const identifier[])
 
 public OnChannelMessageCreated(const identifier[], const channel_id[], const event_data[])
 {
-    if(strcmp(identifier, IDENTIFIER, false) != 0)
+    if(!equal(identifier, IDENTIFIER))
     {
         return;
     }
@@ -76,7 +76,7 @@ public OnChannelMessageCreated(const identifier[], const channel_id[], const eve
         return;
     }
 
-    if(strcmp(channel_id, CHANNEL_ID) != 0)
+    if(!equal(channel_id, CHANNEL_ID))
     {
         goto cleanup;
     }
@@ -91,7 +91,7 @@ public OnChannelMessageCreated(const identifier[], const channel_id[], const eve
     json_object_get_string(jsonEvent, "content", content, charsmax(content));
     json_object_get_string(author, "id", authorId, charsmax(authorId));
 
-    if(strcmp(authorId, BOT_ID) == 0)
+    if(equal(authorId, BOT_ID))
     {
         goto cleanup;
     }

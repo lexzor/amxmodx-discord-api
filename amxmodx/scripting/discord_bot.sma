@@ -70,7 +70,7 @@ public bot_guilds(id)
 
 public OnGuildCreated(const identifier[], const guild_data[])
 {
-    if(strcmp(identifier, IDENTIFIER) != 0)
+    if(!equal(identifier, IDENTIFIER))
     {
         return;
     }
@@ -99,7 +99,7 @@ public OnGuildCreated(const identifier[], const guild_data[])
 
 public OnGuildDeleted(const identifier[], const guild_data[])
 {
-    if(strcmp(identifier, IDENTIFIER) != 0)
+    if(equal(identifier, IDENTIFIER))
     {
         return;
     }
