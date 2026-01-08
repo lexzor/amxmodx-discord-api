@@ -15,6 +15,7 @@ void OnAmxxAttach()
 
 void OnAmxxDetach()
 {
+
 }
 
 void OnPluginsLoaded()
@@ -24,4 +25,5 @@ void OnPluginsLoaded()
 
 void OnPluginsUnloaded()
 {
+
 }

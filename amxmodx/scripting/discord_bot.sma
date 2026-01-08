@@ -19,20 +19,19 @@ public plugin_init()
             return;
         }
         
-        if(!StartBot(IDENTIFIER))
-        {
-            set_fail_state("Failed to start Discord BOT!");
-        }
-
         new opt[Options];
         opt[LOG_LEVEL] = DEFAULT;
         opt[PRINT_EVENT_DATA] = false;
         formatex(opt[PREFIX], MAX_CONSOLE_PREFIX_LENGTH - 1, "[DiscordAPIChannelRelay]");
         SetBotOptions(IDENTIFIER, opt);
     }
-    else 
+
+    if(!IsBotReady(IDENTIFIER))
     {
-        log_amx("Discord BOT already exists.");
+        if(!StartBot(IDENTIFIER))
+        {
+            set_fail_state("Failed to start Discord BOT!");
+        }
     }
 
     register_concmd("bot_guilds", "bot_guilds");
