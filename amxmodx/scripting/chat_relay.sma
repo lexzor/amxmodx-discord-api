@@ -23,6 +23,9 @@ public cmd_say(id)
     {
         return PLUGIN_CONTINUE;
     }
+    
+    new command[64];
+    read_argv(0, command, charsmax(command));
 
     new message[128];	
     read_args(message, charsmax(message));
@@ -30,6 +33,11 @@ public cmd_say(id)
     trim(message);
 
     if(strlen(message) == 0)
+    {
+        return PLUGIN_CONTINUE;
+    }
+
+    if(equal(command, "say_team") && message[0] == '@')
     {
         return PLUGIN_CONTINUE;
     }
