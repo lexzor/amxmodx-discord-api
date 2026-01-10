@@ -273,7 +273,7 @@ enginefuncs_t meta_engfuncs =
 
 void OnStartFrameDetour()
 {
-	gpMetaUtilFuncs->pfnLogConsole(PLID, "TEST");
+	MF_PrintSrvConsole("SHOULD CRASH IF AMX VM IT'S NOT LOADED");
 }
 
 DLL_FUNCTIONS gFunctionTable =
@@ -437,7 +437,6 @@ int Meta_Attach(PLUG_LOADTIME iCurrentPhase, META_FUNCTIONS* pFunctionTable, met
 
 	memcpy(pFunctionTable, &gMetaFunctionTable, sizeof(META_FUNCTIONS));
 	gpGamedllFuncs = pGamedllFuncs;
-	gpMetaUtilFuncs->pfnLogConsole(PLID, "Hello!");
 	return true;
 }
 static_assert(std::same_as<decltype(&Meta_Attach), META_ATTACH_FN>);
