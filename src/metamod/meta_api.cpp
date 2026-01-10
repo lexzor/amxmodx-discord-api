@@ -7,14 +7,14 @@ mutil_funcs_t* gpMetaUtilFuncs;		// metamod utility functions
 
 plugin_info_t Plugin_info =
 {
-	.ifvers = META_INTERFACE_VERSION,
-	.name = "minimal stub",
-	.version = "1.17",
-	.date = "2003/11/15",
-	.author = "Will Day <willday@metamod.org>",
-	.url = "http://www.metamod.org/",
-	.logtag = "STUB",
-	.loadable = PT_ANYTIME,
+	.ifvers		= META_INTERFACE_VERSION,
+	.name		= MODULE_NAME,
+	.version	= MODULE_VERSION,
+	.date		= MODULE_VERSION,
+	.author		= MODULE_AUTHOR,
+	.url		= MODULE_URL,
+	.logtag		= MODULE_LOGTAG,
+	.loadable	= PT_ANYTIME,
 	.unloadable = PT_ANYPAUSE,
 };
 
