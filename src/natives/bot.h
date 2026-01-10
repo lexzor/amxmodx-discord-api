@@ -1,6 +1,6 @@
 #pragma once
 
-#include <amxxmodule.h>
+#include "precompiled.h"
 
 cell AMX_NATIVE_CALL CreateBot(AMX* amx, cell* params);
 cell AMX_NATIVE_CALL SetBotOptions(AMX* amxx, cell* params);

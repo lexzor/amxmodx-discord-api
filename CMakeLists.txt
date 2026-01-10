@@ -14,6 +14,16 @@ include_directories(
     vendor/include/amxmodx
     vendor/include/amxmodx/sdk
     vendor/include
+
+    vendor/include/hlsdk
+    vendor/include/hlsdk/cl_dll
+    vendor/include/hlsdk/common
+    vendor/include/hlsdk/dlls
+    vendor/include/hlsdk/engine
+    vendor/include/hlsdk/pm_shared
+
+    vendor/include/metamod
+
     src/utils
     src/natives
     src

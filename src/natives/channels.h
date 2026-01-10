@@ -1,5 +1,5 @@
 #pragma once
 
-#include <amxxmodule.h>
+#include "precompiled.h"
 
 cell AMX_NATIVE_CALL SendMessageToChannel(AMX* amx, cell* params);

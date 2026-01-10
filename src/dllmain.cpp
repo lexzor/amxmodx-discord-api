@@ -1,17 +1,15 @@
-#include <amxxmodule.h>
+#include "precompiled.h"
 
-#include "common.h"
+#include "dllmain.h"
 
 #include "amx_natives.h"
 #include "amx_forwards.h"
-#include "moduleconfig.h"
 
 void OnAmxxAttach()
 {
-	MF_PrintSrvConsole("[DiscordAPI] Module loaded successfully!\n");
-	MF_PrintSrvConsole("[DiscordAPI] Version %s compiled (%s)\n", MODULE_VERSION, __DATE__);
 	RegisterNatives();
 }
+
 
 void OnAmxxDetach()
 {
@@ -26,4 +24,14 @@ void OnPluginsLoaded()
 void OnPluginsUnloaded()
 {
 
+}
+
+void OnMetaAttach(PLUG_LOADTIME current_phase)
+{
+	gpMetaUtilFuncs->pfnLogConsole(PLID, "[DiscordAPI] Success: Version %s compiled (%s)", MODULE_VERSION, __DATE__);
+}
+
+void OnMetaDetach(PLUG_LOADTIME iCurrentPhase, PL_UNLOAD_REASON iReason)
+{
+	gpMetaUtilFuncs->pfnLogConsole(PLID, "[DiscordAPI] Module detached");
 }

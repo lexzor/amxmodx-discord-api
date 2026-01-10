@@ -1,5 +1,5 @@
 #include "discord_bots_manager.h"
-#include "common.h"
+#include "precompiled.h"
 
 DiscordBotsManager::~DiscordBotsManager()
 {
