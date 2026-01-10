@@ -17,25 +17,10 @@
 	#pragma loadlib discordapi
 #endif
 
-#include <discordapiguilds>
 #include <discordapichannels>
-
-const MAX_IDENTIFIER_LENGTH			= 32;
-const MAX_CONSOLE_PREFIX_LENGTH 	= 32;
-
-enum LogLevel (+=1)
-{
-	NONE = 0,
-	DEFAULT,
-	VERBOSE
-}
-
-enum Options
-{
-	LogLevel:LOG_LEVEL,									// Log level for bot console messages.
-	PREFIX[MAX_CONSOLE_PREFIX_LENGTH],					// Console prefix for bot messages in console.
-	bool:PRINT_EVENT_DATA 								// Enable/Disable printing event data in console (for debugging).
-}
+#include <discordapiconsts>
+#include <discordapiguilds>
+#include <discordapiutils>
 
 /*
 * Forwards
