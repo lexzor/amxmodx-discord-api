@@ -1,5 +1,4 @@
 #include <amxxmodule.h>
-
 #include "amx_forwards.h"
 
 const char* g_ForwardsNames[] = {

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+	<Type Name="::string_t">
+		<DisplayString>{gpGlobals->pStringBase + m_diff,s8}, len={strlen(gpGlobals->pStringBase + m_diff)}</DisplayString>
+		<StringView>gpGlobals->pStringBase + m_diff,s8</StringView>
+		<Expand>
+			<Item Name="Ptr Offset">m_diff,X</Item>
+			<Item Name="Length">strlen(gpGlobals->pStringBase + m_diff)</Item>
+		</Expand>
+	</Type>
+</AutoVisualizer>

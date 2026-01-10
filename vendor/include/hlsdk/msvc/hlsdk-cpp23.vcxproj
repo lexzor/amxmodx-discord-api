@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{9e9ef723-800e-4715-8580-0414aced92c9}</ProjectGuid>
+    <RootNamespace>hlsdkcpp23</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(ProjectDir)bin\</OutDir>
+    <IntDir>$(ProjectDir)bin\$(Platform)\$(Configuration)\</IntDir>
+    <TargetName>$(ProjectName)-$(Configuration)</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(ProjectDir)bin\</OutDir>
+    <IntDir>$(ProjectDir)bin\$(Platform)\$(Configuration)\</IntDir>
+    <TargetName>$(ProjectName)-$(Configuration)</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <ScanSourceForModuleDependencies>true</ScanSourceForModuleDependencies>
+      <BuildStlModules>true</BuildStlModules>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <ScanSourceForModuleDependencies>true</ScanSourceForModuleDependencies>
+      <BuildStlModules>true</BuildStlModules>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\metamod\dllapi.ixx" />
+    <ClCompile Include="..\..\metamod\engine_api.ixx" />
+    <ClCompile Include="..\..\metamod\metamod_api.ixx" />
+    <ClCompile Include="..\..\metamod\meta_api.ixx" />
+    <ClCompile Include="..\..\metamod\mutil.ixx" />
+    <ClCompile Include="..\..\metamod\plinfo.ixx" />
+    <ClCompile Include="..\cl_dll\hud_iface.ixx" />
+    <ClCompile Include="..\cl_dll\wrect.ixx" />
+    <ClCompile Include="..\common\beamdef.ixx" />
+    <ClCompile Include="..\common\cl_entity.ixx" />
+    <ClCompile Include="..\common\com_model.ixx" />
+    <ClCompile Include="..\common\const_.ixx" />
+    <ClCompile Include="..\common\con_nprint.ixx" />
+    <ClCompile Include="..\common\crc.ixx" />
+    <ClCompile Include="..\common\cvardef.ixx" />
+    <ClCompile Include="..\common\demo_api.ixx" />
+    <ClCompile Include="..\common\director_cmds.ixx" />
+    <ClCompile Include="..\common\dlight.ixx" />
+    <ClCompile Include="..\common\dll_state.ixx" />
+    <ClCompile Include="..\common\engine_launcher_api.ixx" />
+    <ClCompile Include="..\common\entity_state.ixx" />
+    <ClCompile Include="..\common\entity_types.ixx" />
+    <ClCompile Include="..\common\event_api.ixx" />
+    <ClCompile Include="..\common\event_args.ixx" />
+    <ClCompile Include="..\common\event_flags.ixx" />
+    <ClCompile Include="..\common\exefuncs.ixx" />
+    <ClCompile Include="..\common\hltv.ixx" />
+    <ClCompile Include="..\common\in_buttons.ixx" />
+    <ClCompile Include="..\common\ivoicetweak.ixx" />
+    <ClCompile Include="..\common\mathlib.ixx" />
+    <ClCompile Include="..\common\netadr.ixx" />
+    <ClCompile Include="..\common\net_api.ixx" />
+    <ClCompile Include="..\common\particledef.ixx" />
+    <ClCompile Include="..\common\pmtrace.ixx" />
+    <ClCompile Include="..\common\qfont.ixx" />
+    <ClCompile Include="..\common\ref_params.ixx" />
+    <ClCompile Include="..\common\r_efx.ixx" />
+    <ClCompile Include="..\common\r_studioint.ixx" />
+    <ClCompile Include="..\common\screenfade.ixx" />
+    <ClCompile Include="..\common\studio_event.ixx" />
+    <ClCompile Include="..\common\triangleapi.ixx" />
+    <ClCompile Include="..\common\usercmd.ixx" />
+    <ClCompile Include="..\common\weaponinfo.ixx" />
+    <ClCompile Include="..\dlls\activity.ixx" />
+    <ClCompile Include="..\dlls\cdll_dll.ixx" />
+    <ClCompile Include="..\dlls\extdll.ixx" />
+    <ClCompile Include="..\dlls\hlsdk.sv.util.ixx" />
+    <ClCompile Include="..\dlls\util.ixx" />
+    <ClCompile Include="..\dlls\vector.ixx" />
+    <ClCompile Include="..\engine\archtypes.ixx" />
+    <ClCompile Include="..\engine\cdll_int.ixx" />
+    <ClCompile Include="..\engine\custom.ixx" />
+    <ClCompile Include="..\engine\customentity.ixx" />
+    <ClCompile Include="..\engine\edict.ixx" />
+    <ClCompile Include="..\engine\eiface.ixx" />
+    <ClCompile Include="..\engine\hlsdk.customentity.ixx" />
+    <ClCompile Include="..\engine\hlsdk.engine.ixx" />
+    <ClCompile Include="..\engine\keydefs.ixx" />
+    <ClCompile Include="..\engine\progdefs.ixx" />
+    <ClCompile Include="..\engine\progs.ixx" />
+    <ClCompile Include="..\engine\Sequence.ixx" />
+    <ClCompile Include="..\engine\shake.ixx" />
+    <ClCompile Include="..\engine\sizebuf.ixx" />
+    <ClCompile Include="..\engine\studio.ixx" />
+    <ClCompile Include="..\hlsdk.ixx" />
+    <ClCompile Include="..\pm_shared\pm_defs.ixx" />
+    <ClCompile Include="..\pm_shared\pm_info.ixx" />
+    <ClCompile Include="..\pm_shared\pm_materials.ixx" />
+    <ClCompile Include="..\pm_shared\pm_movevars.ixx" />
+    <ClCompile Include="..\pm_shared\pm_shared.ixx" />
+    <ClCompile Include="hlsdk-cpp23.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\metamod\comp_dep.h" />
+    <ClInclude Include="..\..\metamod\dllapi.h" />
+    <ClInclude Include="..\..\metamod\engine_api.h" />
+    <ClInclude Include="..\..\metamod\metamod_api.hpp" />
+    <ClInclude Include="..\..\metamod\meta_api.h" />
+    <ClInclude Include="..\..\metamod\mutil.h" />
+    <ClInclude Include="..\..\metamod\osdep.h" />
+    <ClInclude Include="..\..\metamod\plinfo.h" />
+    <ClInclude Include="..\cl_dll\hud_iface.h" />
+    <ClInclude Include="..\cl_dll\wrect.h" />
+    <ClInclude Include="..\common\beamdef.h" />
+    <ClInclude Include="..\common\cl_entity.h" />
+    <ClInclude Include="..\common\com_model.h" />
+    <ClInclude Include="..\common\const.h" />
+    <ClInclude Include="..\common\con_nprint.h" />
+    <ClInclude Include="..\common\crc.h" />
+    <ClInclude Include="..\common\cvardef.h" />
+    <ClInclude Include="..\common\demo_api.h" />
+    <ClInclude Include="..\common\director_cmds.h" />
+    <ClInclude Include="..\common\dlight.h" />
+    <ClInclude Include="..\common\dll_state.h" />
+    <ClInclude Include="..\common\engine_launcher_api.h" />
+    <ClInclude Include="..\common\entity_state.h" />
+    <ClInclude Include="..\common\entity_types.h" />
+    <ClInclude Include="..\common\event_api.h" />
+    <ClInclude Include="..\common\event_args.h" />
+    <ClInclude Include="..\common\event_flags.h" />
+    <ClInclude Include="..\common\exefuncs.h" />
+    <ClInclude Include="..\common\hltv.h" />
+    <ClInclude Include="..\common\interface.h" />
+    <ClInclude Include="..\common\in_buttons.h" />
+    <ClInclude Include="..\common\ivoicetweak.h" />
+    <ClInclude Include="..\common\mathlib.h" />
+    <ClInclude Include="..\common\netadr.h" />
+    <ClInclude Include="..\common\net_api.h" />
+    <ClInclude Include="..\common\nowin.h" />
+    <ClInclude Include="..\common\particledef.h" />
+    <ClInclude Include="..\common\pmtrace.h" />
+    <ClInclude Include="..\common\qfont.h" />
+    <ClInclude Include="..\common\ref_params.h" />
+    <ClInclude Include="..\common\r_efx.h" />
+    <ClInclude Include="..\common\r_studioint.h" />
+    <ClInclude Include="..\common\screenfade.h" />
+    <ClInclude Include="..\common\studio_event.h" />
+    <ClInclude Include="..\common\triangleapi.h" />
+    <ClInclude Include="..\common\usercmd.h" />
+    <ClInclude Include="..\common\weaponinfo.h" />
+    <ClInclude Include="..\dlls\activity.h" />
+    <ClInclude Include="..\dlls\activitymap.h" />
+    <ClInclude Include="..\dlls\cdll_dll.h" />
+    <ClInclude Include="..\dlls\enginecallback.h" />
+    <ClInclude Include="..\dlls\extdll.h" />
+    <ClInclude Include="..\dlls\hlsdk.sv.hpp" />
+    <ClInclude Include="..\dlls\hlsdk.sv.util.hpp" />
+    <ClInclude Include="..\dlls\util.h" />
+    <ClInclude Include="..\dlls\vector.h" />
+    <ClInclude Include="..\dlls\vector.hpp" />
+    <ClInclude Include="..\engine\anorms.h" />
+    <ClInclude Include="..\engine\archtypes.h" />
+    <ClInclude Include="..\engine\cdll_int.h" />
+    <ClInclude Include="..\engine\custom.h" />
+    <ClInclude Include="..\engine\customentity.h" />
+    <ClInclude Include="..\engine\edict.h" />
+    <ClInclude Include="..\engine\eiface.h" />
+    <ClInclude Include="..\engine\hlsdk.engine.hpp" />
+    <ClInclude Include="..\engine\keydefs.h" />
+    <ClInclude Include="..\engine\progdefs.h" />
+    <ClInclude Include="..\engine\progs.h" />
+    <ClInclude Include="..\engine\Sequence.h" />
+    <ClInclude Include="..\engine\shake.h" />
+    <ClInclude Include="..\engine\studio.h" />
+    <ClInclude Include="..\pm_shared\pm_debug.h" />
+    <ClInclude Include="..\pm_shared\pm_defs.h" />
+    <ClInclude Include="..\pm_shared\pm_info.h" />
+    <ClInclude Include="..\pm_shared\pm_materials.h" />
+    <ClInclude Include="..\pm_shared\pm_movevars.h" />
+    <ClInclude Include="..\pm_shared\pm_shared.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\engine\hlsdk.customentity.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\dlls\hlsdk.sv.ixx">
+      <FileType>Document</FileType>
+    </ClCompile>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
