@@ -28,11 +28,10 @@ void OnPluginsUnloaded()
 
 void OnMetaAttach(PLUG_LOADTIME current_phase)
 {
-	MF_PrintSrvConsole("[DiscordAPI] Module attached successfully!\n");
-	MF_PrintSrvConsole("[DiscordAPI] Version %s compiled (%s)\n", MODULE_VERSION, __DATE__);
+	gpMetaUtilFuncs->pfnLogConsole(PLID, "[DiscordAPI] Success: Version %s compiled (%s)", MODULE_VERSION, __DATE__);
 }
 
 void OnMetaDetach(PLUG_LOADTIME iCurrentPhase, PL_UNLOAD_REASON iReason)
 {
-	MF_PrintSrvConsole("[DiscordAPI] Module detached\n");
+	gpMetaUtilFuncs->pfnLogConsole(PLID, "[DiscordAPI] Module detached");
 }
