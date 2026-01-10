@@ -271,7 +271,12 @@ enginefuncs_t meta_engfuncs =
 	.pfnEngCheckParm = nullptr,
 };
 
-inline constexpr DLL_FUNCTIONS gFunctionTable =
+void OnStartFrameDetour()
+{
+	gpMetaUtilFuncs->pfnLogConsole(PLID, "TEST");
+}
+
+DLL_FUNCTIONS gFunctionTable =
 {
 	.pfnGameInit = nullptr,
 	.pfnSpawn = nullptr,
@@ -303,7 +308,7 @@ inline constexpr DLL_FUNCTIONS gFunctionTable =
 	.pfnPlayerPreThink = nullptr,
 	.pfnPlayerPostThink = nullptr,
 
-	.pfnStartFrame = nullptr,
+	.pfnStartFrame = OnStartFrameDetour,
 	.pfnParmsNewLevel = nullptr,
 	.pfnParmsChangeLevel = nullptr,
 
