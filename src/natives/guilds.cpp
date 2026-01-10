@@ -1,5 +1,4 @@
 #include "guilds.h"
-#include "common.h"
 
 cell AMX_NATIVE_CALL GetGuilds(AMX* amx, cell* params)
 {

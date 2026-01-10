@@ -1,15 +1,7 @@
-
-#include "extdll.h"
-#include "dllapi.h"
-#include "enginecallbacks.h"
-#include "usercmd.h"
-#include "amxxmodule.h"
-
-#include "common.h"
+#include "precompiled.h"
 
 #include "amx_natives.h"
 #include "amx_forwards.h"
-#include "moduleconfig.h"
 
 void OnAmxxAttach()
 {
