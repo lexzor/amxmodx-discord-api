@@ -1,12 +1,12 @@
 #include "precompiled.h"
 
+#include "dllmain.h"
+
 #include "amx_natives.h"
 #include "amx_forwards.h"
 
 void OnAmxxAttach()
 {
-	MF_PrintSrvConsole("[DiscordAPI] Module loaded successfully!\n");
-	MF_PrintSrvConsole("[DiscordAPI] Version %s compiled (%s)\n", MODULE_VERSION, __DATE__);
 	RegisterNatives();
 }
 
@@ -26,7 +26,13 @@ void OnPluginsUnloaded()
 
 }
 
-void OnStartFrameDetour()
+void OnMetaAttach(PLUG_LOADTIME current_phase)
 {
-	MF_PrintSrvConsole("SHOULD CRASH IF AMX VM IT'S NOT LOADED");
+	MF_PrintSrvConsole("[DiscordAPI] Module attached successfully!\n");
+	MF_PrintSrvConsole("[DiscordAPI] Version %s compiled (%s)\n", MODULE_VERSION, __DATE__);
+}
+
+void OnMetaDetach(PLUG_LOADTIME iCurrentPhase, PL_UNLOAD_REASON iReason)
+{
+	MF_PrintSrvConsole("[DiscordAPI] Module detached\n");
 }

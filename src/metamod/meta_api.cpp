@@ -1,5 +1,5 @@
 #include "precompiled.h"
-#include <concepts>
+#include "dllmain.h"
 
 meta_globals_t* gpMetaGlobals;		// metamod globals
 gamedll_funcs_t* gpGamedllFuncs;	// gameDLL function tables
@@ -67,6 +67,9 @@ int Meta_Attach(PLUG_LOADTIME iCurrentPhase, META_FUNCTIONS* pFunctionTable, met
 
 	memcpy(pFunctionTable, &gMetaFunctionTable, sizeof(META_FUNCTIONS));
 	gpGamedllFuncs = pGamedllFuncs;
+
+	OnMetaAttach(iCurrentPhase);
+
 	return true;
 }
 static_assert(std::same_as<decltype(&Meta_Attach), META_ATTACH_FN>);
@@ -76,6 +79,8 @@ static_assert(std::same_as<decltype(&Meta_Attach), META_ATTACH_FN>);
 // reason	(given) why detaching (refresh, console unload, forced unload, etc)
 int Meta_Detach(PLUG_LOADTIME iCurrentPhase, PL_UNLOAD_REASON iReason) noexcept
 {
+	OnMetaDetach(iCurrentPhase, iReason);
+
 	return true;
 }
 static_assert(std::same_as<decltype(&Meta_Detach), META_DETACH_FN>);

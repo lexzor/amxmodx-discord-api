@@ -7,6 +7,8 @@
 #include "usercmd.h"
 #include "amxxmodule.h"
 
+#include <concepts>
+
 #include "discord_bots_manager.h"
 
 #define MAX_IDENTIFIER_LENGTH			32
