@@ -1,4 +1,5 @@
 #include "precompiled.h"
+#include "hooks.h"
 
 enginefuncs_t meta_engfuncs =
 {

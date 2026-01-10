@@ -1,4 +1,5 @@
 #include "precompiled.h"
+#include "hooks.h"
 
 DLL_FUNCTIONS gFunctionTable =
 {
