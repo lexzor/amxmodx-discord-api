@@ -49,8 +49,8 @@ private:
 
 	DiscordBotOptions m_Options;
 
-	bool m_Ready = false;
-	bool m_ShouldPrintEventsData = false;
-	bool m_CanSendInteractionMessage = false;
+	bool m_Ready						= false;
+	bool m_ShouldPrintEventsData		= false;
+	bool m_CanSendInteractionMessage	= false;
 	std::string m_LastInteractionMessage;
 };

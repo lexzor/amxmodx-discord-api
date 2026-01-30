@@ -1,3 +1,3 @@
 #pragma once
 
-#include "precompiled.h"
+void OnStartFramePre();

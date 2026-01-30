@@ -23,11 +23,11 @@ inline constexpr META_FUNCTIONS gMetaFunctionTable =
 {
 	.pfnGetEntityAPI					= nullptr,				// HL SDK; called before game DLL
 	.pfnGetEntityAPI_Post				= nullptr,				// META; called after game DLL
-	.pfnGetEntityAPI2					= &GetEntityAPI2_Post,// HL SDK2; called before game DLL
+	.pfnGetEntityAPI2					= &GetEntityAPI2_Post,	// HL SDK2; called before game DLL
 	.pfnGetEntityAPI2_Post				= nullptr,				// META; called after game DLL
 	.pfnGetNewDLLFunctions				= nullptr,				// HL SDK2; called before game DLL
 	.pfnGetNewDLLFunctions_Post			= nullptr,				// META; called after game DLL
-	.pfnGetEngineFunctions				= &GetEngineFunctions,		// META; called before HL engine
+	.pfnGetEngineFunctions				= &GetEngineFunctions,	// META; called before HL engine
 	.pfnGetEngineFunctions_Post			= nullptr,				// META; called after HL engine
 };
 
