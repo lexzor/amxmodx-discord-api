@@ -33,7 +33,7 @@ DLL_FUNCTIONS gFunctionTable =
 	.pfnPlayerPreThink					= nullptr,
 	.pfnPlayerPostThink					= nullptr,
 
-	.pfnStartFrame						= nullptr,
+	.pfnStartFrame						= OnStartFramePre,
 	.pfnParmsNewLevel					= nullptr,
 	.pfnParmsChangeLevel				= nullptr,
 
