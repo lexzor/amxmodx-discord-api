@@ -9,6 +9,8 @@ DiscordBot::DiscordBot(const std::string& identifier, const std::string& token)
 {
 	m_GuildEventsHandler        = std::make_unique<GuildsEventsHandler>(this);
 	m_MessagesEventsHandler     = std::make_unique<MessagesEventsHandler>(this);
+
+    RegisterEventsListeners();
 }
 
 DiscordBot::~DiscordBot()
@@ -58,7 +60,7 @@ void DiscordBot::RegisterGlobalSlashCommand(const std::string& command, const st
     {
         if (value.slash_command.name == command)
         {
-            if (value.amx_fw_handle == INVALID_SLASH_COMMAND_AMXX_FW_HANDLE)
+            if (value.amx_fw_handle == INVALID_SLASH_COMMAND_AMXX_FW_HANDLE || value.amx_fw_handle != amx_fw_handle)
             {
                 value.amx_fw_handle = amx_fw_handle;
                 return;
@@ -74,8 +76,15 @@ void DiscordBot::RegisterGlobalSlashCommand(const std::string& command, const st
         [this, command, amx_fw_handle](const dpp::confirmation_callback_t& cb) {
             if (cb.is_error())
             {
-                MF_PrintSrvConsole("%s (RegisterGlobalSlashCommand) ERROR: Failed to register slash command '%s'\n", GetConsolePrefix().c_str(), command.c_str());
-                MF_PrintSrvConsole("%s (RegisterGlobalSlashCommand) %s\n", GetConsolePrefix().c_str(), cb.get_error().human_readable.c_str());
+                const std::string errorMessage = cb.get_error().human_readable;
+
+                g_EventsQueue->Push([this, command, errorMessage]() {
+                    if (this == nullptr)
+                        return;
+                    
+                    MF_PrintSrvConsole("%s (RegisterGlobalSlashCommand) ERROR: Failed to register slash command '%s'\n", GetConsolePrefix().c_str(), command.c_str());
+                    MF_PrintSrvConsole("%s (RegisterGlobalSlashCommand) %s\n", GetConsolePrefix().c_str(), errorMessage.c_str());
+                });
             }
             else
             {
@@ -84,7 +93,7 @@ void DiscordBot::RegisterGlobalSlashCommand(const std::string& command, const st
 
                 m_GlobalSlashCommands.emplace(snowflake, SlashCommand(createdSlashCmd, amx_fw_handle));
 
-                if (GetLogLevel() == LogLevel::DEFAULT || GetLogLevel() == LogLevel::VERBOSE)
+                if (GetLogLevel() >= LogLevel::DEFAULT)
                 {
                     MF_PrintSrvConsole("%s (RegisterGlobalSlashCommand) Slash command '%s' has been registered succesfully\n", GetConsolePrefix().c_str(), command.c_str());
                 }
@@ -144,17 +153,29 @@ void DiscordBot::ClearGlobalSlashCommands()
     m_BotCluster.global_bulk_command_delete([this](const dpp::confirmation_callback_t& cb) {
         if (cb.is_error())
         {
-            MF_PrintSrvConsole("%s (ClearGlobalSlashCommands) ERROR: Failed to clear global slash commands\n", GetConsolePrefix().c_str());
-            MF_PrintSrvConsole("%s (ClearGlobalSlashCommands) %s\n", GetConsolePrefix().c_str(), cb.get_error().human_readable.c_str());
+            const std::string errorMessage = cb.get_error().human_readable;
+
+            g_EventsQueue->Push([this, errorMessage]() {
+                if (this == nullptr)
+                    return; 
+
+                MF_PrintSrvConsole("%s (ClearGlobalSlashCommands) ERROR: Failed to clear global slash commands\n", GetConsolePrefix().c_str());
+                MF_PrintSrvConsole("%s (ClearGlobalSlashCommands) %s\n", GetConsolePrefix().c_str(), errorMessage.c_str());
+            });
         }
         else
         {
-            m_GlobalSlashCommands.clear();
+            g_EventsQueue->Push([this]() {
+                if (this == nullptr)
+                    return;
 
-            if (GetLogLevel() == LogLevel::DEFAULT || GetLogLevel() == LogLevel::VERBOSE)
-            {
-                MF_PrintSrvConsole("%s (ClearGlobalSlashCommands) All global slash commands have been removed\n", GetConsolePrefix().c_str());
-            }
+                m_GlobalSlashCommands.clear();
+
+                if (GetLogLevel() >= LogLevel::DEFAULT)
+                {
+                    MF_PrintSrvConsole("%s (ClearGlobalSlashCommands) All global slash commands have been removed\n", GetConsolePrefix().c_str());
+                }
+            });
         }
     });
 }
@@ -195,9 +216,8 @@ void DiscordBot::RegisterEventsListeners()
     m_BotCluster.on_log([this](dpp::log_t cb) {
         g_EventsQueue->Push([this, cb]() {
             if (this == nullptr || !this->GetReadyState())
-            {
                 return;
-            }
+            
             if (cb.severity > dpp::loglevel::ll_info)
             {
                 std::string level = cb.severity == dpp::loglevel::ll_critical ? "CRITICAL" : dpp::loglevel::ll_error ? "ERROR" : "WARNING";
@@ -227,47 +247,44 @@ void DiscordBot::RegisterEventsListeners()
     });
 
     m_BotCluster.on_ready([this](dpp::ready_t cb) {
-        if (this == nullptr || !this->GetReadyState())
-        {
+        if (this == nullptr)
             return;
+
+        SetReadyState(true);
+        ExecuteForward(ON_BOT_READY, m_Identifier.c_str());
+
+        if (GetLogLevel() == LogLevel::VERBOSE)
+        {
+            MF_PrintSrvConsole("%s (OnBotReady) Querying Discord API to retrieve global shlash commands '%s'...\n", GetConsolePrefix().c_str());
         }
 
         m_BotCluster.global_commands_get([this](dpp::confirmation_callback_t cb) {
-            if (this == nullptr || !this->GetReadyState())
-            {
+            if (this == nullptr)
                 return;
-            }
 
-            dpp::slashcommand_map cmdsMap;
-            bool hadError = cb.is_error();
-            std::string errorMessage;
+            if (cb.is_error())
+            {
+                const std::string errorMessage = cb.get_error().human_readable;
 
-            if (hadError) {
-                errorMessage = cb.get_error().human_readable;
-            }
-            else {
-                cmdsMap = std::get<dpp::slashcommand_map>(cb.value);
-            }
+                g_EventsQueue->Push([this, errorMessage]() {
+                    if (this == nullptr)
+                        return;
 
-            g_EventsQueue->Push([
-                this,
-                hadError,
-                cmdsMap = std::move(cmdsMap),
-                errorMessage = std::move(errorMessage)
-            ]() {
-                if (this == nullptr || !this->GetReadyState())
-                {
-                    return;
-                }
-
-                if (hadError)
-                {
                     MF_PrintSrvConsole("%s ERROR: Failed to retrieve global slash commands from Discord API\n", GetConsolePrefix().c_str());
                     MF_PrintSrvConsole("%s %s\n", GetConsolePrefix().c_str(), errorMessage.c_str());
-                }
-                else
-                {
-                        
+                });
+            }
+            else
+            {
+                dpp::slashcommand_map cmdsMap;
+                cmdsMap = std::get<dpp::slashcommand_map>(cb.value);
+            
+                g_EventsQueue->Push([this, cmdsMap]() {
+                    if (this == nullptr)
+                    {
+                        return;
+                    }
+
                     std::size_t slashCommandsCount = cmdsMap.size();
 
                     if (slashCommandsCount > 0)
@@ -286,50 +303,47 @@ void DiscordBot::RegisterEventsListeners()
                     {
                         MF_PrintSrvConsole("%s No global slash commands are registered for this bot on Discord API\n", GetConsolePrefix().c_str());
                     }
-
-                    SetReadyState(true);
-                    ExecuteForward(ON_BOT_READY, m_Identifier.c_str());
-                }
-            });
+                });
+            }
         });
     });
 
-    m_BotCluster.on_slashcommand([this](dpp::slashcommand_t cb) {
-        g_EventsQueue->Push([this, cb]() {
-            if (this == nullptr || !this->GetReadyState())
-            {
-                return;
-            }
+    //m_BotCluster.on_slashcommand([this](dpp::slashcommand_t cb) {
+    //    g_EventsQueue->Push([this, cb]() {
+    //        if (this == nullptr || !this->GetReadyState())
+    //        {
+    //            return;
+    //        }
 
-            SlashCommandsMap::iterator it = m_GlobalSlashCommands.find(cb.command.get_command_interaction().id);
+    //        SlashCommandsMap::iterator it = m_GlobalSlashCommands.find(cb.command.get_command_interaction().id);
 
-            if (it == m_GlobalSlashCommands.end())
-            {
-                return;
-            }
+    //        if (it == m_GlobalSlashCommands.end())
+    //        {
+    //            return;
+    //        }
 
-            if (it->second.amx_fw_handle == INVALID_SLASH_COMMAND_AMXX_FW_HANDLE)
-            {
-                MF_PrintSrvConsole("%s Slash command issued by user '%s', but it does not exists in local slash commands map\n", GetConsolePrefix().c_str(), cb.command.usr.username);
-                return;
-            }
+    //        if (it->second.amx_fw_handle == INVALID_SLASH_COMMAND_AMXX_FW_HANDLE)
+    //        {
+    //            MF_PrintSrvConsole("%s Slash command issued by user '%s', but it does not exists in local slash commands map\n", GetConsolePrefix().c_str(), cb.command.usr.username);
+    //            return;
+    //        }
 
-            m_CanSendInteractionMessage = true;
+    //        m_CanSendInteractionMessage = true;
 
-            if (m_Options.print_events_data || GetLogLevel() == LogLevel::VERBOSE)
-            {
-                MF_PrintSrvConsole("%s OnGlobalSlashCommand '%s': \n%s\n", GetConsolePrefix().c_str(), cb.command.get_command_interaction().name.c_str(), cb.command.to_json().dump(4).c_str());
-            }
+    //        if (m_Options.print_events_data || GetLogLevel() == LogLevel::VERBOSE)
+    //        {
+    //            MF_PrintSrvConsole("%s OnGlobalSlashCommand '%s': \n%s\n", GetConsolePrefix().c_str(), cb.command.get_command_interaction().name.c_str(), cb.command.to_json().dump(4).c_str());
+    //        }
 
-            MF_ExecuteForward(it->second.amx_fw_handle, cb.command.usr.build_json().c_str());
+    //        MF_ExecuteForward(it->second.amx_fw_handle, cb.command.usr.build_json().c_str());
 
-            if (!m_LastInteractionMessage.empty())
-            {
-                cb.reply(m_LastInteractionMessage);
-                m_LastInteractionMessage.clear();
-            }
+    //        if (!m_LastInteractionMessage.empty())
+    //        {
+    //            cb.reply(m_LastInteractionMessage);
+    //            m_LastInteractionMessage.clear();
+    //        }
 
-            m_CanSendInteractionMessage = false;
-        });
-    });
+    //        m_CanSendInteractionMessage = false;
+    //    });
+    //});
 }

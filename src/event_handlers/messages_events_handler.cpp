@@ -15,10 +15,8 @@ void MessagesEventsHandler::RegisterListeners()
 {
 	m_Bot->GetCluster().on_message_create([this](const dpp::message_create_t& cb) {
         g_EventsQueue->Push([this, cb]() {
-            if (m_Bot == nullptr || !m_Bot->GetReadyState())
-            {
+            if (m_Bot == nullptr)
                 return;
-            }
             
 			OnMessageCreate(cb);
         });

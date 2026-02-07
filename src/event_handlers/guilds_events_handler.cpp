@@ -5,8 +5,8 @@
 #include "events_queue.h"
 #include "amx_forwards.h"
 
-GuildsEventsHandler::GuildsEventsHandler(DiscordBot* m_Bot)
-    : m_Bot(m_Bot)
+GuildsEventsHandler::GuildsEventsHandler(DiscordBot* bot)
+    : m_Bot(bot)
 {
     RegisterListeners();
 }
@@ -15,10 +15,8 @@ void GuildsEventsHandler::RegisterListeners()
 {
     m_Bot->GetCluster().on_guild_create([this](dpp::guild_create_t cb) {
         g_EventsQueue->Push([this, cb]() {
-            if (m_Bot == nullptr || !m_Bot->GetReadyState())
-            {
+            if (m_Bot == nullptr)
                 return;
-            }
 
             OnGuildCreate(cb);
         });
@@ -26,7 +24,7 @@ void GuildsEventsHandler::RegisterListeners()
 
     m_Bot->GetCluster().on_guild_delete([this](dpp::guild_delete_t cb) {
         g_EventsQueue->Push([this, cb]() {
-            if (m_Bot == nullptr || !m_Bot->GetReadyState())
+            if (m_Bot == nullptr)
             {
                 return;
             }
@@ -37,7 +35,7 @@ void GuildsEventsHandler::RegisterListeners()
 
     m_Bot->GetCluster().on_guild_update([this](dpp::guild_update_t cb) {
         g_EventsQueue->Push([this, cb]() {
-            if (m_Bot == nullptr || !m_Bot->GetReadyState())
+            if (m_Bot == nullptr)
             {
                 return;
             }
