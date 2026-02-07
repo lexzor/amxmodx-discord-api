@@ -1,7 +1,7 @@
 #include "events_queue.h"
 #include "precompiled.h"
 
-std::shared_ptr<Queue<EventFn>> g_EventsQueue = std::make_unique<Queue<EventFn>>();
+std::unique_ptr<Queue<EventFn>> g_EventsQueue = std::make_unique<Queue<EventFn>>();
 
 void InitializeEventsQueue()
 {
