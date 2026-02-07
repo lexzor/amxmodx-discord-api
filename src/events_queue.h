@@ -4,7 +4,7 @@
 #include <memory>
 #include <concepts>
 #include <dpp/dispatcher.h>
-#include "mspc/queue.h"
+#include "mpsc/queue.h"
 
 using EventFn = std::function<void()>;
 
