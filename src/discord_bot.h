@@ -7,6 +7,7 @@
 
 #include "discord_bot_options.h"
 #include "discord_bot_slash_command.h"
+#include "event_handlers/guild_events_handler.h"
 
 class DiscordBot
 {
@@ -30,11 +31,14 @@ public:
 	void SetOptions						(const DiscordBotOptions& options);
 	void SetEventsDataConsolePrinting	(const bool state);
 
+	inline dpp::cluster&			GetCluster() { return m_BotCluster; }
 	inline const std::string&		GetConsolePrefix()					const { return m_Options.chat_prefix; }
 	inline const LogLevel			GetLogLevel()						const { return m_Options.log_level; }
 	inline const SlashCommandsMap&	GetGlobalSlashCommandsMap()		    const { return m_GlobalSlashCommands; }
-	inline const GuildsMap&			GetGuildsMap()						const { return m_Guilds; }
 	inline const bool				GetReadyState()						const { return m_Ready; }
+	inline const std::string&		GetIdentifier()						const { return m_Identifier; }
+	inline const DiscordBotOptions& GetOptions()						const { return m_Options; }
+	inline GuildsMap&				GetGuildsMap()							  { return m_Guilds; }
 
 private:
 	void							SetReadyState(bool state);
@@ -53,4 +57,6 @@ private:
 	bool m_ShouldPrintEventsData		= false;
 	bool m_CanSendInteractionMessage	= false;
 	std::string m_LastInteractionMessage;
+
+	std::unique_ptr<GuildEventsHandler> m_GuildEventsHandler;
 };

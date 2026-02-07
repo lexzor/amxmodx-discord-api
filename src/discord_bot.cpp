@@ -7,12 +7,13 @@
 DiscordBot::DiscordBot(const std::string& identifier, const std::string& token)
     : m_BotCluster(token, dpp::i_default_intents | dpp::i_message_content, 1), m_Options(DiscordBotOptions()), m_Identifier(identifier)
 {
-    RegisterEventsListeners();
+	m_GuildEventsHandler = std::make_unique<GuildEventsHandler>(this);
 }
 
 DiscordBot::~DiscordBot()
 {
     m_BotCluster.shutdown();
+    m_GuildEventsHandler.reset();
 }
 
 void DiscordBot::SetOptions(const DiscordBotOptions& options)
@@ -224,99 +225,6 @@ void DiscordBot::RegisterEventsListeners()
         });
     });
 
-    m_BotCluster.on_guild_create([this](dpp::guild_create_t cb) {
-        g_EventsQueue->Push([this, cb]() {
-            if (this == nullptr || !this->GetReadyState())
-            {
-                return;
-            }
-
-            m_Guilds.emplace(cb.created.id, cb.created);
-
-            if (GetLogLevel() == LogLevel::VERBOSE)
-            {
-                MF_PrintSrvConsole("%s Bot has been added in '%s' guild\n", GetConsolePrefix().c_str(), cb.created.name.c_str());
-            }
-
-            if (m_Options.print_events_data || GetLogLevel() == LogLevel::VERBOSE)
-            {
-                MF_PrintSrvConsole("%s OnGuildCreate: \n%s\n", GetConsolePrefix().c_str(), cb.created.to_json().dump(4).c_str());
-            }
-
-            dpp::json guild =
-            {
-                { "id", cb.created.id.str() },
-                { "name", cb.created.name }
-            };
-
-            ExecuteForward(ON_GUILD_CREATED, m_Identifier.c_str(), guild.dump().c_str());
-        });
-    });
-
-    m_BotCluster.on_guild_delete([this](dpp::guild_delete_t cb) {
-        g_EventsQueue->Push([this, cb]() {
-            if (this == nullptr || !this->GetReadyState())
-            {
-                return;
-            }
-
-            if (GetLogLevel() == LogLevel::VERBOSE)
-            {
-                if (cb.deleted.is_unavailable())
-                {
-                    MF_PrintSrvConsole("%s '%s' guild has became unavailable (temporarly)\n", GetConsolePrefix().c_str(), cb.deleted.name.c_str());
-                }
-                else
-                {
-                    MF_PrintSrvConsole("%s Bot was removed from '%s' guild\n", GetConsolePrefix().c_str(), cb.deleted.name.c_str());
-                }
-            }
-
-            if (!cb.deleted.is_unavailable())
-                m_Guilds.erase(cb.deleted.id);
-
-            if (m_Options.print_events_data || GetLogLevel() == LogLevel::VERBOSE)
-            {
-                MF_PrintSrvConsole("%s OnGuildDelete: \n%s\n", GetConsolePrefix().c_str(), cb.deleted.to_json().dump(4).c_str());
-            }
-
-            dpp::json guild =
-            {
-                { "id", cb.deleted.id.str() },
-                { "name", cb.deleted.name },
-                { "unavailable", cb.deleted.is_unavailable() }
-            };
-
-            ExecuteForward(ON_GUILD_DELETED, m_Identifier.c_str(), guild.dump().c_str());
-        });
-    });
-
-    m_BotCluster.on_guild_update([this](dpp::guild_update_t cb) {
-        g_EventsQueue->Push([this, cb]() {
-            if (this == nullptr || !this->GetReadyState())
-            {
-                return;
-            }
-
-            m_Guilds[cb.updated.id] = cb.updated;
-
-            if (m_Options.print_events_data || GetLogLevel() == LogLevel::VERBOSE)
-            {
-                MF_PrintSrvConsole("%s OnGuildUpdate: \n%s\n", GetConsolePrefix().c_str(), cb.updated.to_json().dump(4).c_str());
-            }
-
-            if (GetLogLevel() == LogLevel::VERBOSE)
-            {
-                MF_PrintSrvConsole("%s Guild '%s' has been updated\n", GetConsolePrefix().c_str(), cb.updated.name.c_str());
-            }
-
-            if (m_Options.print_events_data || GetLogLevel() == LogLevel::VERBOSE)
-            {
-                MF_PrintSrvConsole("%s OnGuildUpdate: \n%s\n", GetConsolePrefix().c_str(), cb.updated.to_json().dump(4).c_str());
-            }
-        });
-    });
-
     m_BotCluster.on_ready([this](dpp::ready_t cb) {
         if (this == nullptr || !this->GetReadyState())
         {
@@ -423,7 +331,6 @@ void DiscordBot::RegisterEventsListeners()
             m_CanSendInteractionMessage = false;
         });
     });
-
 
     m_BotCluster.on_message_create([this](dpp::message_create_t cb) mutable {
         g_EventsQueue->Push([this, cb]() {
