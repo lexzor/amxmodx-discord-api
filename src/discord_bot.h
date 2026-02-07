@@ -7,7 +7,8 @@
 
 #include "discord_bot_options.h"
 #include "discord_bot_slash_command.h"
-#include "event_handlers/guild_events_handler.h"
+#include "event_handlers/guilds_events_handler.h"
+#include "event_handlers/messages_events_handler.h"
 
 class DiscordBot
 {
@@ -38,7 +39,13 @@ public:
 	inline const bool				GetReadyState()						const { return m_Ready; }
 	inline const std::string&		GetIdentifier()						const { return m_Identifier; }
 	inline const DiscordBotOptions& GetOptions()						const { return m_Options; }
+	
 	inline GuildsMap&				GetGuildsMap()							  { return m_Guilds; }
+	inline const std::string&		GetInteractionMessage()				const { return m_LastInteractionMessage; }
+
+	inline void                     SetInteractionReplyAbility(bool state)    { m_CanSendInteractionMessage = state; }
+	inline void                     SetInteractionMessage(const std::string& message) { m_LastInteractionMessage = message; }
+	inline void						ClearInteractionMessage() { m_LastInteractionMessage.clear(); }
 
 private:
 	void							SetReadyState(bool state);
@@ -59,4 +66,5 @@ private:
 	std::string m_LastInteractionMessage;
 
 	std::unique_ptr<GuildsEventsHandler> m_GuildEventsHandler;
+	std::unique_ptr<MessagesEventsHandler> m_MessagesEventsHandler;
 };

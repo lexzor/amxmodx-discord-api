@@ -7,7 +7,8 @@
 DiscordBot::DiscordBot(const std::string& identifier, const std::string& token)
     : m_BotCluster(token, dpp::i_default_intents | dpp::i_message_content, 1), m_Options(DiscordBotOptions()), m_Identifier(identifier)
 {
-	m_GuildEventsHandler = std::make_unique<GuildsEventsHandler>(this);
+	m_GuildEventsHandler        = std::make_unique<GuildsEventsHandler>(this);
+	m_MessagesEventsHandler     = std::make_unique<MessagesEventsHandler>(this);
 }
 
 DiscordBot::~DiscordBot()
@@ -331,97 +332,4 @@ void DiscordBot::RegisterEventsListeners()
             m_CanSendInteractionMessage = false;
         });
     });
-
-    m_BotCluster.on_message_create([this](dpp::message_create_t cb) mutable {
-        g_EventsQueue->Push([this, cb]() {
-            if (this == nullptr || !this->GetReadyState())
-            {
-                return;
-            }
-
-            m_CanSendInteractionMessage = true;
-
-            dpp::json eventData{};
-
-            eventData["id"] = cb.msg.id.str();
-            eventData["content"] = cb.msg.content;
-            eventData["guild_id"] = cb.msg.guild_id.str();
-            eventData["author"] =
-            {
-                { "id", cb.msg.author.id.str() },
-                { "username", cb.msg.author.username }
-            };
-
-            eventData["mentions"] = dpp::json::array();
-
-            for (const auto& pair : cb.msg.mentions)
-            {
-                const dpp::user& user = pair.first;
-
-                eventData["mentions"].push_back({
-                    { "id", user.id.str() },
-                    { "username", user.username }
-                });
-            }
-
-            if (m_Options.print_events_data || GetLogLevel() == LogLevel::VERBOSE)
-            {
-                MF_PrintSrvConsole("%s OnChannelMessageCreated: \n%s\n", GetConsolePrefix().c_str(), eventData.dump(4).c_str());
-            }
-
-            ExecuteForward(ON_CHANNEL_MESSAGE_CREATED, m_Identifier.c_str(), cb.msg.channel_id.str().c_str(), eventData.dump().c_str());
-
-            if (!m_LastInteractionMessage.empty())
-            {
-                cb.reply(m_LastInteractionMessage);
-                m_LastInteractionMessage.clear();
-            }
-
-            m_CanSendInteractionMessage = false;
-        });
-    });
-
-    /*
-    m_BotCluster.on_message_create([this](const dpp::message_create_t& cb) {
-        m_CanSendInteractionMessage = true;
-
-        dpp::json eventData{};
-
-        eventData["id"] = cb.msg.id.str();
-        eventData["content"] = cb.msg.content;
-        eventData["guild_id"] = cb.msg.guild_id.str();
-        eventData["author"] =
-        {
-            { "id", cb.msg.author.id.str() },
-            { "username", cb.msg.author.username }
-        };
-
-        eventData["mentions"] = dpp::json::array();
-
-        for (const auto& pair : cb.msg.mentions)
-        {
-            const dpp::user& user = pair.first;
-
-            eventData["mentions"].push_back({
-                { "id", user.id.str() },
-                { "username", user.username }
-            });
-        }
-
-        if (m_Options.print_events_data || GetLogLevel() == LogLevel::VERBOSE)
-        {
-            MF_PrintSrvConsole("%s OnChannelMessageCreated: \n%s\n", GetConsolePrefix().c_str(), eventData.dump(4).c_str());
-        }
-
-        ExecuteForward(ON_CHANNEL_MESSAGE_CREATED, m_Identifier.c_str(), cb.msg.channel_id.str().c_str(), eventData.dump().c_str());
-
-        if (!m_LastInteractionMessage.empty())
-        {
-            cb.reply(m_LastInteractionMessage);
-            m_LastInteractionMessage.clear();
-        }
-
-        m_CanSendInteractionMessage = false;
-    });
-    */
 }
