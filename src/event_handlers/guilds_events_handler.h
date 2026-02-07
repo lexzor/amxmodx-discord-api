@@ -4,10 +4,10 @@
 
 class DiscordBot;
 
-class GuildEventsHandler
+class GuildsEventsHandler
 {
 public:
-	GuildEventsHandler(DiscordBot* bot);
+	GuildsEventsHandler(DiscordBot* bot);
 	
 	void RegisterListeners();
 

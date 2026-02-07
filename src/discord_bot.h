@@ -58,5 +58,5 @@ private:
 	bool m_CanSendInteractionMessage	= false;
 	std::string m_LastInteractionMessage;
 
-	std::unique_ptr<GuildEventsHandler> m_GuildEventsHandler;
+	std::unique_ptr<GuildsEventsHandler> m_GuildEventsHandler;
 };

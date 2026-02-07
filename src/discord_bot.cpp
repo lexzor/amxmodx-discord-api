@@ -7,7 +7,7 @@
 DiscordBot::DiscordBot(const std::string& identifier, const std::string& token)
     : m_BotCluster(token, dpp::i_default_intents | dpp::i_message_content, 1), m_Options(DiscordBotOptions()), m_Identifier(identifier)
 {
-	m_GuildEventsHandler = std::make_unique<GuildEventsHandler>(this);
+	m_GuildEventsHandler = std::make_unique<GuildsEventsHandler>(this);
 }
 
 DiscordBot::~DiscordBot()

@@ -1,17 +1,17 @@
-#include "guild_events_handler.h"
+#include "guilds_events_handler.h"
 
 #include "amxxmodule.h"
 #include "discord_bot.h"
 #include "events_queue.h"
 #include "amx_forwards.h"
 
-GuildEventsHandler::GuildEventsHandler(DiscordBot* m_Bot)
+GuildsEventsHandler::GuildsEventsHandler(DiscordBot* m_Bot)
     : m_Bot(m_Bot)
 {
     RegisterListeners();
 }
 
-void GuildEventsHandler::RegisterListeners()
+void GuildsEventsHandler::RegisterListeners()
 {
     m_Bot->GetCluster().on_guild_create([this](dpp::guild_create_t cb) {
         g_EventsQueue->Push([this, cb]() {
@@ -47,7 +47,7 @@ void GuildEventsHandler::RegisterListeners()
     });
 }
 
-void GuildEventsHandler::OnGuildCreate(const dpp::guild_create_t& cb)
+void GuildsEventsHandler::OnGuildCreate(const dpp::guild_create_t& cb)
 {
     m_Bot->GetGuildsMap().emplace(cb.created.id, cb.created);
 
@@ -70,7 +70,7 @@ void GuildEventsHandler::OnGuildCreate(const dpp::guild_create_t& cb)
     ExecuteForward(ON_GUILD_CREATED, m_Bot->GetIdentifier().c_str(), guild.dump().c_str());
 }
 
-void GuildEventsHandler::OnGuildDelete(const dpp::guild_delete_t& cb)
+void GuildsEventsHandler::OnGuildDelete(const dpp::guild_delete_t& cb)
 {
     if (m_Bot->GetLogLevel() == LogLevel::VERBOSE)
     {
@@ -102,7 +102,7 @@ void GuildEventsHandler::OnGuildDelete(const dpp::guild_delete_t& cb)
     ExecuteForward(ON_GUILD_DELETED, m_Bot->GetIdentifier().c_str(), guild.dump().c_str());
 }
 
-void GuildEventsHandler::OnGuildUpdate(const dpp::guild_update_t& cb)
+void GuildsEventsHandler::OnGuildUpdate(const dpp::guild_update_t& cb)
 {
     m_Bot->GetGuildsMap()[cb.updated.id] = cb.updated;
 
