@@ -296,7 +296,7 @@ void DiscordBot::RegisterEventsListeners()
 
                         if (GetLogLevel() == LogLevel::VERBOSE)
                         {
-                            MF_PrintSrvConsole("%s Retrieved %i global slash command%s from Discord API\n", GetConsolePrefix().c_str(), slashCommandsCount == 1 ? "s" : "");
+                            MF_PrintSrvConsole("%s Retrieved %i global slash command%s from Discord API\n", GetConsolePrefix().c_str(), slashCommandsCount, slashCommandsCount == 1 ? "s" : "");
                         }
                     }
                     else if (GetLogLevel() == LogLevel::VERBOSE)
