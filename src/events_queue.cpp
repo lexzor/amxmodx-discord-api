@@ -10,11 +10,6 @@ void InitializeEventsQueue()
 
 void ConsumeQueueEvents()
 {
-	if (g_EventsQueue->Size() == 0)
-	{
-		return;
-	}
-
 	std::shared_ptr<Queue<EventFn>::Node> node = nullptr;
 	while ((node = g_EventsQueue->Pop()) != nullptr)
 	{
