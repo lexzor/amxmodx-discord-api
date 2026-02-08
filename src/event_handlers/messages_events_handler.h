@@ -8,6 +8,7 @@ class MessagesEventsHandler
 {
 public:
 	MessagesEventsHandler(DiscordBot* bot);
+	~MessagesEventsHandler();
 
 	void RegisterListeners();
 

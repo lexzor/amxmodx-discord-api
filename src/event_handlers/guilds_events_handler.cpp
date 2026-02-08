@@ -11,6 +11,11 @@ GuildsEventsHandler::GuildsEventsHandler(DiscordBot* bot)
     RegisterListeners();
 }
 
+GuildsEventsHandler::~GuildsEventsHandler()
+{
+    m_Bot = nullptr;
+}
+
 void GuildsEventsHandler::RegisterListeners()
 {
     m_Bot->GetCluster().on_guild_create([this](dpp::guild_create_t cb) {

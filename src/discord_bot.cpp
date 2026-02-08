@@ -17,6 +17,7 @@ DiscordBot::~DiscordBot()
 {
     m_BotCluster.shutdown();
     m_GuildEventsHandler.reset();
+    m_MessagesEventsHandler.reset();
 }
 
 void DiscordBot::SetOptions(const DiscordBotOptions& options)
@@ -220,7 +221,7 @@ void DiscordBot::RegisterEventsListeners()
             
             if (cb.severity > dpp::loglevel::ll_info)
             {
-                std::string level = cb.severity == dpp::loglevel::ll_critical ? "CRITICAL" : dpp::loglevel::ll_error ? "ERROR" : "WARNING";
+                std::string level = cb.severity == dpp::loglevel::ll_critical ? "CRITICAL" : cb.severity == dpp::loglevel::ll_error ? "ERROR" : "WARNING";
 
                 MF_PrintSrvConsole("\n----------------------------------\n");
                 MF_PrintSrvConsole("%s %s log! Identifier: %s\n", GetConsolePrefix().c_str(), level.c_str(), m_Identifier.c_str());

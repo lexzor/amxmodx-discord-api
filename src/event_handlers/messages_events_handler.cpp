@@ -11,6 +11,11 @@ MessagesEventsHandler::MessagesEventsHandler(DiscordBot* bot)
 	RegisterListeners();
 }
 
+MessagesEventsHandler::~MessagesEventsHandler()
+{
+    m_Bot = nullptr;
+}
+
 void MessagesEventsHandler::RegisterListeners()
 {
 	m_Bot->GetCluster().on_message_create([this](const dpp::message_create_t& cb) {

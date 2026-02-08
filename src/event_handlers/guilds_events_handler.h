@@ -8,6 +8,7 @@ class GuildsEventsHandler
 {
 public:
 	GuildsEventsHandler(DiscordBot* bot);
+	~GuildsEventsHandler();
 	
 	void RegisterListeners();
 
