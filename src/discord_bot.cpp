@@ -16,10 +16,6 @@ DiscordBot::DiscordBot(const std::string& identifier, const std::string& token)
 
 DiscordBot::~DiscordBot()
 {
-    m_BotCluster.shutdown();
-    m_GuildEventsHandler.reset();
-    m_MessagesEventsHandler.reset();
-	m_ReadyEventHandler.reset();
 }
 
 void DiscordBot::SetOptions(const DiscordBotOptions& options)
@@ -52,14 +48,8 @@ bool DiscordBot::Stop()
         return false;
     }
 
-
-    m_IsDestroyed = true;
     m_BotCluster.shutdown();
     
-    m_GuildEventsHandler.reset();
-    m_MessagesEventsHandler.reset();
-    m_ReadyEventHandler.reset();
-
     ExecuteForward(ON_BOT_STOPPED, m_Identifier.c_str());
 
     return true;
