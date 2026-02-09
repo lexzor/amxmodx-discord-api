@@ -9,8 +9,9 @@ DiscordBot::DiscordBot(const std::string& identifier, const std::string& token)
 {
 	m_GuildEventsHandler        = std::make_unique<GuildsEventsHandler>(this);
 	m_MessagesEventsHandler     = std::make_unique<MessagesEventsHandler>(this);
+	m_ReadyEventHandler         = std::make_unique<ReadyEventHandler>(this);
 
-    RegisterEventsListeners();
+    //RegisterEventsListeners();
 }
 
 DiscordBot::~DiscordBot()
@@ -18,6 +19,7 @@ DiscordBot::~DiscordBot()
     m_BotCluster.shutdown();
     m_GuildEventsHandler.reset();
     m_MessagesEventsHandler.reset();
+	m_ReadyEventHandler.reset();
 }
 
 void DiscordBot::SetOptions(const DiscordBotOptions& options)
@@ -51,7 +53,12 @@ bool DiscordBot::Stop()
     }
 
     m_BotCluster.shutdown();
-	ExecuteForward(ON_BOT_STOPPED, m_Identifier.c_str());
+    m_GuildEventsHandler.reset();
+    m_MessagesEventsHandler.reset();
+    m_ReadyEventHandler.reset();
+
+    ExecuteForward(ON_BOT_STOPPED, m_Identifier.c_str());
+
     return true;
 }
 
@@ -212,103 +219,8 @@ void DiscordBot::SetReadyState(bool state)
     }
 }
 
-void DiscordBot::RegisterEventsListeners()
-{
-    m_BotCluster.on_log([this](dpp::log_t cb) {
-        g_EventsQueue->Push([this, cb]() {
-            if (this == nullptr || !this->GetReadyState())
-                return;
-            
-            if (cb.severity > dpp::loglevel::ll_info)
-            {
-                std::string level = cb.severity == dpp::loglevel::ll_critical ? "CRITICAL" : cb.severity == dpp::loglevel::ll_error ? "ERROR" : "WARNING";
-
-                MF_PrintSrvConsole("\n----------------------------------\n");
-                MF_PrintSrvConsole("%s %s log! Identifier: %s\n", GetConsolePrefix().c_str(), level.c_str(), m_Identifier.c_str());
-                MF_PrintSrvConsole("%s JSON log: %s\n", GetConsolePrefix().c_str(), cb.message.c_str());
-                MF_PrintSrvConsole("----------------------------------\n");
-                return;
-            }
-
-            if (GetLogLevel() == LogLevel::NONE)
-            {
-                return;
-            }
-
-            if (GetLogLevel() == LogLevel::DEFAULT && cb.severity == dpp::loglevel::ll_info)
-            {
-                MF_PrintSrvConsole("%s %s\n", GetConsolePrefix().c_str(), cb.message.c_str());
-            }
-
-            if (GetLogLevel() == LogLevel::VERBOSE)
-            {
-                MF_PrintSrvConsole("%s %s\n", GetConsolePrefix().c_str(), cb.message.c_str());
-            }
-        });
-    });
-
-    m_BotCluster.on_ready([this](dpp::ready_t cb) {
-        if (this == nullptr)
-            return;
-
-        SetReadyState(true);
-        ExecuteForward(ON_BOT_READY, m_Identifier.c_str());
-
-        if (GetLogLevel() == LogLevel::VERBOSE)
-        {
-            MF_PrintSrvConsole("%s (OnBotReady) Querying Discord API to retrieve global shlash commands '%s'...\n", GetConsolePrefix().c_str());
-        }
-
-        m_BotCluster.global_commands_get([this](dpp::confirmation_callback_t cb) {
-            if (this == nullptr)
-                return;
-
-            if (cb.is_error())
-            {
-                const std::string errorMessage = cb.get_error().human_readable;
-
-                g_EventsQueue->Push([this, errorMessage]() {
-                    if (this == nullptr)
-                        return;
-
-                    MF_PrintSrvConsole("%s ERROR: Failed to retrieve global slash commands from Discord API\n", GetConsolePrefix().c_str());
-                    MF_PrintSrvConsole("%s %s\n", GetConsolePrefix().c_str(), errorMessage.c_str());
-                });
-            }
-            else
-            {
-                dpp::slashcommand_map cmdsMap;
-                cmdsMap = std::get<dpp::slashcommand_map>(cb.value);
-            
-                g_EventsQueue->Push([this, cmdsMap]() {
-                    if (this == nullptr)
-                    {
-                        return;
-                    }
-
-                    std::size_t slashCommandsCount = cmdsMap.size();
-
-                    if (slashCommandsCount > 0)
-                    {
-                        for (const auto& [key, value] : cmdsMap)
-                        {
-                            m_GlobalSlashCommands.emplace(key, SlashCommand(value, INVALID_SLASH_COMMAND_AMXX_FW_HANDLE));
-                        }
-
-                        if (GetLogLevel() == LogLevel::VERBOSE)
-                        {
-                            MF_PrintSrvConsole("%s Retrieved %i global slash command%s from Discord API\n", GetConsolePrefix().c_str(), slashCommandsCount, slashCommandsCount == 1 ? "s" : "");
-                        }
-                    }
-                    else if (GetLogLevel() == LogLevel::VERBOSE)
-                    {
-                        MF_PrintSrvConsole("%s No global slash commands are registered for this bot on Discord API\n", GetConsolePrefix().c_str());
-                    }
-                });
-            }
-        });
-    });
-
+//void DiscordBot::RegisterEventsListeners()
+//{
     //m_BotCluster.on_slashcommand([this](dpp::slashcommand_t cb) {
     //    g_EventsQueue->Push([this, cb]() {
     //        if (this == nullptr || !this->GetReadyState())
@@ -347,4 +259,4 @@ void DiscordBot::RegisterEventsListeners()
     //        m_CanSendInteractionMessage = false;
     //    });
     //});
-}
+//}
