@@ -4,6 +4,7 @@
 
 #include <string>
 #include <functional>
+#include <atomic>
 
 #include "discord_bot_options.h"
 #include "discord_bot_slash_command.h"
@@ -52,6 +53,7 @@ public:
 private:
 	//void							RegisterEventsListeners();
 	inline const std::string*		GetLastInteractionMessage()			const { return &m_LastInteractionMessage; }
+	inline const bool				IsDestroyed()						const { return m_IsDestroyed; }
 
 private:
 	dpp::cluster m_BotCluster;
@@ -61,6 +63,7 @@ private:
 
 	DiscordBotOptions m_Options;
 
+	std::atomic<bool> m_IsDestroyed		= false;
 	bool m_Ready						= false;
 	bool m_ShouldPrintEventsData		= false;
 	bool m_CanSendInteractionMessage	= false;

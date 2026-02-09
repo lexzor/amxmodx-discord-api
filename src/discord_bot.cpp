@@ -52,7 +52,10 @@ bool DiscordBot::Stop()
         return false;
     }
 
+
+    m_IsDestroyed = true;
     m_BotCluster.shutdown();
+    
     m_GuildEventsHandler.reset();
     m_MessagesEventsHandler.reset();
     m_ReadyEventHandler.reset();
@@ -82,12 +85,15 @@ void DiscordBot::RegisterGlobalSlashCommand(const std::string& command, const st
     m_BotCluster.global_command_create(
         { command, description, m_BotCluster.me.id },
         [this, command, amx_fw_handle](const dpp::confirmation_callback_t& cb) {
+            if (IsDestroyed())
+                return;
+
             if (cb.is_error())
             {
                 const std::string errorMessage = cb.get_error().human_readable;
 
                 g_EventsQueue->Push([this, command, errorMessage]() {
-                    if (this == nullptr)
+                    if (IsDestroyed())
                         return;
                     
                     MF_PrintSrvConsole("%s (RegisterGlobalSlashCommand) ERROR: Failed to register slash command '%s'\n", GetConsolePrefix().c_str(), command.c_str());
@@ -99,12 +105,17 @@ void DiscordBot::RegisterGlobalSlashCommand(const std::string& command, const st
                 const dpp::slashcommand& createdSlashCmd = std::get<dpp::slashcommand>(cb.value);
                 const dpp::snowflake snowflake = createdSlashCmd.id;
 
-                m_GlobalSlashCommands.emplace(snowflake, SlashCommand(createdSlashCmd, amx_fw_handle));
+                g_EventsQueue->Push([this, command, snowflake, amx_fw_handle, createdSlashCmd]() {
+                    if (IsDestroyed())
+                        return;
 
-                if (GetLogLevel() >= LogLevel::DEFAULT)
-                {
-                    MF_PrintSrvConsole("%s (RegisterGlobalSlashCommand) Slash command '%s' has been registered succesfully\n", GetConsolePrefix().c_str(), command.c_str());
-                }
+                    m_GlobalSlashCommands.emplace(snowflake, SlashCommand(createdSlashCmd, amx_fw_handle));
+
+                    if (GetLogLevel() >= LogLevel::DEFAULT)
+                    {
+                        MF_PrintSrvConsole("%s (RegisterGlobalSlashCommand) Slash command '%s' has been registered succesfully\n", GetConsolePrefix().c_str(), command.c_str());
+                    }
+                });
             }
         }
     );
@@ -120,10 +131,20 @@ void DiscordBot::UnregisterGlobalSlashCommand(const dpp::snowflake& snowflake, c
     }
 
     m_BotCluster.global_commands_get([this, command, snowflake](const dpp::confirmation_callback_t& cb) {
+        if (IsDestroyed())
+            return;
+
         if (cb.is_error())
         {
-            MF_PrintSrvConsole("%s (UnregisterGlobalSlashCommand) ERROR: Failed to get global slash commands from Discord API when deleting '%s'\n", GetConsolePrefix().c_str(), command.c_str());
-            MF_PrintSrvConsole("%s (UnregisterGlobalSlashCommand) %s\n", GetConsolePrefix().c_str(), cb.get_error().human_readable.c_str());
+			const std::string errorMessage = cb.get_error().human_readable;
+
+            g_EventsQueue->Push([this, command, errorMessage]() {
+                if (IsDestroyed())
+                    return;
+                
+                MF_PrintSrvConsole("%s (UnregisterGlobalSlashCommand) ERROR: Failed to get global slash commands from Discord API when deleting '%s'\n", GetConsolePrefix().c_str(), command.c_str());
+                MF_PrintSrvConsole("%s (UnregisterGlobalSlashCommand) %s\n", GetConsolePrefix().c_str(), errorMessage.c_str());
+            });
         }
         else
         {
@@ -139,19 +160,31 @@ void DiscordBot::UnregisterGlobalSlashCommand(const dpp::snowflake& snowflake, c
             m_BotCluster.global_command_delete(snowflake, [this, snowflake, command](const dpp::confirmation_callback_t& cb) {
                 if (cb.is_error())
                 {
-                    MF_PrintSrvConsole("%s (UnregisterGlobalSlashCommand) ERROR: Failed to delete global slash command '%s' from Discord API \n", GetConsolePrefix().c_str(), command.c_str());
-                    MF_PrintSrvConsole("%s (UnregisterGlobalSlashCommand) %s\n", GetConsolePrefix().c_str(), cb.get_error().human_readable.c_str());
+					const std::string errorMessage = cb.get_error().human_readable;
+
+                    g_EventsQueue->Push([this, command, errorMessage]() {
+                        if (IsDestroyed())
+                            return;
+
+                        MF_PrintSrvConsole("%s (UnregisterGlobalSlashCommand) ERROR: Failed to delete global slash command '%s' from Discord API \n", GetConsolePrefix().c_str(), command.c_str());
+                        MF_PrintSrvConsole("%s (UnregisterGlobalSlashCommand) %s\n", GetConsolePrefix().c_str(), errorMessage.c_str());
+                    });
                 }
                 else
                 {
-                    if (GetLogLevel() != LogLevel::NONE)
-                    {
-                        MF_PrintSrvConsole("%s (UnregisterGlobalSlashCommand) Slash command '%s' has been unregistered succesfully\n", command.c_str());
+                    g_EventsQueue->Push([this, snowflake, command]() {
+                        if (IsDestroyed())
+                            return;
+                    
+                        if (GetLogLevel() != LogLevel::NONE)
+                        {
+                            MF_PrintSrvConsole("%s (UnregisterGlobalSlashCommand) Slash command '%s' has been unregistered succesfully\n", command.c_str());
 
-                        m_GlobalSlashCommands.erase(snowflake);
-                    }
+                            m_GlobalSlashCommands.erase(snowflake);
+                        }
+                    });
                 }
-             });
+            });
         }
     });
 }
@@ -164,7 +197,7 @@ void DiscordBot::ClearGlobalSlashCommands()
             const std::string errorMessage = cb.get_error().human_readable;
 
             g_EventsQueue->Push([this, errorMessage]() {
-                if (this == nullptr)
+                if (IsDestroyed())
                     return; 
 
                 MF_PrintSrvConsole("%s (ClearGlobalSlashCommands) ERROR: Failed to clear global slash commands\n", GetConsolePrefix().c_str());
@@ -174,7 +207,7 @@ void DiscordBot::ClearGlobalSlashCommands()
         else
         {
             g_EventsQueue->Push([this]() {
-                if (this == nullptr)
+                if (IsDestroyed())
                     return;
 
                 m_GlobalSlashCommands.clear();
