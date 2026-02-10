@@ -45,7 +45,18 @@ public:
 		return nullptr;
 	}
 
+	void SetProcessingLock(bool value)
+	{
+		m_IsProcessingLocked = value;
+	}
+
+	[[nodiscard]] inline bool IsProcessingLocked()
+	{
+		return m_IsProcessingLocked;
+	}
+
 private:
 	std::shared_ptr<Node> m_Head				= nullptr;
 	std::atomic<std::shared_ptr<Node>> m_Tail	= nullptr;
+	bool m_IsProcessingLocked					= false;		
 };

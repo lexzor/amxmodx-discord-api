@@ -19,11 +19,13 @@ void OnAmxxDetach()
 void OnPluginsLoaded()
 {
 	RegisterForwards();
+
+	g_EventsQueue->SetProcessingLock(false);
 }
 
 void OnPluginsUnloaded()
 {
-
+	g_EventsQueue->SetProcessingLock(true);
 }
 
 void OnMetaAttach(PLUG_LOADTIME current_phase)
