@@ -23,7 +23,7 @@ void OnPluginsLoaded()
 	g_EventsQueue->SetProcessingLock(false);
 }
 
-void OnPluginsUnloaded()
+void OnPluginsUnloading()
 {
 	g_EventsQueue->SetProcessingLock(true);
 }
@@ -36,7 +36,6 @@ void OnMetaAttach(PLUG_LOADTIME current_phase)
 
 void OnMetaDetach(PLUG_LOADTIME iCurrentPhase, PL_UNLOAD_REASON iReason)
 {
-
 	ConsumeQueueEvents();
 	g_EventsQueue.release();
 	auto& botMap = DiscordBotsManager::get().GetDiscordBotsMap();

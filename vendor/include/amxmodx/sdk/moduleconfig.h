@@ -85,7 +85,7 @@
 #define FN_AMXX_PLUGINSLOADED OnPluginsLoaded
 
 /** All plugins are about to be unloaded */
-//#define FN_AMXX_PLUGINSUNLOADING OnPluginsUnloading
+#define FN_AMXX_PLUGINSUNLOADING OnPluginsUnloading
 
 /** All plugins are now unloaded */
 #define FN_AMXX_PLUGINSUNLOADED OnPluginsUnloaded
