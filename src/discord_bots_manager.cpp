@@ -40,3 +40,8 @@ DiscordBot* DiscordBotsManager::GetBotRawPtrByIdentifier(const std::string& iden
 
 	return it->second.get();
 }
+
+DiscordBotsManager::DiscordBotMap& DiscordBotsManager::GetDiscordBotsMap()
+{
+	return m_BotsMap;
+}

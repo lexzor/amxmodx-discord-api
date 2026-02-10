@@ -4,9 +4,13 @@
 
 #include <string>
 #include <functional>
+#include <atomic>
 
 #include "discord_bot_options.h"
 #include "discord_bot_slash_command.h"
+#include "event_handlers/guilds_events_handler.h"
+#include "event_handlers/messages_events_handler.h"
+#include "event_handlers/ready_event_handler.h"
 
 class DiscordBot
 {
@@ -29,17 +33,27 @@ public:
 	
 	void SetOptions						(const DiscordBotOptions& options);
 	void SetEventsDataConsolePrinting	(const bool state);
+	void SetReadyState					(bool state);
 
+	inline dpp::cluster&			GetCluster() { return m_BotCluster; }
 	inline const std::string&		GetConsolePrefix()					const { return m_Options.chat_prefix; }
 	inline const LogLevel			GetLogLevel()						const { return m_Options.log_level; }
-	inline const SlashCommandsMap&	GetGlobalSlashCommandsMap()		    const { return m_GlobalSlashCommands; }
-	inline const GuildsMap&			GetGuildsMap()						const { return m_Guilds; }
 	inline const bool				GetReadyState()						const { return m_Ready; }
+	inline const std::string&		GetIdentifier()						const { return m_Identifier; }
+	inline const DiscordBotOptions& GetOptions()						const { return m_Options; }
+	inline const std::string&		GetInteractionMessage()				const { return m_LastInteractionMessage; }
+	
+	inline GuildsMap&				GetGuildsMap()							  { return m_Guilds; }
+	inline SlashCommandsMap&		GetGlobalSlashCommandsMap()				  { return m_GlobalSlashCommands; }
+
+	inline void                     SetInteractionReplyAbility(bool state)    { m_CanSendInteractionMessage = state; }
+	inline void                     SetInteractionMessage(const std::string& message) { m_LastInteractionMessage = message; }
+	inline void						ClearInteractionMessage()				  { m_LastInteractionMessage.clear(); }
 
 private:
-	void							SetReadyState(bool state);
-	void							RegisterEventsListeners();
+	//void							RegisterEventsListeners();
 	inline const std::string*		GetLastInteractionMessage()			const { return &m_LastInteractionMessage; }
+	inline const bool				IsDestroyed()						const { return m_IsDestroyed; }
 
 private:
 	dpp::cluster m_BotCluster;
@@ -49,8 +63,13 @@ private:
 
 	DiscordBotOptions m_Options;
 
+	std::atomic<bool> m_IsDestroyed		= false;
 	bool m_Ready						= false;
 	bool m_ShouldPrintEventsData		= false;
 	bool m_CanSendInteractionMessage	= false;
 	std::string m_LastInteractionMessage;
+
+	std::unique_ptr<GuildsEventsHandler> m_GuildEventsHandler;
+	std::unique_ptr<MessagesEventsHandler> m_MessagesEventsHandler;
+	std::unique_ptr<ReadyEventHandler> m_ReadyEventHandler;
 };

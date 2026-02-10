@@ -30,7 +30,6 @@ public:
 		
 		std::shared_ptr<Node> prev = m_Tail.exchange(node);
 		prev->next = node;
-		m_EventsCount++;
 	}
 
 	[[nodiscard]] std::shared_ptr<Node> Pop()
@@ -46,13 +45,18 @@ public:
 		return nullptr;
 	}
 
-	[[nodiscard]] const std::size_t& Size() const
+	void SetProcessingLock(bool value)
 	{
-		return m_EventsCount;
+		m_IsProcessingLocked = value;
+	}
+
+	[[nodiscard]] inline bool IsProcessingLocked()
+	{
+		return m_IsProcessingLocked;
 	}
 
 private:
 	std::shared_ptr<Node> m_Head				= nullptr;
 	std::atomic<std::shared_ptr<Node>> m_Tail	= nullptr;
-	std::size_t m_EventsCount					= 0;
+	bool m_IsProcessingLocked					= false;		
 };

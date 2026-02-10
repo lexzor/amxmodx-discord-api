@@ -8,15 +8,16 @@
 
 class DiscordBotsManager : public Singleton<DiscordBotsManager>
 {
+	using DiscordBotMap = std::unordered_map<std::string, std::unique_ptr<DiscordBot>>;
 public:
 	~DiscordBotsManager();
 
 	bool				InitializeBot(const std::string& identifier, const char* token);
 	bool				DeinitializeBot(const std::string& identifier);
 	DiscordBot*			GetBotRawPtrByIdentifier(const std::string& identifier);
+	DiscordBotMap&		GetDiscordBotsMap();
 
 private:
-	using DiscordBotMap = std::unordered_map<std::string, std::unique_ptr<DiscordBot>>;
 
 	DiscordBotMap m_BotsMap;
 };

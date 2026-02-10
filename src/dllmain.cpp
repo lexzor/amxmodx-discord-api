@@ -19,11 +19,13 @@ void OnAmxxDetach()
 void OnPluginsLoaded()
 {
 	RegisterForwards();
+
+	g_EventsQueue->SetProcessingLock(false);
 }
 
-void OnPluginsUnloaded()
+void OnPluginsUnloading()
 {
-
+	g_EventsQueue->SetProcessingLock(true);
 }
 
 void OnMetaAttach(PLUG_LOADTIME current_phase)
@@ -34,5 +36,17 @@ void OnMetaAttach(PLUG_LOADTIME current_phase)
 
 void OnMetaDetach(PLUG_LOADTIME iCurrentPhase, PL_UNLOAD_REASON iReason)
 {
+	ConsumeQueueEvents();
+	g_EventsQueue.release();
+	auto& botMap = DiscordBotsManager::get().GetDiscordBotsMap();
+	
+	for (auto& bot : botMap)
+	{
+		bot.second->Stop();
+		ExecuteForward(ON_BOT_STOPPED, bot.first.c_str());
+		bot.second.release();
+	}
+
+	botMap.clear();
 	gpMetaUtilFuncs->pfnLogConsole(PLID, "[DiscordAPI] Module detached");
 }
