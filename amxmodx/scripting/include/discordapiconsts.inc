@@ -8,7 +8,7 @@
 	#pragma loadlib discordapi
 #endif
 
-#define AMXX_API_VERSION_STRING "1.0.0-BETA"
+#define DISCORD_API_AMXX_API_VERSION_STRING "1.0.0-BETA"
 
 const MAX_IDENTIFIER_LENGTH			= 32;
 const MAX_CONSOLE_PREFIX_LENGTH 	= 32;

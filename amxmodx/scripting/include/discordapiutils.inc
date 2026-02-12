@@ -10,7 +10,6 @@
 
 #include <amxmodx>
 #include <amxmisc>
-#include <discordapi>
 #include <discordapiconsts>
 
 /**
@@ -20,14 +19,14 @@
 *
 * @return True if version matches or false otherwise 
 */
-stock boolean:UTIL_DAPICheckAPIVersion()
+stock boolean:CheckAPIVersion()
 {
     new buffer[16]
-    GetModuleStringVersion(buffer, charsmax(buffer));
+    GetModuleVersionString(buffer, charsmax(buffer));
 
-    if(!equal(buffer, AMXX_API_VERSION_STRING))
+    if(!equal(buffer, DISCORD_API_AMXX_API_VERSION_STRING))
     {
-        log_amx("[DiscordAPI] AMXX API version %s does not correspond with module version %s", AMXX_API_VERSION_STRING, buffer);
+        log_amx("[DiscordAPI] AMXX API version %s does not correspond with module version %s", DISCORD_API_AMXX_API_VERSION_STRING, buffer);
         return false;
     }
 
