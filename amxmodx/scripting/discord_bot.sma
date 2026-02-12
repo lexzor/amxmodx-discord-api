@@ -2,10 +2,16 @@
 #include <discordapi>
 #include <json>
 
-#define TOKEN "YOUR_DISCORD_BOT_TOKEN_HERE"
-#define IDENTIFIER "discord_bot_example"
+#define IDENTIFIER "discord_bot"
 
 #pragma semicolon 1
+
+enum CVARS
+{
+    TOKEN[64]
+}
+
+new g_eCvars[CVARS];
 
 public plugin_init()
 {
@@ -22,7 +28,7 @@ public plugin_init()
         new opt[Options];
         opt[LOG_LEVEL] = DEFAULT;
         opt[PRINT_EVENT_DATA] = false;
-        formatex(opt[PREFIX], MAX_CONSOLE_PREFIX_LENGTH - 1, "[DiscordAPIChannelRelay]");
+        formatex(opt[PREFIX], MAX_CONSOLE_PREFIX_LENGTH - 1, "[DiscordBOT]");
         SetBotOptions(IDENTIFIER, opt);
     }
 
@@ -33,6 +39,17 @@ public plugin_init()
             set_fail_state("Failed to start Discord BOT!");
         }
     }
+
+    bind_pcvar_string(
+		create_cvar(
+            "discord_bot_token",
+            "bot_token",
+            FCVAR_PROTECTED | FCVAR_SPONLY | FCVAR_SERVER,
+            "Discord bot token",
+		),
+		g_eCvars[TOKEN],
+        charsmax(g_eCvars[TOKEN])
+	);
 
     register_concmd("bot_guilds", "bot_guilds");
 }

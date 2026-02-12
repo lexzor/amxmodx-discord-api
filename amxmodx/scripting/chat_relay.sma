@@ -3,11 +3,17 @@
 #include <json>
 #include <discordapi>
 
-#define IDENTIFIER "discord_bot_example"
-#define BOT_ID "YOUR_DISCORD_BOT_ID"
-#define CHANNEL_ID "YOUR_CHANNEL_ID_HERE"
+#define IDENTIFIER "discord_bot"
 
 #pragma semicolon 1
+
+enum CVARS
+{
+    ID[64],
+    CHANNEL[64]
+}
+
+new g_eCvars[CVARS];
 
 public plugin_init()
 {
@@ -15,6 +21,31 @@ public plugin_init()
     
     register_clcmd("say", "cmd_say");
     register_clcmd("say_team", "cmd_say");
+
+    bind_pcvar_string(
+		create_cvar(
+            "discord_bot_chat_relay_channel",
+            "channel_id",
+            FCVAR_PROTECTED | FCVAR_SPONLY | FCVAR_SERVER,
+            "Discord bot channel ID",
+		),
+		g_eCvars[CHANNEL],
+        charsmax(g_eCvars[CHANNEL])
+	);
+    
+    bind_pcvar_string(
+		create_cvar(
+            "discord_bot_id",
+            "bot_id",
+            FCVAR_PROTECTED | FCVAR_SPONLY | FCVAR_SERVER,
+            "Discord bot token",
+		),
+		g_eCvars[ID],
+        charsmax(g_eCvars[ID])
+	);
+        charsmax(g_eCvars[CHANNEL])
+	);
+
 }
 
 public cmd_say(id)
@@ -48,25 +79,15 @@ public cmd_say(id)
     new discordMessage[128];
     formatex(discordMessage, charsmax(discordMessage), "[%s] %s: %s", get_user_team(id) == 1 ? "T" : "CT", name, message);
 
-    SendMessageToChannel(IDENTIFIER, CHANNEL_ID, discordMessage);
+    SendMessageToChannel(IDENTIFIER, g_eCvars[CHANNEL], discordMessage);
 
     return PLUGIN_CONTINUE;
 }
 
-public OnBotReady(const identifier[])
-{
-    if(!equal(identifier, IDENTIFIER))
-    {
-        log_amx("Bot %s is ready!", IDENTIFIER);
-    }
-}
-
 public OnChannelMessageCreated(const identifier[], const channel_id[], const event_data[])
 {
-    if(!equal(identifier, IDENTIFIER))
-    {
+    if(!equal(identifier, IDENTIFIER) || !equal(channel_id, g_eCvars[CHANNEL]))
         return;
-    }
 
     new JSON:jsonEvent = json_parse(event_data);
 
@@ -74,11 +95,6 @@ public OnChannelMessageCreated(const identifier[], const channel_id[], const eve
     {
         log_amx("Failed to parse raw json event from OnChannelMessageCreated.");
         return;
-    }
-
-    if(!equal(channel_id, CHANNEL_ID))
-    {
-        goto cleanup;
     }
 
     new JSON:author = json_object_get_value(jsonEvent, "author");
@@ -91,7 +107,7 @@ public OnChannelMessageCreated(const identifier[], const channel_id[], const eve
     json_object_get_string(jsonEvent, "content", content, charsmax(content));
     json_object_get_string(author, "id", authorId, charsmax(authorId));
 
-    if(equal(authorId, BOT_ID))
+    if(equal(authorId, g_eCvars[ID]))
     {
         goto cleanup;
     }
