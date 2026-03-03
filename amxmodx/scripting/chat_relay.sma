@@ -13,7 +13,7 @@ enum CVARS
     CHANNEL[64]
 }
 
-new g_eCvars[CVARS];
+new g_eCvar[CVARS];
 
 public plugin_init()
 {
@@ -24,28 +24,25 @@ public plugin_init()
 
     bind_pcvar_string(
 		create_cvar(
+            "discord_bot_id",
+            "channel_id",
+            FCVAR_PROTECTED | FCVAR_SPONLY | FCVAR_SERVER,
+            "Discord bot ID. Used to ignore messages from itself"
+		),
+		g_eCvar[ID],
+        charsmax(g_eCvar[ID])
+	);
+
+    bind_pcvar_string(
+		create_cvar(
             "discord_bot_chat_relay_channel",
             "channel_id",
             FCVAR_PROTECTED | FCVAR_SPONLY | FCVAR_SERVER,
-            "Discord bot channel ID",
+            "Channel to send and read messages"
 		),
-		g_eCvars[CHANNEL],
-        charsmax(g_eCvars[CHANNEL])
+		g_eCvar[CHANNEL],
+        charsmax(g_eCvar[CHANNEL])
 	);
-    
-    bind_pcvar_string(
-		create_cvar(
-            "discord_bot_id",
-            "bot_id",
-            FCVAR_PROTECTED | FCVAR_SPONLY | FCVAR_SERVER,
-            "Discord bot token",
-		),
-		g_eCvars[ID],
-        charsmax(g_eCvars[ID])
-	);
-        charsmax(g_eCvars[CHANNEL])
-	);
-
 }
 
 public cmd_say(id)
@@ -79,14 +76,14 @@ public cmd_say(id)
     new discordMessage[128];
     formatex(discordMessage, charsmax(discordMessage), "[%s] %s: %s", get_user_team(id) == 1 ? "T" : "CT", name, message);
 
-    SendMessageToChannel(IDENTIFIER, g_eCvars[CHANNEL], discordMessage);
+    SendMessageToChannel(IDENTIFIER, g_eCvar[CHANNEL], discordMessage);
 
     return PLUGIN_CONTINUE;
 }
 
 public OnChannelMessageCreated(const identifier[], const channel_id[], const event_data[])
 {
-    if(!equal(identifier, IDENTIFIER) || !equal(channel_id, g_eCvars[CHANNEL]))
+    if(!equal(identifier, IDENTIFIER) || !equal(channel_id, g_eCvar[CHANNEL]))
         return;
 
     new JSON:jsonEvent = json_parse(event_data);
@@ -107,7 +104,7 @@ public OnChannelMessageCreated(const identifier[], const channel_id[], const eve
     json_object_get_string(jsonEvent, "content", content, charsmax(content));
     json_object_get_string(author, "id", authorId, charsmax(authorId));
 
-    if(equal(authorId, g_eCvars[ID]))
+    if(equal(authorId, g_eCvar[ID]))
     {
         goto cleanup;
     }

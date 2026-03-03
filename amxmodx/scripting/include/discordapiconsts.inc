@@ -1,12 +1,12 @@
-#if defined _discordapiconsts_included
-	#endinput
-#endif
-#define _discordapiconsts_included
-
 #pragma reqlib discordapi
 #if !defined AMXMODX_NOAUTOLOAD
 	#pragma loadlib discordapi
 #endif
+
+#if defined _discordapiconsts_included
+	#endinput
+#endif
+#define _discordapiconsts_included
 
 #define DISCORD_API_AMXX_API_VERSION_STRING "1.0.0-BETA"
 

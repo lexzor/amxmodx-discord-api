@@ -11,15 +11,26 @@ enum CVARS
     TOKEN[64]
 }
 
-new g_eCvars[CVARS];
+new g_eCvar[CVARS];
 
 public plugin_init()
 {
     register_plugin("[DiscordAPI] Discord BOT", "0.1", "lexzor");
 
+    bind_pcvar_string(
+		create_cvar(
+            "discord_bot_token",
+            "bot_token",
+            FCVAR_PROTECTED | FCVAR_SPONLY | FCVAR_SERVER,
+            "Discord bot token"
+		),
+		g_eCvar[TOKEN],
+        charsmax(g_eCvar[TOKEN])
+	);
+
     if(!BotExists(IDENTIFIER))
     {
-        if(!CreateBot(IDENTIFIER, TOKEN))
+        if(!CreateBot(IDENTIFIER, g_eCvar[TOKEN]))
         {
             set_fail_state("Failed to create Discord BOT!");
             return;
@@ -30,6 +41,8 @@ public plugin_init()
         opt[PRINT_EVENT_DATA] = false;
         formatex(opt[PREFIX], MAX_CONSOLE_PREFIX_LENGTH - 1, "[DiscordBOT]");
         SetBotOptions(IDENTIFIER, opt);
+
+        log_amx("Bot %s created", IDENTIFIER);
     }
 
     if(!IsBotReady(IDENTIFIER))
@@ -38,20 +51,19 @@ public plugin_init()
         {
             set_fail_state("Failed to start Discord BOT!");
         }
+
+        log_amx("Trying to start bot %s", IDENTIFIER);
     }
 
-    bind_pcvar_string(
-		create_cvar(
-            "discord_bot_token",
-            "bot_token",
-            FCVAR_PROTECTED | FCVAR_SPONLY | FCVAR_SERVER,
-            "Discord bot token",
-		),
-		g_eCvars[TOKEN],
-        charsmax(g_eCvars[TOKEN])
-	);
-
     register_concmd("bot_guilds", "bot_guilds");
+}
+
+public OnBotReady(const identifier[])
+{
+    if(equal(identifier, IDENTIFIER))
+    {
+        log_amx("Bot %s started", IDENTIFIER);
+    }
 }
 
 public bot_guilds(id)

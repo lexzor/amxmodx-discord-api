@@ -1,12 +1,12 @@
-#if defined _discordapichannels_included
-	#endinput
-#endif
-#define _discordapichannels_included
-
 #pragma reqlib discordapi
 #if !defined AMXMODX_NOAUTOLOAD
 	#pragma loadlib discordapi
 #endif
+
+#if defined _discordapibotchannels_included
+	#endinput
+#endif
+#define _discordapibotchannels_included
 
 /*
 *

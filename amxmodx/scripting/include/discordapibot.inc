@@ -6,19 +6,16 @@
 *
 */
 
-#if defined _discordapi_included
-	#endinput
-#endif
-
-#define _discordapi_included
-
 #pragma reqlib discordapi
 #if !defined AMXMODX_NOAUTOLOAD
 	#pragma loadlib discordapi
 #endif
 
-#include <discordapibotchannels>
-#include <discordapibotguilds>
+#if defined _discordapibot_included
+	#endinput
+#endif
+
+#define _discordapibot_included
 
 /*
 * Forwards
