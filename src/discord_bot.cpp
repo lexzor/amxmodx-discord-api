@@ -31,6 +31,12 @@ void DiscordBot::SetEventsDataConsolePrinting(const bool state)
 
 bool DiscordBot::Start()
 {
+    if (m_Starting)
+    {
+        MF_PrintSrvConsole("%s (Start) ERROR: Bot it's under starting state...\n", GetConsolePrefix().c_str());
+        return false;
+    }
+
     if (m_Ready)
     {
         MF_PrintSrvConsole("%s (Start) ERROR: Bot it's already marked as ready!\n", GetConsolePrefix().c_str());
@@ -38,11 +44,18 @@ bool DiscordBot::Start()
     }
 
     m_BotCluster.start(dpp::st_return);
+    m_Starting = true;
     return true;
 }
 
 bool DiscordBot::Stop()
 {
+    if(m_Starting)
+    {
+        MF_PrintSrvConsole("%s (Stop) ERROR: Can't stop bot while starting!\n", GetConsolePrefix().c_str());
+        return false;
+    }
+
     if (!m_Ready)
     {
         MF_PrintSrvConsole("%s (Stop) ERROR: Bot it's not ready!\n", GetConsolePrefix().c_str());
@@ -235,6 +248,7 @@ bool DiscordBot::SendReplyToLastInteraction(const std::string &message)
 
 void DiscordBot::SetReadyState(bool state)
 {
+    m_Starting = false;
     m_Ready = state;
 
     if (GetLogLevel() == LogLevel::VERBOSE)
