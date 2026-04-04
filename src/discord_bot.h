@@ -11,6 +11,7 @@
 #include "event_handlers/guilds_events_handler.h"
 #include "event_handlers/messages_events_handler.h"
 #include "event_handlers/ready_event_handler.h"
+#include "event_handlers/log_event_handler.h"
 
 class DiscordBot
 {
@@ -69,7 +70,8 @@ private:
 	bool m_CanSendInteractionMessage = false;
 	std::string m_LastInteractionMessage;
 
+	std::unique_ptr<LogEventHandler> m_LogEventHandler;
+	std::unique_ptr<ReadyEventHandler> m_ReadyEventHandler;
 	std::unique_ptr<GuildsEventsHandler> m_GuildEventsHandler;
 	std::unique_ptr<MessagesEventsHandler> m_MessagesEventsHandler;
-	std::unique_ptr<ReadyEventHandler> m_ReadyEventHandler;
 };
