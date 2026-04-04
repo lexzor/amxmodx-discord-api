@@ -2,6 +2,9 @@
 #include <discordapi>
 #include <json>
 
+// Debug logs for library API
+#define DEBUG
+
 #define IDENTIFIER "discord_bot"
 
 #pragma semicolon 1
@@ -44,6 +47,9 @@ public plugin_init()
 
         log_amx("Bot %s created", IDENTIFIER);
     }
+#if defined DEBUG   
+    else log_amx("Bot %s does not exists", IDENTIFIER);
+#endif
 
     if(!IsBotReady(IDENTIFIER))
     {
@@ -54,6 +60,9 @@ public plugin_init()
 
         log_amx("Trying to start bot %s", IDENTIFIER);
     }
+#if defined DEBUG   
+    else log_amx("Bot %s already started", IDENTIFIER);
+#endif
 
     register_concmd("bot_guilds", "bot_guilds");
 }
@@ -64,6 +73,9 @@ public OnBotReady(const identifier[])
     {
         log_amx("Bot %s started", IDENTIFIER);
     }
+#if defined DEBUG
+    else log_amx("OnBotReady received for %s, but it's not plugin's bot %s", identifier, IDENTIFIER);
+#endif
 }
 
 public bot_guilds(id)
@@ -103,6 +115,9 @@ public OnGuildCreated(const identifier[], const guild_data[])
     {
         return;
     }
+#if defined DEBUG
+    else log_amx("OnBotReady received for %s, but it's not plugin's bot %s", identifier, IDENTIFIER);
+#endif
 
     new JSON:guild = json_parse(guild_data);
 
