@@ -1,4 +1,5 @@
 #include <amxmodx>
+#include <amxmisc>
 #include <discordapi>
 #include <json>
 
@@ -7,11 +8,13 @@
 
 #define IDENTIFIER "discord_bot"
 
+#define PLUGIN_CONFIG "discord_bot.cfg"
+
 #pragma semicolon 1
 
 enum CVARS
 {
-    TOKEN[64]
+    TOKEN[128]
 }
 
 new g_eCvar[CVARS];
@@ -31,6 +34,12 @@ public plugin_init()
         charsmax(g_eCvar[TOKEN])
 	);
 
+    new szCfgDir[64];
+    get_configsdir(szCfgDir, charsmax(szCfgDir));
+    server_cmd("exec %s", fmt("%s/%s", szCfgDir, PLUGIN_CONFIG));
+    server_exec();
+    server_print("cfg %s", fmt("%s/%s", szCfgDir, PLUGIN_CONFIG));
+
     if(!BotExists(IDENTIFIER))
     {
         if(!CreateBot(IDENTIFIER, g_eCvar[TOKEN]))
@@ -40,7 +49,7 @@ public plugin_init()
         }
         
         new opt[Options];
-        opt[LOG_LEVEL] = DEFAULT;
+        opt[LOG_LEVEL] = VERBOSE;
         opt[PRINT_EVENT_DATA] = false;
         formatex(opt[PREFIX], MAX_CONSOLE_PREFIX_LENGTH - 1, "[DiscordBOT]");
         SetBotOptions(IDENTIFIER, opt);
