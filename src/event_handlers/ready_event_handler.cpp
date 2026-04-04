@@ -18,8 +18,8 @@ ReadyEventHandler::~ReadyEventHandler()
 
 void ReadyEventHandler::RegisterListeners()
 {
-	m_Bot->GetCluster().on_ready([this](const dpp::ready_t& cb) {
-		g_EventsQueue->Push([this, cb]() {
+	m_Bot->GetCluster().on_ready([this](const dpp::ready_t& cb) {     
+        g_EventsQueue->Push([this]() {
 			if (m_Bot == nullptr)
 				return;
 			
@@ -30,12 +30,9 @@ void ReadyEventHandler::RegisterListeners()
 
 void ReadyEventHandler::OnReady()
 {
-    m_Bot->SetReadyState(true);
-    ExecuteForward(ON_BOT_READY, m_Bot->GetIdentifier().c_str());
-
     if (m_Bot->GetLogLevel() == LogLevel::VERBOSE)
     {
-        MF_PrintSrvConsole("%s (OnBotReady) Querying Discord API to retrieve global shlash commands '%s'...\n", m_Bot->GetConsolePrefix().c_str());
+        MF_PrintSrvConsole("%s (OnBotReady) Querying Discord API to retrieve global shlash commands...\n", m_Bot->GetConsolePrefix().c_str());
     }
 
     m_Bot->GetCluster().global_commands_get([this](dpp::confirmation_callback_t cb) {
@@ -84,5 +81,8 @@ void ReadyEventHandler::OnReady()
                 }
             });
         }
+
+        m_Bot->SetReadyState(true);
+        ExecuteForward(ON_BOT_READY, m_Bot->GetIdentifier().c_str());
     });
 }
