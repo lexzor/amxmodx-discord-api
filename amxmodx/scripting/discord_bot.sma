@@ -38,7 +38,6 @@ public plugin_init()
     get_configsdir(szCfgDir, charsmax(szCfgDir));
     server_cmd("exec %s", fmt("%s/%s", szCfgDir, PLUGIN_CONFIG));
     server_exec();
-    server_print("cfg %s", fmt("%s/%s", szCfgDir, PLUGIN_CONFIG));
 
     if(!BotExists(IDENTIFIER))
     {
@@ -49,7 +48,7 @@ public plugin_init()
         }
         
         new opt[Options];
-        opt[LOG_LEVEL] = VERBOSE;
+        opt[LOG_LEVEL] = DEFAULT;
         opt[PRINT_EVENT_DATA] = false;
         formatex(opt[PREFIX], MAX_CONSOLE_PREFIX_LENGTH - 1, "[DiscordBOT]");
         SetBotOptions(IDENTIFIER, opt);
