@@ -19,8 +19,8 @@
  *   prepended with.
  * -The library is the name that the #pragma library
  *   message will have prepended.
- * -The library class is the class of libraries that 
- *   a module belongs to (like DBI).  Keep it "" to 
+ * -The library class is the class of libraries that
+ *   a module belongs to (like DBI).  Keep it "" to
  *   ignore.
  * -For both library and library class, you can use a comma
  *   to add multiple entries.
@@ -33,7 +33,7 @@
 #define MODULE_LIBRARY "discordapi"
 #define MODULE_LIBCLASS "discordapi"
 // If you want the module not to be reloaded on mapchange, remove / comment out the next line
-//#define MODULE_RELOAD_ON_MAPCHANGE
+// #define MODULE_RELOAD_ON_MAPCHANGE
 
 #ifdef __DATE__
 #define MODULE_DATE __DATE__
@@ -45,7 +45,7 @@
 // #define USE_METAMOD
 
 // use memory manager/tester?
-// note that if you use this, you cannot construct/allocate 
+// note that if you use this, you cannot construct/allocate
 // anything before the module attached (OnAmxxAttach).
 // be careful of default constructors using new/malloc!
 // #define MEMORY_TEST
@@ -54,22 +54,22 @@
 // It allows you to compile without libstdc++.so as a dependency
 // #define NO_ALLOC_OVERRIDES
 
-// Uncomment this if you are using MSVC8 or greater and want to fix some of the compatibility issues yourself 
+// Uncomment this if you are using MSVC8 or greater and want to fix some of the compatibility issues yourself
 // #define NO_MSVC8_AUTO_COMPAT
 
-/** 
+/**
  * AMXX Init functions
  * Also consider using FN_META_*
  */
 
 /** AMXX query */
-//#define FN_AMXX_QUERY OnAmxxQuery
+// #define FN_AMXX_QUERY OnAmxxQuery
 
 /** AMXX Check Game - module API is NOT available here.
  * Return AMXX_GAME_OK if this module can load on the game, AMXX_GAME_BAD if it cannot.
  * syntax: int AmxxCheckGame(const char *game)
  */
-//#define FN_AMXX_CHECKGAME AmxxCheckGame
+// #define FN_AMXX_CHECKGAME AmxxCheckGame
 
 /** AMXX attach
  * Do native functions init here (MF_AddNatives)
@@ -88,7 +88,7 @@
 #define FN_AMXX_PLUGINSUNLOADING OnPluginsUnloading
 
 /** All plugins are now unloaded */
-#define FN_AMXX_PLUGINSUNLOADED OnPluginsUnloaded
+// #define FN_AMXX_PLUGINSUNLOADED OnPluginsUnloaded
 
 /**** METAMOD ****/
 // If your module doesn't use metamod, you may close the file now :)
@@ -101,11 +101,11 @@
 // - Metamod init functions
 // Also consider using FN_AMXX_*
 // Meta query
-//#define FN_META_QUERY OnMetaQuery
+// #define FN_META_QUERY OnMetaQuery
 // Meta attach
-//#define FN_META_ATTACH OnMetaAttach
+// #define FN_META_ATTACH OnMetaAttach
 // Meta detach
-//#define FN_META_DETACH OnMetaDetach
+// #define FN_META_DETACH OnMetaDetach
 
 // (wd) are Will Day's notes
 // - GetEntityAPI2 functions
@@ -269,7 +269,7 @@
 // #define FN_WriteCoord						WriteCoord
 // #define FN_WriteString						WriteString
 // #define FN_WriteEntity						WriteEntity
- //#define FN_CVarRegister						CVarRegister
+// #define FN_CVarRegister						CVarRegister
 // #define FN_CVarGetFloat						CVarGetFloat
 // #define FN_CVarGetString						CVarGetString
 // #define FN_CVarSetFloat						CVarSetFloat
@@ -504,14 +504,13 @@
 // #define FN_Voice_SetClientListening_Post		Voice_SetClientListening_Post
 // #define FN_GetPlayerAuthId_Post				GetPlayerAuthId_Post
 
-// #define FN_OnFreeEntPrivateData				OnFreeEntPrivateData				
+// #define FN_OnFreeEntPrivateData				OnFreeEntPrivateData
 // #define FN_GameShutdown						GameShutdown
 // #define FN_ShouldCollide						ShouldCollide
 
 // #define FN_OnFreeEntPrivateData_Post			OnFreeEntPrivateData_Post
 // #define FN_GameShutdown_Post					GameShutdown_Post
 // #define FN_ShouldCollide_Post				ShouldCollide_Post
-
 
 #endif // USE_METAMOD
 

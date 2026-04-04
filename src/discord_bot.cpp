@@ -4,28 +4,28 @@
 #include "dpp/nlohmann/json.hpp"
 #include "events_queue.h"
 
-DiscordBot::DiscordBot(const std::string& identifier, const std::string& token)
+DiscordBot::DiscordBot(const std::string &identifier, const std::string &token)
     : m_BotCluster(token, dpp::i_default_intents | dpp::i_message_content, 1), m_Options(DiscordBotOptions()), m_Identifier(identifier)
 {
-	m_GuildEventsHandler        = std::make_unique<GuildsEventsHandler>(this);
-	m_MessagesEventsHandler     = std::make_unique<MessagesEventsHandler>(this);
-	m_ReadyEventHandler         = std::make_unique<ReadyEventHandler>(this);
+    m_GuildEventsHandler = std::make_unique<GuildsEventsHandler>(this);
+    m_MessagesEventsHandler = std::make_unique<MessagesEventsHandler>(this);
+    m_ReadyEventHandler = std::make_unique<ReadyEventHandler>(this);
 
-    //RegisterEventsListeners();
+    // RegisterEventsListeners();
 }
 
 DiscordBot::~DiscordBot()
 {
 }
 
-void DiscordBot::SetOptions(const DiscordBotOptions& options)
+void DiscordBot::SetOptions(const DiscordBotOptions &options)
 {
     m_Options = options;
 }
 
 void DiscordBot::SetEventsDataConsolePrinting(const bool state)
 {
-	m_Options.print_events_data = state;
+    m_Options.print_events_data = state;
 }
 
 bool DiscordBot::Start()
@@ -49,178 +49,178 @@ bool DiscordBot::Stop()
     }
 
     m_BotCluster.shutdown();
-    
+
     ExecuteForward(ON_BOT_STOPPED, m_Identifier.c_str());
 
     return true;
 }
 
-void DiscordBot::RegisterGlobalSlashCommand(const std::string& command, const std::string& description, int amx_fw_handle)
-{
-    for (auto& [_, value] : m_GlobalSlashCommands)
-    {
-        if (value.slash_command.name == command)
-        {
-            if (value.amx_fw_handle == INVALID_SLASH_COMMAND_AMXX_FW_HANDLE || value.amx_fw_handle != amx_fw_handle)
-            {
-                value.amx_fw_handle = amx_fw_handle;
-                return;
-            }
+// void DiscordBot::RegisterGlobalSlashCommand(const std::string& command, const std::string& description, int amx_fw_handle)
+// {
+//     for (auto& [_, value] : m_GlobalSlashCommands)
+//     {
+//         if (value.slash_command.name == command)
+//         {
+//             if (value.amx_fw_handle == INVALID_SLASH_COMMAND_AMXX_FW_HANDLE || value.amx_fw_handle != amx_fw_handle)
+//             {
+//                 value.amx_fw_handle = amx_fw_handle;
+//                 return;
+//             }
 
-            MF_PrintSrvConsole("%s (RegisterGlobalSlashCommand) Slash command '%s' already registered.\n", command.c_str());
-            return;
-        }
-    }
+//             MF_PrintSrvConsole("%s (RegisterGlobalSlashCommand) Slash command '%s' already registered.\n", command.c_str());
+//             return;
+//         }
+//     }
 
-    m_BotCluster.global_command_create(
-        { command, description, m_BotCluster.me.id },
-        [this, command, amx_fw_handle](const dpp::confirmation_callback_t& cb) {
-            if (IsDestroyed())
-                return;
+//     m_BotCluster.global_command_create(
+//         { command, description, m_BotCluster.me.id },
+//         [this, command, amx_fw_handle](const dpp::confirmation_callback_t& cb) {
+//             if (IsDestroyed())
+//                 return;
 
-            if (cb.is_error())
-            {
-                const std::string errorMessage = cb.get_error().human_readable;
+//             if (cb.is_error())
+//             {
+//                 const std::string errorMessage = cb.get_error().human_readable;
 
-                g_EventsQueue->Push([this, command, errorMessage]() {
-                    if (IsDestroyed())
-                        return;
-                    
-                    MF_PrintSrvConsole("%s (RegisterGlobalSlashCommand) ERROR: Failed to register slash command '%s'\n", GetConsolePrefix().c_str(), command.c_str());
-                    MF_PrintSrvConsole("%s (RegisterGlobalSlashCommand) %s\n", GetConsolePrefix().c_str(), errorMessage.c_str());
-                });
-            }
-            else
-            {
-                const dpp::slashcommand& createdSlashCmd = std::get<dpp::slashcommand>(cb.value);
-                const dpp::snowflake snowflake = createdSlashCmd.id;
+//                 g_EventsQueue->Push([this, command, errorMessage]() {
+//                     if (IsDestroyed())
+//                         return;
 
-                g_EventsQueue->Push([this, command, snowflake, amx_fw_handle, createdSlashCmd]() {
-                    if (IsDestroyed())
-                        return;
+//                     MF_PrintSrvConsole("%s (RegisterGlobalSlashCommand) ERROR: Failed to register slash command '%s'\n", GetConsolePrefix().c_str(), command.c_str());
+//                     MF_PrintSrvConsole("%s (RegisterGlobalSlashCommand) %s\n", GetConsolePrefix().c_str(), errorMessage.c_str());
+//                 });
+//             }
+//             else
+//             {
+//                 const dpp::slashcommand& createdSlashCmd = std::get<dpp::slashcommand>(cb.value);
+//                 const dpp::snowflake snowflake = createdSlashCmd.id;
 
-                    m_GlobalSlashCommands.emplace(snowflake, SlashCommand(createdSlashCmd, amx_fw_handle));
+//                 g_EventsQueue->Push([this, command, snowflake, amx_fw_handle, createdSlashCmd]() {
+//                     if (IsDestroyed())
+//                         return;
 
-                    if (GetLogLevel() >= LogLevel::DEFAULT)
-                    {
-                        MF_PrintSrvConsole("%s (RegisterGlobalSlashCommand) Slash command '%s' has been registered succesfully\n", GetConsolePrefix().c_str(), command.c_str());
-                    }
-                });
-            }
-        }
-    );
+//                     m_GlobalSlashCommands.emplace(snowflake, SlashCommand(createdSlashCmd, amx_fw_handle));
 
-    return;
-}
+//                     if (GetLogLevel() >= LogLevel::DEFAULT)
+//                     {
+//                         MF_PrintSrvConsole("%s (RegisterGlobalSlashCommand) Slash command '%s' has been registered succesfully\n", GetConsolePrefix().c_str(), command.c_str());
+//                     }
+//                 });
+//             }
+//         }
+//     );
 
-void DiscordBot::UnregisterGlobalSlashCommand(const dpp::snowflake& snowflake, const std::string& command)
-{
-    if (GetLogLevel() == LogLevel::VERBOSE)
-    {
-        MF_PrintSrvConsole("%s (UnregisterGlobalSlashCommand) Querying Discord API to unregister global slash command '%s'...\n", GetConsolePrefix().c_str(), command.c_str());
-    }
+//     return;
+// }
 
-    m_BotCluster.global_commands_get([this, command, snowflake](const dpp::confirmation_callback_t& cb) {
-        if (IsDestroyed())
-            return;
+// void DiscordBot::UnregisterGlobalSlashCommand(const dpp::snowflake& snowflake, const std::string& command)
+// {
+//     if (GetLogLevel() == LogLevel::VERBOSE)
+//     {
+//         MF_PrintSrvConsole("%s (UnregisterGlobalSlashCommand) Querying Discord API to unregister global slash command '%s'...\n", GetConsolePrefix().c_str(), command.c_str());
+//     }
 
-        if (cb.is_error())
-        {
-			const std::string errorMessage = cb.get_error().human_readable;
+//     m_BotCluster.global_commands_get([this, command, snowflake](const dpp::confirmation_callback_t& cb) {
+//         if (IsDestroyed())
+//             return;
 
-            g_EventsQueue->Push([this, command, errorMessage]() {
-                if (IsDestroyed())
-                    return;
-                
-                MF_PrintSrvConsole("%s (UnregisterGlobalSlashCommand) ERROR: Failed to get global slash commands from Discord API when deleting '%s'\n", GetConsolePrefix().c_str(), command.c_str());
-                MF_PrintSrvConsole("%s (UnregisterGlobalSlashCommand) %s\n", GetConsolePrefix().c_str(), errorMessage.c_str());
-            });
-        }
-        else
-        {
-            dpp::slashcommand_map cmdsMap = std::get<dpp::slashcommand_map>(cb.value);
-            dpp::slashcommand_map::iterator it = cmdsMap.find(snowflake);
+//         if (cb.is_error())
+//         {
+// 			const std::string errorMessage = cb.get_error().human_readable;
 
-            if (it == cmdsMap.end())
-            {
-                MF_PrintSrvConsole("%s (UnregisterGlobalSlashCommand) Command '%s' it's not registered in Discord API\n", GetConsolePrefix().c_str(), command.c_str());
-                return;
-            }
+//             g_EventsQueue->Push([this, command, errorMessage]() {
+//                 if (IsDestroyed())
+//                     return;
 
-            m_BotCluster.global_command_delete(snowflake, [this, snowflake, command](const dpp::confirmation_callback_t& cb) {
-                if (cb.is_error())
-                {
-					const std::string errorMessage = cb.get_error().human_readable;
+//                 MF_PrintSrvConsole("%s (UnregisterGlobalSlashCommand) ERROR: Failed to get global slash commands from Discord API when deleting '%s'\n", GetConsolePrefix().c_str(), command.c_str());
+//                 MF_PrintSrvConsole("%s (UnregisterGlobalSlashCommand) %s\n", GetConsolePrefix().c_str(), errorMessage.c_str());
+//             });
+//         }
+//         else
+//         {
+//             dpp::slashcommand_map cmdsMap = std::get<dpp::slashcommand_map>(cb.value);
+//             dpp::slashcommand_map::iterator it = cmdsMap.find(snowflake);
 
-                    g_EventsQueue->Push([this, command, errorMessage]() {
-                        if (IsDestroyed())
-                            return;
+//             if (it == cmdsMap.end())
+//             {
+//                 MF_PrintSrvConsole("%s (UnregisterGlobalSlashCommand) Command '%s' it's not registered in Discord API\n", GetConsolePrefix().c_str(), command.c_str());
+//                 return;
+//             }
 
-                        MF_PrintSrvConsole("%s (UnregisterGlobalSlashCommand) ERROR: Failed to delete global slash command '%s' from Discord API \n", GetConsolePrefix().c_str(), command.c_str());
-                        MF_PrintSrvConsole("%s (UnregisterGlobalSlashCommand) %s\n", GetConsolePrefix().c_str(), errorMessage.c_str());
-                    });
-                }
-                else
-                {
-                    g_EventsQueue->Push([this, snowflake, command]() {
-                        if (IsDestroyed())
-                            return;
-                    
-                        if (GetLogLevel() != LogLevel::NONE)
-                        {
-                            MF_PrintSrvConsole("%s (UnregisterGlobalSlashCommand) Slash command '%s' has been unregistered succesfully\n", command.c_str());
+//             m_BotCluster.global_command_delete(snowflake, [this, snowflake, command](const dpp::confirmation_callback_t& cb) {
+//                 if (cb.is_error())
+//                 {
+// 					const std::string errorMessage = cb.get_error().human_readable;
 
-                            m_GlobalSlashCommands.erase(snowflake);
-                        }
-                    });
-                }
-            });
-        }
-    });
-}
+//                     g_EventsQueue->Push([this, command, errorMessage]() {
+//                         if (IsDestroyed())
+//                             return;
 
-void DiscordBot::ClearGlobalSlashCommands()
-{
-    m_BotCluster.global_bulk_command_delete([this](const dpp::confirmation_callback_t& cb) {
-        if (cb.is_error())
-        {
-            const std::string errorMessage = cb.get_error().human_readable;
+//                         MF_PrintSrvConsole("%s (UnregisterGlobalSlashCommand) ERROR: Failed to delete global slash command '%s' from Discord API \n", GetConsolePrefix().c_str(), command.c_str());
+//                         MF_PrintSrvConsole("%s (UnregisterGlobalSlashCommand) %s\n", GetConsolePrefix().c_str(), errorMessage.c_str());
+//                     });
+//                 }
+//                 else
+//                 {
+//                     g_EventsQueue->Push([this, snowflake, command]() {
+//                         if (IsDestroyed())
+//                             return;
 
-            g_EventsQueue->Push([this, errorMessage]() {
-                if (IsDestroyed())
-                    return; 
+//                         if (GetLogLevel() != LogLevel::NONE)
+//                         {
+//                             MF_PrintSrvConsole("%s (UnregisterGlobalSlashCommand) Slash command '%s' has been unregistered succesfully\n", command.c_str());
 
-                MF_PrintSrvConsole("%s (ClearGlobalSlashCommands) ERROR: Failed to clear global slash commands\n", GetConsolePrefix().c_str());
-                MF_PrintSrvConsole("%s (ClearGlobalSlashCommands) %s\n", GetConsolePrefix().c_str(), errorMessage.c_str());
-            });
-        }
-        else
-        {
-            g_EventsQueue->Push([this]() {
-                if (IsDestroyed())
-                    return;
+//                             m_GlobalSlashCommands.erase(snowflake);
+//                         }
+//                     });
+//                 }
+//             });
+//         }
+//     });
+// }
 
-                m_GlobalSlashCommands.clear();
+// void DiscordBot::ClearGlobalSlashCommands()
+// {
+//     m_BotCluster.global_bulk_command_delete([this](const dpp::confirmation_callback_t& cb) {
+//         if (cb.is_error())
+//         {
+//             const std::string errorMessage = cb.get_error().human_readable;
 
-                if (GetLogLevel() >= LogLevel::DEFAULT)
-                {
-                    MF_PrintSrvConsole("%s (ClearGlobalSlashCommands) All global slash commands have been removed\n", GetConsolePrefix().c_str());
-                }
-            });
-        }
-    });
-}
+//             g_EventsQueue->Push([this, errorMessage]() {
+//                 if (IsDestroyed())
+//                     return;
 
-void DiscordBot::SendMessageToChannel(const std::string& channel_id, const std::string& message)
+//                 MF_PrintSrvConsole("%s (ClearGlobalSlashCommands) ERROR: Failed to clear global slash commands\n", GetConsolePrefix().c_str());
+//                 MF_PrintSrvConsole("%s (ClearGlobalSlashCommands) %s\n", GetConsolePrefix().c_str(), errorMessage.c_str());
+//             });
+//         }
+//         else
+//         {
+//             g_EventsQueue->Push([this]() {
+//                 if (IsDestroyed())
+//                     return;
+
+//                 m_GlobalSlashCommands.clear();
+
+//                 if (GetLogLevel() >= LogLevel::DEFAULT)
+//                 {
+//                     MF_PrintSrvConsole("%s (ClearGlobalSlashCommands) All global slash commands have been removed\n", GetConsolePrefix().c_str());
+//                 }
+//             });
+//         }
+//     });
+// }
+
+void DiscordBot::SendMessageToChannel(const std::string &channel_id, const std::string &message)
 {
     const dpp::snowflake channel(channel_id);
 
-	dpp::message msg(channel, message);
+    dpp::message msg(channel, message);
 
-	m_BotCluster.message_create(msg);
+    m_BotCluster.message_create(msg);
 }
 
-bool DiscordBot::SendReplyToLastInteraction(const std::string& message)
+bool DiscordBot::SendReplyToLastInteraction(const std::string &message)
 {
     if (!m_CanSendInteractionMessage)
     {
@@ -242,44 +242,44 @@ void DiscordBot::SetReadyState(bool state)
     }
 }
 
-//void DiscordBot::RegisterEventsListeners()
+// void DiscordBot::RegisterEventsListeners()
 //{
-    //m_BotCluster.on_slashcommand([this](dpp::slashcommand_t cb) {
-    //    g_EventsQueue->Push([this, cb]() {
-    //        if (this == nullptr || !this->GetReadyState())
-    //        {
-    //            return;
-    //        }
+// m_BotCluster.on_slashcommand([this](dpp::slashcommand_t cb) {
+//     g_EventsQueue->Push([this, cb]() {
+//         if (this == nullptr || !this->GetReadyState())
+//         {
+//             return;
+//         }
 
-    //        SlashCommandsMap::iterator it = m_GlobalSlashCommands.find(cb.command.get_command_interaction().id);
+//        SlashCommandsMap::iterator it = m_GlobalSlashCommands.find(cb.command.get_command_interaction().id);
 
-    //        if (it == m_GlobalSlashCommands.end())
-    //        {
-    //            return;
-    //        }
+//        if (it == m_GlobalSlashCommands.end())
+//        {
+//            return;
+//        }
 
-    //        if (it->second.amx_fw_handle == INVALID_SLASH_COMMAND_AMXX_FW_HANDLE)
-    //        {
-    //            MF_PrintSrvConsole("%s Slash command issued by user '%s', but it does not exists in local slash commands map\n", GetConsolePrefix().c_str(), cb.command.usr.username);
-    //            return;
-    //        }
+//        if (it->second.amx_fw_handle == INVALID_SLASH_COMMAND_AMXX_FW_HANDLE)
+//        {
+//            MF_PrintSrvConsole("%s Slash command issued by user '%s', but it does not exists in local slash commands map\n", GetConsolePrefix().c_str(), cb.command.usr.username);
+//            return;
+//        }
 
-    //        m_CanSendInteractionMessage = true;
+//        m_CanSendInteractionMessage = true;
 
-    //        if (m_Options.print_events_data || GetLogLevel() == LogLevel::VERBOSE)
-    //        {
-    //            MF_PrintSrvConsole("%s OnGlobalSlashCommand '%s': \n%s\n", GetConsolePrefix().c_str(), cb.command.get_command_interaction().name.c_str(), cb.command.to_json().dump(4).c_str());
-    //        }
+//        if (m_Options.print_events_data || GetLogLevel() == LogLevel::VERBOSE)
+//        {
+//            MF_PrintSrvConsole("%s OnGlobalSlashCommand '%s': \n%s\n", GetConsolePrefix().c_str(), cb.command.get_command_interaction().name.c_str(), cb.command.to_json().dump(4).c_str());
+//        }
 
-    //        MF_ExecuteForward(it->second.amx_fw_handle, cb.command.usr.build_json().c_str());
+//        MF_ExecuteForward(it->second.amx_fw_handle, cb.command.usr.build_json().c_str());
 
-    //        if (!m_LastInteractionMessage.empty())
-    //        {
-    //            cb.reply(m_LastInteractionMessage);
-    //            m_LastInteractionMessage.clear();
-    //        }
+//        if (!m_LastInteractionMessage.empty())
+//        {
+//            cb.reply(m_LastInteractionMessage);
+//            m_LastInteractionMessage.clear();
+//        }
 
-    //        m_CanSendInteractionMessage = false;
-    //    });
-    //});
+//        m_CanSendInteractionMessage = false;
+//    });
+//});
 //}

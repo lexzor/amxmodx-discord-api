@@ -49,7 +49,7 @@ cell AMX_NATIVE_CALL GetGuilds(AMX* amx, cell* params)
 		});
 	}
 
-	std::string guildsJSON = jGuilds.dump();
+	const std::string guildsJSON = jGuilds.dump();
 
 	if (guildsJSON.size() > bufferLen)
 	{
