@@ -21,7 +21,7 @@ new g_eCvar[CVARS];
 
 public plugin_init()
 {
-    register_plugin("[DiscordAPI] Discord BOT", "0.1", "lexzor");
+    register_plugin("[DiscordAPI] Discord BOT", "0.4", "lexzor");
 
     bind_pcvar_string(
 		create_cvar(

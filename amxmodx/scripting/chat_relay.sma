@@ -17,7 +17,7 @@ new g_eCvar[CVARS];
 
 public plugin_init()
 {
-    register_plugin("[DiscordAPI] Chat Relay", "0.1", "lexzor");
+    register_plugin("[DiscordAPI] Chat Relay", "0.7", "lexzor");
     
     register_clcmd("say", "cmd_say");
     register_clcmd("say_team", "cmd_say");
