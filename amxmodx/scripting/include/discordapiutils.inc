@@ -1,3 +1,11 @@
+/*
+* Discord API Module for AMX Mod X. Below you will find all the natives and forwards provided by the module. 
+*
+* Author: lexzor
+* Website: https://github.com/lexzor/amxmodx-discord-api
+*
+*/
+
 #if defined _discordapiutils_included
 	#endinput
 #endif
@@ -19,16 +27,16 @@
 *
 * @return True if version matches or false otherwise 
 */
-stock boolean:CheckAPIVersion()
-{
-    new buffer[16]
-    GetModuleVersionString(buffer, charsmax(buffer));
+// stock boolean:CheckAPIVersion()
+// {
+//     new buffer[16]
+//     GetModuleVersionString(buffer, charsmax(buffer));
 
-    if(!equal(buffer, DISCORD_API_AMXX_API_VERSION_STRING))
-    {
-        log_amx("[DiscordAPI] AMXX API version %s does not correspond with module version %s", DISCORD_API_AMXX_API_VERSION_STRING, buffer);
-        return false;
-    }
+//     if(!equal(buffer, DISCORD_API_AMXX_API_VERSION_STRING))
+//     {
+//         log_amx("[DiscordAPI] AMXX API version %s does not correspond with module version %s", DISCORD_API_AMXX_API_VERSION_STRING, buffer);
+//         return false;
+//     }
 
-    return true;
-}
+//     return true;
+// }

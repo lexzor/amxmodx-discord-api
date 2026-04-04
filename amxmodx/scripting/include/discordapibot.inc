@@ -126,7 +126,7 @@ native bool:DeleteBot(const identifier[]);
 *
 * @return False if bot does not exists or is not ready, true otherwise.
 */
-native bool:RegisterGlobalSlashCommand(const identifier[], const command[], const description[], const callback[]);
+// native bool:RegisterGlobalSlashCommand(const identifier[], const command[], const description[], const callback[]);
 
 /**
 * Unregister a slash command.
@@ -136,7 +136,7 @@ native bool:RegisterGlobalSlashCommand(const identifier[], const command[], cons
 *
 * @return False if bot does not exists or is not ready, true otherwise.
 */
-native bool:UnregisterGlobalSlashCommand(const identifier[], const command[]);
+// native bool:UnregisterGlobalSlashCommand(const identifier[], const command[]);
 
 /**
 * Delete all slash commands which has been registered for a bot.
@@ -145,7 +145,7 @@ native bool:UnregisterGlobalSlashCommand(const identifier[], const command[]);
 *
 * @return False if bot does not exists or is not ready, true otherwise.
 */
-native bool:ClearGlobalSlashCommands(const identifier[]);
+// native bool:ClearGlobalSlashCommands(const identifier[]);
 
 /**
 * Send reply on last slash command interaction.

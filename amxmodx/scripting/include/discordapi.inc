@@ -29,4 +29,4 @@
 * @param len              	Length of the buffer.
 *
 */
-native GetModuleVersionString(const buffer[], const len);
+// native GetModuleVersionString(const buffer[], const len);
