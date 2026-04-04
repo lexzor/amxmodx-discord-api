@@ -65,7 +65,7 @@ private:
 	DiscordBotOptions m_Options;
 
 	std::atomic<bool> m_IsDestroyed = false;
-	std::atomic<bool> m_Starting = false;
+	bool m_Starting = false;
 	bool m_Ready = false;
 	bool m_ShouldPrintEventsData = false;
 	bool m_CanSendInteractionMessage = false;
