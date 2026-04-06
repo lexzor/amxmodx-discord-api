@@ -26,7 +26,7 @@ public plugin_init()
     bind_pcvar_string(
 		create_cvar(
             "discord_bot_token",
-            "bot_token",
+            "INVALID_CVAR",
             FCVAR_PROTECTED | FCVAR_SPONLY | FCVAR_SERVER,
             "Discord bot token"
 		),
@@ -44,10 +44,10 @@ public plugin_cfg()
     server_cmd("exec %s", fmt("%s/%s", szCfgDir, PLUGIN_CONFIG));
     server_exec();
 
-    StartBot();
+    OnConfigExecuted();
 }
 
-StartBot()
+OnConfigExecuted()
 {
     if(!BotExists(IDENTIFIER))
     {

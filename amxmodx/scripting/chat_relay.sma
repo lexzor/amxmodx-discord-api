@@ -26,7 +26,7 @@ public plugin_init()
     bind_pcvar_string(
 		create_cvar(
             "discord_bot_id",
-            "channel_id",
+            "INVALID_CVAR",
             FCVAR_PROTECTED | FCVAR_SPONLY | FCVAR_SERVER,
             "Discord bot ID. Used to ignore messages from itself"
 		),
@@ -37,9 +37,9 @@ public plugin_init()
     bind_pcvar_string(
 		create_cvar(
             "discord_bot_chat_relay_channel",
-            "channel_id",
+            "INVALID_CVAR",
             FCVAR_PROTECTED | FCVAR_SPONLY | FCVAR_SERVER,
-            "Channel to send and read messages"
+            "Channel to send server chat messages"
 		),
 		g_eCvar[CHANNEL],
         charsmax(g_eCvar[CHANNEL])
@@ -48,7 +48,7 @@ public plugin_init()
     bind_pcvar_string(
         create_cvar(
             "discord_bot_chat_relay_blocked_msgs_prefixes",
-            "channel_id",
+            "INVALID_CVAR",
             FCVAR_PROTECTED | FCVAR_SPONLY | FCVAR_SERVER,
             "Chat messages prefixes to block (used for chat commands)"
 		),
