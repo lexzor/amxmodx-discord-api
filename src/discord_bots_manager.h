@@ -7,8 +7,9 @@
 
 class DiscordBotsManager
 {
-	using DiscordBotMap = std::unordered_map<std::string, std::unique_ptr<DiscordBot>>;
 public:
+	using DiscordBotMap = std::unordered_map<std::string, std::unique_ptr<DiscordBot>>;
+	
 	DiscordBotsManager() = default;
     ~DiscordBotsManager();
 
