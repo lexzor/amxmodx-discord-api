@@ -45,3 +45,5 @@ DiscordBotsManager::DiscordBotMap& DiscordBotsManager::GetDiscordBotsMap()
 {
 	return m_BotsMap;
 }
+
+std::unique_ptr<DiscordBotsManager> g_DiscordBotsManager = std::make_unique<DiscordBotsManager>();

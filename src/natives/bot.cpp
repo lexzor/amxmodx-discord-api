@@ -23,14 +23,14 @@ cell AMX_NATIVE_CALL CreateBot(AMX *amx, cell *params)
 		return FALSE;
 	}
 
-	return static_cast<cell>(DiscordBotsManager::get().InitializeBot(identifier, token));
+	return static_cast<cell>(g_DiscordBotsManager->InitializeBot(identifier, token));
 }
 
 cell AMX_NATIVE_CALL SetBotOptions(AMX *amx, cell *params)
 {
 	const char *identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
 
-	DiscordBot *bot = DiscordBotsManager::get().GetBotRawPtrByIdentifier(identifier);
+	DiscordBot *bot = g_DiscordBotsManager->GetBotRawPtrByIdentifier(identifier);
 
 	if (bot == nullptr)
 	{
@@ -49,7 +49,7 @@ cell AMX_NATIVE_CALL StartBot(AMX *amx, cell *params)
 {
 	const char *identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
 
-	DiscordBot *bot = DiscordBotsManager::get().GetBotRawPtrByIdentifier(identifier);
+	DiscordBot *bot = g_DiscordBotsManager->GetBotRawPtrByIdentifier(identifier);
 
 	if (bot == nullptr)
 	{
@@ -70,14 +70,14 @@ cell AMX_NATIVE_CALL BotExists(AMX *amx, cell *params)
 {
 	char *identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
 
-	return DiscordBotsManager::get().GetBotRawPtrByIdentifier(identifier) != nullptr ? TRUE : FALSE;
+	return g_DiscordBotsManager->GetBotRawPtrByIdentifier(identifier) != nullptr ? TRUE : FALSE;
 }
 
 cell AMX_NATIVE_CALL IsBotReady(AMX *amx, cell *params)
 {
 	const char *identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
 
-	DiscordBot *bot = DiscordBotsManager::get().GetBotRawPtrByIdentifier(identifier);
+	DiscordBot *bot = g_DiscordBotsManager->GetBotRawPtrByIdentifier(identifier);
 
 	if (bot == nullptr)
 	{
@@ -92,7 +92,7 @@ cell AMX_NATIVE_CALL StopBot(AMX *amx, cell *params)
 {
 	const char *identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
 
-	DiscordBot *bot = DiscordBotsManager::get().GetBotRawPtrByIdentifier(identifier);
+	DiscordBot *bot = g_DiscordBotsManager->GetBotRawPtrByIdentifier(identifier);
 
 	if (bot == nullptr)
 	{
@@ -113,14 +113,14 @@ cell AMX_NATIVE_CALL DeleteBot(AMX *amx, cell *params)
 {
 	char *identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
 
-	return static_cast<cell>(DiscordBotsManager::get().DeinitializeBot(identifier));
+	return static_cast<cell>(g_DiscordBotsManager->DeinitializeBot(identifier));
 }
 
 // cell AMX_NATIVE_CALL RegisterGlobalSlashCommand(AMX* amx, cell* params)
 // {
 // 	const char* identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
 
-// 	DiscordBot* bot = DiscordBotsManager::get().GetBotRawPtrByIdentifier(identifier);
+// 	DiscordBot* bot = g_DiscordBotsManager->GetBotRawPtrByIdentifier(identifier);
 
 // 	if (bot == nullptr)
 // 	{
@@ -155,7 +155,7 @@ cell AMX_NATIVE_CALL DeleteBot(AMX *amx, cell *params)
 // {
 // 	const char* identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
 
-// 	DiscordBot* bot = DiscordBotsManager::get().GetBotRawPtrByIdentifier(identifier);
+// 	DiscordBot* bot = g_DiscordBotsManager->GetBotRawPtrByIdentifier(identifier);
 
 // 	if (bot == nullptr)
 // 	{
@@ -193,7 +193,7 @@ cell AMX_NATIVE_CALL DeleteBot(AMX *amx, cell *params)
 // {
 // 	const char* identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
 
-// 	DiscordBot* bot = DiscordBotsManager::get().GetBotRawPtrByIdentifier(identifier);
+// 	DiscordBot* bot = g_DiscordBotsManager->GetBotRawPtrByIdentifier(identifier);
 
 // 	if (bot == nullptr)
 // 	{
@@ -226,7 +226,7 @@ cell AMX_NATIVE_CALL SendReply(AMX *amx, cell *params)
 {
 	const char *identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
 
-	DiscordBot *bot = DiscordBotsManager::get().GetBotRawPtrByIdentifier(identifier);
+	DiscordBot *bot = g_DiscordBotsManager->GetBotRawPtrByIdentifier(identifier);
 
 	if (bot == nullptr)
 	{

@@ -3,10 +3,9 @@
 #include <unordered_map>
 #include <string>
 
-#include "utils/singleton.h"
 #include "discord_bot.h"
 
-class DiscordBotsManager : public Singleton<DiscordBotsManager>
+class DiscordBotsManager
 {
 	using DiscordBotMap = std::unordered_map<std::string, std::unique_ptr<DiscordBot>>;
 public:
@@ -21,3 +20,5 @@ private:
 
 	DiscordBotMap m_BotsMap;
 };
+
+extern std::unique_ptr<DiscordBotsManager> g_DiscordBotsManager;

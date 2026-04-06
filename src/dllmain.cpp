@@ -36,7 +36,7 @@ void OnMetaDetach(PLUG_LOADTIME iCurrentPhase, PL_UNLOAD_REASON iReason)
 {
 	ConsumeQueueEvents();
 	g_EventsQueue.release();
-	auto &botMap = DiscordBotsManager::get().GetDiscordBotsMap();
+	auto &botMap = g_DiscordBotsManager->GetDiscordBotsMap();
 
 	for (auto &bot : botMap)
 	{
