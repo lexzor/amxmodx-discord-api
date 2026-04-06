@@ -21,7 +21,7 @@ new g_eCvar[CVARS];
 
 public plugin_init()
 {
-    register_plugin("[DiscordAPI] Discord BOT", "0.4", "lexzor");
+    register_plugin("[DiscordAPI] Discord BOT", "0.5.0", "lexzor");
 
     bind_pcvar_string(
 		create_cvar(
@@ -34,6 +34,21 @@ public plugin_init()
         charsmax(g_eCvar[TOKEN])
 	);
 
+    register_concmd("bot_guilds", "bot_guilds");
+}
+
+public plugin_cfg()
+{
+    new szCfgDir[64];
+    get_configsdir(szCfgDir, charsmax(szCfgDir));
+    server_cmd("exec %s", fmt("%s/%s", szCfgDir, PLUGIN_CONFIG));
+    server_exec();
+
+    StartBot();
+}
+
+StartBot()
+{
     if(!BotExists(IDENTIFIER))
     {
         if(!CreateBot(IDENTIFIER, g_eCvar[TOKEN]))
@@ -66,16 +81,6 @@ public plugin_init()
 #if defined DEBUG   
     else log_amx("Bot %s already started", IDENTIFIER);
 #endif
-
-    register_concmd("bot_guilds", "bot_guilds");
-}
-
-public plugin_cfg()
-{
-    new szCfgDir[64];
-    get_configsdir(szCfgDir, charsmax(szCfgDir));
-    server_cmd("exec %s", fmt("%s/%s", szCfgDir, PLUGIN_CONFIG));
-    server_exec();
 }
 
 public OnBotReady(const identifier[])
