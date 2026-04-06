@@ -6,11 +6,10 @@ DiscordBotsManager::~DiscordBotsManager()
 	for (auto& pair : m_BotsMap)
 	{
 		pair.second->Stop();
-		pair.second.release();
 	}
 }
 
-bool DiscordBotsManager::InitializeBot(const std::string& identifier, const char* token)
+bool DiscordBotsManager::InitializeBot(const std::string& identifier, const std::string& token)
 {
 	DiscordBotMap::iterator it = m_BotsMap.find(identifier);
 
@@ -41,7 +40,7 @@ DiscordBot* DiscordBotsManager::GetBotRawPtrByIdentifier(const std::string& iden
 	return it->second.get();
 }
 
-DiscordBotsManager::DiscordBotMap& DiscordBotsManager::GetDiscordBotsMap()
+const DiscordBotsManager::DiscordBotMap& DiscordBotsManager::GetDiscordBotsMap() const
 {
 	return m_BotsMap;
 }

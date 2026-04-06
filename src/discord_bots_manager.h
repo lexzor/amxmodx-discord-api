@@ -9,15 +9,22 @@ class DiscordBotsManager
 {
 	using DiscordBotMap = std::unordered_map<std::string, std::unique_ptr<DiscordBot>>;
 public:
-	~DiscordBotsManager();
+	DiscordBotsManager() = default;
+    ~DiscordBotsManager();
 
-	bool				InitializeBot(const std::string& identifier, const char* token);
-	bool				DeinitializeBot(const std::string& identifier);
-	DiscordBot*			GetBotRawPtrByIdentifier(const std::string& identifier);
-	DiscordBotMap&		GetDiscordBotsMap();
+    DiscordBotsManager(const DiscordBotsManager&) = delete;
+    DiscordBotsManager& operator=(const DiscordBotsManager&) = delete;
+
+    DiscordBotsManager(DiscordBotsManager&&) = delete;
+    DiscordBotsManager& operator=(DiscordBotsManager&&) = delete;
+
+	bool InitializeBot(const std::string& identifier, const std::string& token);
+	bool DeinitializeBot(const std::string& identifier);
+	
+	[[nodiscard]] DiscordBot* GetBotRawPtrByIdentifier(const std::string& identifier);
+	[[nodiscard]] const DiscordBotMap& GetDiscordBotsMap() const;
 
 private:
-
 	DiscordBotMap m_BotsMap;
 };
 
