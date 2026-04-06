@@ -21,7 +21,7 @@ new g_eCvar[CVARS];
 
 public plugin_init()
 {
-    register_plugin("[DiscordAPI] Discord BOT", "0.5.0", "lexzor");
+    register_plugin("[DiscordAPI] Discord BOT", "0.5.1", "lexzor");
 
     bind_pcvar_string(
 		create_cvar(
@@ -154,7 +154,7 @@ public OnGuildCreated(const identifier[], const guild_data[])
     json_object_get_string(guild, "id", eData[Id], charsmax(eData[Id]));
     json_object_get_string(guild, "name", eData[Name], charsmax(eData[Name]));
 
-    server_print("Bot has been added in guild %s (%s)", eData[Name], eData[Id]);
+    log_amx("Bot %s has been added in guild %s (%s)", identifier, eData[Name], eData[Id]);
 }
 
 public OnGuildDeleted(const identifier[], const guild_data[])
@@ -187,10 +187,10 @@ public OnGuildDeleted(const identifier[], const guild_data[])
 
     if(!eData[Unavailable])
     {
-        server_print("Bot has been added in guild %s (%s)", eData[Name], eData[Id]);
+        log_amx("Bot has been added in guild %s (%s)", identifier, eData[Name], eData[Id]);
     }
     else 
     {
-        server_print("Server %s (%s) has become temporarly unavailable", eData[Name], eData[Id]);
+        log_amx("Server %s (%s) has become temporarly unavailable for bot %s", eData[Name], eData[Id], identifier);
     }
 }
