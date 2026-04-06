@@ -4,7 +4,7 @@
 #include <json>
 
 // Debug logs for library API
-#define DEBUG
+//#define DEBUG
 
 #define IDENTIFIER "discord_bot"
 

@@ -10,7 +10,8 @@
 enum CVARS
 {
     ID[64],
-    CHANNEL[64]
+    CHANNEL[64],
+    BLOCKED_MSGS_PREFIXES[64]
 }
 
 new g_eCvar[CVARS];
@@ -43,6 +44,17 @@ public plugin_init()
 		g_eCvar[CHANNEL],
         charsmax(g_eCvar[CHANNEL])
 	);
+
+    bind_pcvar_string(
+        create_cvar(
+            "discord_bot_chat_relay_blocked_msgs_prefixes",
+            "channel_id",
+            FCVAR_PROTECTED | FCVAR_SPONLY | FCVAR_SERVER,
+            "Chat messages prefixes to block (used for chat commands)"
+		),
+		g_eCvar[BLOCKED_MSGS_PREFIXES],
+        charsmax(g_eCvar[BLOCKED_MSGS_PREFIXES])
+    );
 }
 
 public cmd_say(id)
@@ -65,9 +77,21 @@ public cmd_say(id)
         return PLUGIN_CONTINUE;
     }
 
-    if(equal(command, "say_team") && message[0] == '@')
+    if(equal(command, "say_team"))
     {
         return PLUGIN_CONTINUE;
+    }
+
+    new blockedMessagesPrefixes[128];
+    copy(blockedMessagesPrefixes, charsmax(blockedMessagesPrefixes), g_eCvar[BLOCKED_MSGS_PREFIXES]);
+
+    new prefix[16];
+    while(blockedMessagesPrefixes[0] && strtok2(blockedMessagesPrefixes, prefix, charsmax(prefix), blockedMessagesPrefixes, charsmax(blockedMessagesPrefixes), ',') != -1)
+    {
+        if(strncmp(message, prefix, strlen(prefix)) == 0)
+        {
+            return PLUGIN_CONTINUE;
+        }
     }
 
     new name[MAX_NAME_LENGTH + 1];
