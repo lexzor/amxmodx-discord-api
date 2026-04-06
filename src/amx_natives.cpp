@@ -12,13 +12,9 @@ AMX_NATIVE_INFO g_DiscordBotNatives[] =
 		{"StartBot", StartBot},
 		{"StopBot", StopBot},
 		{"DeleteBot", DeleteBot},
-		// { "RegisterGlobalSlashCommand",			RegisterGlobalSlashCommand },
-		// { "UnregisterGlobalSlashCommand", 		UnregisterGlobalSlashCommand },
-		// { "ClearGlobalSlashCommands",			ClearGlobalSlashCommands },
 		{"SendReply", SendReply},
 
 		// guilds.h
-
 		{"GetGuilds", GetGuilds},
 
 		// channels.h

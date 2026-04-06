@@ -25,10 +25,6 @@ public:
 	bool Start();
 	bool Stop();
 
-	// void RegisterGlobalSlashCommand		(const std::string& command, const std::string& description, int amx_fw_handle);
-	// void UnregisterGlobalSlashCommand	(const dpp::snowflake& snowflake, const std::string& command);
-	// void ClearGlobalSlashCommands		();
-
 	void SendMessageToChannel(const std::string &channel_id, const std::string &message);
 	bool SendReplyToLastInteraction(const std::string &message);
 
@@ -52,7 +48,6 @@ public:
 	inline void ClearInteractionMessage() { m_LastInteractionMessage.clear(); }
 
 private:
-	// void							RegisterEventsListeners();
 	inline const std::string *GetLastInteractionMessage() const { return &m_LastInteractionMessage; }
 	inline const bool IsDestroyed() const { return m_IsDestroyed; }
 
