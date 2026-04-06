@@ -34,11 +34,6 @@ public plugin_init()
         charsmax(g_eCvar[TOKEN])
 	);
 
-    new szCfgDir[64];
-    get_configsdir(szCfgDir, charsmax(szCfgDir));
-    server_cmd("exec %s", fmt("%s/%s", szCfgDir, PLUGIN_CONFIG));
-    server_exec();
-
     if(!BotExists(IDENTIFIER))
     {
         if(!CreateBot(IDENTIFIER, g_eCvar[TOKEN]))
@@ -73,6 +68,14 @@ public plugin_init()
 #endif
 
     register_concmd("bot_guilds", "bot_guilds");
+}
+
+public plugin_cfg()
+{
+    new szCfgDir[64];
+    get_configsdir(szCfgDir, charsmax(szCfgDir));
+    server_cmd("exec %s", fmt("%s/%s", szCfgDir, PLUGIN_CONFIG));
+    server_exec();
 }
 
 public OnBotReady(const identifier[])
