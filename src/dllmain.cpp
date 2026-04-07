@@ -5,6 +5,7 @@
 #include "amxx/amx_forwards.h"
 #include "mpsc/events_queue.h"
 #include "console_commands/concmds.h"
+#include "console_variables/cvars.h"
 
 void OnAmxxAttach()
 {
@@ -30,7 +31,8 @@ void OnMetaAttach(PLUG_LOADTIME current_phase)
 	InitializeDiscordBotsManager();
 	InitializeEventsQueue();
 	RegisterConsoleCommands();
-	
+	RegisterConsoleVariables();
+
 	gpMetaUtilFuncs->pfnLogConsole(PLID, "[DiscordAPI] Success: Version %s compiled (%s)", MODULE_VERSION, MODULE_DATE);
 }
 
