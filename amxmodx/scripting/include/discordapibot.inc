@@ -114,40 +114,6 @@ native bool:StopBot(const identifier[]);
 native bool:DeleteBot(const identifier[]);
 
 /**
-* Register a slash command.
-*
-* @note Callback params: func(const identifier[]). 
-* @note Callback function it's an interaction.
-*
-* @param identifier         Bot identifier.
-* @param command            Command name.
-* @param description        Command description.
-* @param callback			Public function name to be called when command is used.
-*
-* @return False if bot does not exists or is not ready, true otherwise.
-*/
-// native bool:RegisterGlobalSlashCommand(const identifier[], const command[], const description[], const callback[]);
-
-/**
-* Unregister a slash command.
-*
-* @param identifier         Bot identifier.
-* @param command            Command name.
-*
-* @return False if bot does not exists or is not ready, true otherwise.
-*/
-// native bool:UnregisterGlobalSlashCommand(const identifier[], const command[]);
-
-/**
-* Delete all slash commands which has been registered for a bot.
-*
-* @param identifier         Bot identifier.
-*
-* @return False if bot does not exists or is not ready, true otherwise.
-*/
-// native bool:ClearGlobalSlashCommands(const identifier[]);
-
-/**
 * Send reply on last slash command interaction.
 *
 * @note This function it's used to reply to an interaction.

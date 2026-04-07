@@ -25,17 +25,13 @@ static inline DiscordBotOptions ParseBotOptionsFromAmxArray(const cell *options)
 		char c = static_cast<char>(options[currentIter + i]);
 
 		if (c == 0x0)
-		{
 			break;
-		}
 
 		chat_prefix.push_back(c);
 	}
 
 	if (chat_prefix.empty())
-	{
 		chat_prefix = "[DiscordBot]";
-	}
 
 	currentIter += MAX_CONSOLE_PREFIX_LENGTH;
 	const bool print_events_data = options[currentIter] != 0;

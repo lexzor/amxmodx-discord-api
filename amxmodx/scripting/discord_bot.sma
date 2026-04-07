@@ -86,9 +86,7 @@ OnConfigExecuted()
 public OnBotReady(const identifier[])
 {
     if(equal(identifier, IDENTIFIER))
-    {
         log_amx("Bot %s started", IDENTIFIER);
-    }
 #if defined DEBUG
     else log_amx("OnBotReady received for %s, but it's not plugin's bot %s", identifier, IDENTIFIER);
 #endif
@@ -102,25 +100,17 @@ public bot_guilds(id)
     if(!count)
     {
         if(id == 0)
-        {
             server_print("There are not any guilds to be displayed!");
-        }
         else 
-        {
             client_print(id, print_console, "There are not any guilds to be displayed!");
-        }
 
         return PLUGIN_HANDLED;
     }
 
     if(id == 0)
-    {
         server_print("Guilds: %s", buffer);
-    }
     else 
-    {
         client_print(id, print_console, "Guilds: %s", buffer);
-    }
 
     return PLUGIN_HANDLED;
 }
@@ -128,9 +118,7 @@ public bot_guilds(id)
 public OnGuildCreated(const identifier[], const guild_data[])
 {
     if(!equal(identifier, IDENTIFIER))
-    {
         return;
-    }
 #if defined DEBUG
     else log_amx("OnBotReady received for %s, but it's not plugin's bot %s", identifier, IDENTIFIER);
 #endif
@@ -160,9 +148,7 @@ public OnGuildCreated(const identifier[], const guild_data[])
 public OnGuildDeleted(const identifier[], const guild_data[])
 {
     if(equal(identifier, IDENTIFIER))
-    {
         return;
-    }
 
     new JSON:guild = json_parse(guild_data);
 
@@ -186,11 +172,7 @@ public OnGuildDeleted(const identifier[], const guild_data[])
     eData[Unavailable] = json_object_get_bool(guild, "unavailable");
 
     if(!eData[Unavailable])
-    {
         log_amx("Bot has been added in guild %s (%s)", identifier, eData[Name], eData[Id]);
-    }
     else 
-    {
         log_amx("Server %s (%s) has become temporarly unavailable for bot %s", eData[Name], eData[Id], identifier);
-    }
 }

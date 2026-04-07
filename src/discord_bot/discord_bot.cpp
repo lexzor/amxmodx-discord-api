@@ -88,7 +88,6 @@ void DiscordBot::SendMessageToChannel(const std::string &channel_id, const std::
     const dpp::snowflake channel(channel_id);
 
     dpp::message msg(channel, message);
-
     m_BotCluster.message_create(msg);
 }
 
@@ -110,9 +109,7 @@ void DiscordBot::SetReadyState(bool state)
     m_Ready = state;
 
     if (GetLogLevel() == LogLevel::VERBOSE)
-    {
         MF_PrintSrvConsole("%s Bot has been marked as %sactive\n", GetConsolePrefix().c_str(), m_Ready ? "" : "in");
-    }
 }
 
 dpp::cluster& DiscordBot::GetCluster() noexcept
@@ -179,6 +176,7 @@ const std::string* DiscordBot::GetLastInteractionMessage() const noexcept
 {
     return &m_LastInteractionMessage;
 }
+
 const bool DiscordBot::IsDestroyed() const noexcept
 {
     return m_IsDestroyed.load();

@@ -7,9 +7,7 @@ std::unique_ptr<DiscordBotsManager> g_DiscordBotsManager = {};
 void InitializeDiscordBotsManager()
 {
     if(!g_DiscordBotsManager)
-    {
         g_DiscordBotsManager = std::make_unique<DiscordBotsManager>();
-    }
     else
     {
         g_DiscordBotsManager->ForEach([](DiscordBot& bot) {

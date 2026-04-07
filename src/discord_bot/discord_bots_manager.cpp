@@ -3,9 +3,7 @@
 DiscordBotsManager::~DiscordBotsManager()
 {
 	for (auto& pair : m_BotsMap)
-	{
 		pair.second->Stop();
-	}
 }
 
 bool DiscordBotsManager::InitializeBot(const std::string& identifier, const std::string& token)
@@ -13,9 +11,7 @@ bool DiscordBotsManager::InitializeBot(const std::string& identifier, const std:
 	DiscordBotMap::iterator it = m_BotsMap.find(identifier);
 
 	if (it != m_BotsMap.end())
-	{
 		return true;
-	}
 
 	m_BotsMap.emplace(identifier, std::make_unique<DiscordBot>(identifier, token));
 
@@ -32,9 +28,7 @@ DiscordBot* DiscordBotsManager::GetBotRawPtrByIdentifier(const std::string& iden
 	DiscordBotMap::iterator it = m_BotsMap.find(identifier);
 
 	if (it == m_BotsMap.end())
-	{
 		return nullptr;
-	}
 
 	return it->second.get();
 }
@@ -47,7 +41,5 @@ const DiscordBotsManager::DiscordBotMap& DiscordBotsManager::GetDiscordBotsMap()
 void DiscordBotsManager::ForEach(OnDiscordBotFunction function)
 {
 	for(const auto& [identifier, bot] : m_BotsMap)
-	{
 		function(*bot);
-	}
 }

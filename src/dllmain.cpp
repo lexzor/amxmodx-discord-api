@@ -11,9 +11,7 @@ void OnAmxxAttach()
 	RegisterNatives();
 }
 
-void OnAmxxDetach()
-{
-}
+void OnAmxxDetach() {}
 
 void OnPluginsLoaded()
 {

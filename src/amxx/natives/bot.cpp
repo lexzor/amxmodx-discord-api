@@ -29,7 +29,6 @@ cell AMX_NATIVE_CALL CreateBot(AMX *amx, cell *params)
 cell AMX_NATIVE_CALL SetBotOptions(AMX *amx, cell *params)
 {
 	const char *identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
-
 	DiscordBot *bot = g_DiscordBotsManager->GetBotRawPtrByIdentifier(identifier);
 
 	if (bot == nullptr)
@@ -48,7 +47,6 @@ cell AMX_NATIVE_CALL SetBotOptions(AMX *amx, cell *params)
 cell AMX_NATIVE_CALL StartBot(AMX *amx, cell *params)
 {
 	const char *identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
-
 	DiscordBot *bot = g_DiscordBotsManager->GetBotRawPtrByIdentifier(identifier);
 
 	if (bot == nullptr)
@@ -76,7 +74,6 @@ cell AMX_NATIVE_CALL BotExists(AMX *amx, cell *params)
 cell AMX_NATIVE_CALL IsBotReady(AMX *amx, cell *params)
 {
 	const char *identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
-
 	DiscordBot *bot = g_DiscordBotsManager->GetBotRawPtrByIdentifier(identifier);
 
 	if (bot == nullptr)
@@ -91,7 +88,6 @@ cell AMX_NATIVE_CALL IsBotReady(AMX *amx, cell *params)
 cell AMX_NATIVE_CALL StopBot(AMX *amx, cell *params)
 {
 	const char *identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
-
 	DiscordBot *bot = g_DiscordBotsManager->GetBotRawPtrByIdentifier(identifier);
 
 	if (bot == nullptr)
@@ -119,7 +115,6 @@ cell AMX_NATIVE_CALL DeleteBot(AMX *amx, cell *params)
 cell AMX_NATIVE_CALL SendReply(AMX *amx, cell *params)
 {
 	const char *identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
-
 	DiscordBot *bot = g_DiscordBotsManager->GetBotRawPtrByIdentifier(identifier);
 
 	if (bot == nullptr)

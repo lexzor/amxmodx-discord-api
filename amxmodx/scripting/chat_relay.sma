@@ -73,14 +73,10 @@ public cmd_say(id)
     trim(message);
 
     if(strlen(message) == 0)
-    {
         return PLUGIN_CONTINUE;
-    }
 
     if(equal(command, "say_team"))
-    {
         return PLUGIN_CONTINUE;
-    }
 
     new blockedMessagesPrefixes[128];
     copy(blockedMessagesPrefixes, charsmax(blockedMessagesPrefixes), g_eCvar[BLOCKED_MSGS_PREFIXES]);
@@ -89,9 +85,7 @@ public cmd_say(id)
     while(blockedMessagesPrefixes[0] && strtok2(blockedMessagesPrefixes, prefix, charsmax(prefix), blockedMessagesPrefixes, charsmax(blockedMessagesPrefixes), ',') != -1)
     {
         if(strncmp(message, prefix, strlen(prefix)) == 0)
-        {
             return PLUGIN_CONTINUE;
-        }
     }
 
     new name[MAX_NAME_LENGTH + 1];
@@ -129,9 +123,7 @@ public OnChannelMessageCreated(const identifier[], const channel_id[], const eve
     json_object_get_string(author, "id", authorId, charsmax(authorId));
 
     if(equal(authorId, g_eCvar[ID]))
-    {
         goto cleanup;
-    }
 
     new JSON:mentionsArray = json_object_get_value(jsonEvent, "mentions");
     new count = json_array_get_count(mentionsArray);
@@ -156,9 +148,7 @@ public OnChannelMessageCreated(const identifier[], const channel_id[], const eve
             new const pos = strfind(content, mentionString);
 
             if(pos == -1)
-            {
                 continue;
-            }
 
             replace(content, charsmax(content), mentionString, fmt("^4@%s^1", data[Username]));
         }

@@ -11,8 +11,6 @@ const ConsoleCommand g_ConsoleCommands[] = {
     { "botlist",        "List bots and their status",                               &concmd_botlist },
 };
 
-const std::size_t NUM_COMMANDS = sizeof(g_ConsoleCommands) / sizeof(g_ConsoleCommands[0]);
-
 void RegisterConsoleCommands()
 {
     REG_SVR_COMMAND(const_cast<char*>("dapi"), &concmd_dapi);
@@ -71,6 +69,4 @@ void concmd_botlist()
     {
         gpMetaUtilFuncs->pfnLogConsole(PLID, "%-5zu %-*s %-*s %-*s\n", ++iter, CMD_COLUMN_WIDTH, bot->GetIdentifier().c_str(), CMD_COLUMN_WIDTH, bot->GetConsolePrefix().c_str(), CMD_COLUMN_WIDTH, (bot->IsStarted() ? "active" : "inactive"));
     }
-
-    return;
 }

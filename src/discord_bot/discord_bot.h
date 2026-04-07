@@ -55,9 +55,9 @@ private:
 
 private:
 	dpp::cluster m_BotCluster;
-	std::string m_Identifier;
-	SlashCommandsMap m_GlobalSlashCommands;
-	GuildsMap m_Guilds;
+	std::string m_Identifier {};
+	SlashCommandsMap m_GlobalSlashCommands {};
+	GuildsMap m_Guilds {};
 
 	DiscordBotOptions m_Options {};
 
