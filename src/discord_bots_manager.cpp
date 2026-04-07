@@ -40,9 +40,17 @@ DiscordBot* DiscordBotsManager::GetBotRawPtrByIdentifier(const std::string& iden
 	return it->second.get();
 }
 
-const DiscordBotsManager::DiscordBotMap& DiscordBotsManager::GetDiscordBotsMap() const
+const DiscordBotsManager::DiscordBotMap& DiscordBotsManager::GetDiscordBotsMap() const noexcept
 {
 	return m_BotsMap;
+}
+
+void DiscordBotsManager::ForEach(OnDiscordBotFunction function)
+{
+	for(const auto& [identifier, bot] : m_BotsMap)
+	{
+		function(*bot);
+	}
 }
 
 std::unique_ptr<DiscordBotsManager> g_DiscordBotsManager = std::make_unique<DiscordBotsManager>();
