@@ -29,9 +29,9 @@ void OnPluginsUnloading()
 
 void OnMetaAttach(PLUG_LOADTIME current_phase)
 {
-	gpMetaUtilFuncs->pfnLogConsole(PLID, "[DiscordAPI] Success: Version %s compiled (%s)", MODULE_VERSION, MODULE_DATE);
 	InitializeEventsQueue();
 	RegisterConsoleCommands();
+	gpMetaUtilFuncs->pfnLogConsole(PLID, "[DiscordAPI] Success: Version %s compiled (%s)", MODULE_VERSION, MODULE_DATE);
 }
 
 void OnMetaDetach(PLUG_LOADTIME iCurrentPhase, PL_UNLOAD_REASON iReason)
