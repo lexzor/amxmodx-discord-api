@@ -63,7 +63,7 @@ public:
 	}
 
 private:
-	std::shared_ptr<Node> m_Head				= nullptr;
-	std::atomic<std::shared_ptr<Node>> m_Tail	= nullptr;
-	bool m_IsProcessingLocked					= false;		
+	std::shared_ptr<Node> m_Head = nullptr;
+	std::atomic<std::shared_ptr<Node>> m_Tail = nullptr;
+	bool m_IsProcessingLocked = false;		
 };

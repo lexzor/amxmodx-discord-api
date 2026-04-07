@@ -71,14 +71,10 @@ void ReadyEventHandler::OnReady()
                     }
 
                     if (m_Bot->GetLogLevel() == LogLevel::VERBOSE)
-                    {
                         MF_PrintSrvConsole("%s Retrieved %i global slash command%s from Discord API\n", m_Bot->GetConsolePrefix().c_str(), slashCommandsCount, slashCommandsCount == 1 ? "s" : "");
-                    }
                 }
                 else if (m_Bot->GetLogLevel() == LogLevel::VERBOSE)
-                {
                     MF_PrintSrvConsole("%s No global slash commands are registered for this bot on Discord API\n", m_Bot->GetConsolePrefix().c_str());
-                }
             });
         }
 

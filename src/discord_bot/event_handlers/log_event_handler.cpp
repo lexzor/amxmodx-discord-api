@@ -42,17 +42,11 @@ void LogEventHandler::OnLog(const dpp::log_t& cb)
     }
 
     if (m_Bot->GetLogLevel() == LogLevel::NONE)
-    {
         return;
-    }
 
     if (m_Bot->GetLogLevel() == LogLevel::DEFAULT && cb.severity == dpp::loglevel::ll_info)
-    {
         MF_PrintSrvConsole("%s %s\n", m_Bot->GetConsolePrefix().c_str(), cb.message.c_str());
-    }
 
     if (m_Bot->GetLogLevel() == LogLevel::VERBOSE)
-    {
         MF_PrintSrvConsole("%s %s\n", m_Bot->GetConsolePrefix().c_str(), cb.message.c_str());
-    }
 }
