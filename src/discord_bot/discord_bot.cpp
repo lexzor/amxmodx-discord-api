@@ -39,8 +39,17 @@ bool DiscordBot::Start()
         return false;
     }
 
-    m_BotCluster.start(dpp::st_return);
+    
+    try {
+        m_BotCluster.start(dpp::st_return);
+    }
+    catch (const dpp::logic_exception& e) {
+        MF_PrintSrvConsole("Failed to start bot. Error: %s\n", e.what());
+        return false;
+    }
+    
     m_Starting = true;
+    
     return true;
 }
 
@@ -58,7 +67,16 @@ bool DiscordBot::Stop()
         return false;
     }
 
-    m_BotCluster.shutdown();
+    try {
+        m_BotCluster.shutdown();
+    }
+    catch (const dpp::logic_exception& e) {
+        MF_PrintSrvConsole("Failed to stop bot. Error: %s\n", e.what());
+        return false;
+    }
+
+    m_Ready = false;
+    m_Starting = false;
 
     ExecuteForward(ON_BOT_STOPPED, m_Identifier.c_str());
 
@@ -112,9 +130,9 @@ const LogLevel DiscordBot::GetLogLevel() const noexcept
     return m_Options.log_level;
 }
 
-const bool DiscordBot::GetReadyState() const noexcept
+const bool DiscordBot::IsStarted() const noexcept
 {
-    return m_Ready;
+    return m_Ready || m_Starting;
 }
 
 const std::string& DiscordBot::GetIdentifier() const noexcept

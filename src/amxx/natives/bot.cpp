@@ -57,7 +57,7 @@ cell AMX_NATIVE_CALL StartBot(AMX *amx, cell *params)
 		return FALSE;
 	}
 
-	if (bot->GetReadyState())
+	if (bot->IsStarted())
 	{
 		MF_LogError(amx, AMX_ERR_NATIVE, "(StartBot) Bot with identifier '%s' is ready", identifier);
 		return FALSE;
@@ -85,7 +85,7 @@ cell AMX_NATIVE_CALL IsBotReady(AMX *amx, cell *params)
 		return FALSE;
 	}
 
-	return static_cast<cell>(bot->GetReadyState());
+	return static_cast<cell>(bot->IsStarted());
 }
 
 cell AMX_NATIVE_CALL StopBot(AMX *amx, cell *params)
@@ -100,7 +100,7 @@ cell AMX_NATIVE_CALL StopBot(AMX *amx, cell *params)
 		return FALSE;
 	}
 
-	if (!bot->GetReadyState())
+	if (!bot->IsStarted())
 	{
 		MF_LogError(amx, AMX_ERR_NATIVE, "(StopBot) Bot with identifier '%s' is not ready yet", identifier);
 		return FALSE;
@@ -128,7 +128,7 @@ cell AMX_NATIVE_CALL SendReply(AMX *amx, cell *params)
 		return FALSE;
 	}
 
-	if (!bot->GetReadyState())
+	if (!bot->IsStarted())
 	{
 		MF_LogError(amx, AMX_ERR_NATIVE, "(SendReply) Bot with identifier '%s' is ready", identifier);
 		return FALSE;

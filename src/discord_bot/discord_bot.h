@@ -37,7 +37,7 @@ public:
 
 	[[nodiscard]] const LogLevel GetLogLevel() const noexcept;
 
-	[[nodiscard]] const bool GetReadyState() const noexcept;
+	[[nodiscard]] const bool IsStarted() const noexcept;
 	[[nodiscard]] const std::string &GetIdentifier() const noexcept;
 	[[nodiscard]] const DiscordBotOptions &GetOptions() const noexcept;
 	[[nodiscard]] const std::string &GetInteractionMessage() const noexcept;

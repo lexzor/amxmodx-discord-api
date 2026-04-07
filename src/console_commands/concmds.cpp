@@ -69,7 +69,7 @@ void concmd_botlist()
     std::size_t iter = 0;
     for(const auto& [identifier, bot] : botMap)
     {
-        gpMetaUtilFuncs->pfnLogConsole(PLID, "%-5zu %-*s %-*s %-*s\n", ++iter, CMD_COLUMN_WIDTH, bot->GetIdentifier().c_str(), CMD_COLUMN_WIDTH, bot->GetConsolePrefix().c_str(), CMD_COLUMN_WIDTH, (bot->GetReadyState() ? "active" : "inactive"));
+        gpMetaUtilFuncs->pfnLogConsole(PLID, "%-5zu %-*s %-*s %-*s\n", ++iter, CMD_COLUMN_WIDTH, bot->GetIdentifier().c_str(), CMD_COLUMN_WIDTH, bot->GetConsolePrefix().c_str(), CMD_COLUMN_WIDTH, (bot->IsStarted() ? "active" : "inactive"));
     }
 
     return;
