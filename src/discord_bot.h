@@ -20,7 +20,7 @@ public:
 	using GuildsMap = std::unordered_map<dpp::snowflake, dpp::guild>;
 
 	DiscordBot(const std::string &identifier, const std::string &token);
-	~DiscordBot();
+	~DiscordBot() noexcept;
 
 	bool Start();
 	bool Stop();
@@ -32,24 +32,26 @@ public:
 	void SetEventsDataConsolePrinting(const bool state);
 	void SetReadyState(bool state);
 
-	inline dpp::cluster &GetCluster() { return m_BotCluster; }
-	inline const std::string &GetConsolePrefix() const { return m_Options.chat_prefix; }
-	inline const LogLevel GetLogLevel() const { return m_Options.log_level; }
-	inline const bool GetReadyState() const { return m_Ready; }
-	inline const std::string &GetIdentifier() const { return m_Identifier; }
-	inline const DiscordBotOptions &GetOptions() const { return m_Options; }
-	inline const std::string &GetInteractionMessage() const { return m_LastInteractionMessage; }
+	[[nodiscard]] dpp::cluster &GetCluster() noexcept;
+	[[nodiscard]] const std::string &GetConsolePrefix() const noexcept; 
 
-	inline GuildsMap &GetGuildsMap() { return m_Guilds; }
-	inline SlashCommandsMap &GetGlobalSlashCommandsMap() { return m_GlobalSlashCommands; }
+	[[nodiscard]] const LogLevel GetLogLevel() const noexcept;
 
-	inline void SetInteractionReplyAbility(bool state) { m_CanSendInteractionMessage = state; }
-	inline void SetInteractionMessage(const std::string &message) { m_LastInteractionMessage = message; }
-	inline void ClearInteractionMessage() { m_LastInteractionMessage.clear(); }
+	[[nodiscard]] const bool GetReadyState() const noexcept;
+	[[nodiscard]] const std::string &GetIdentifier() const noexcept;
+	[[nodiscard]] const DiscordBotOptions &GetOptions() const noexcept;
+	[[nodiscard]] const std::string &GetInteractionMessage() const noexcept;
+
+	[[nodiscard]] GuildsMap &GetGuildsMap() noexcept;
+	[[nodiscard]] SlashCommandsMap &GetGlobalSlashCommandsMap() noexcept;
+
+	void SetInteractionReplyAbility(bool state);
+	void SetInteractionMessage(const std::string &message);
+	void ClearInteractionMessage();
 
 private:
-	inline const std::string *GetLastInteractionMessage() const { return &m_LastInteractionMessage; }
-	inline const bool IsDestroyed() const { return m_IsDestroyed; }
+	[[nodiscard]] const std::string *GetLastInteractionMessage() const noexcept;
+	[[nodiscard]] const bool IsDestroyed() const noexcept;
 
 private:
 	dpp::cluster m_BotCluster;
@@ -57,17 +59,17 @@ private:
 	SlashCommandsMap m_GlobalSlashCommands;
 	GuildsMap m_Guilds;
 
-	DiscordBotOptions m_Options;
+	DiscordBotOptions m_Options {};
 
 	std::atomic<bool> m_IsDestroyed = false;
 	bool m_Starting = false;
 	bool m_Ready = false;
 	bool m_ShouldPrintEventsData = false;
 	bool m_CanSendInteractionMessage = false;
-	std::string m_LastInteractionMessage;
+	std::string m_LastInteractionMessage {};
 
-	std::unique_ptr<LogEventHandler> m_LogEventHandler;
-	std::unique_ptr<ReadyEventHandler> m_ReadyEventHandler;
-	std::unique_ptr<GuildsEventsHandler> m_GuildEventsHandler;
-	std::unique_ptr<MessagesEventsHandler> m_MessagesEventsHandler;
+	std::unique_ptr<LogEventHandler> m_LogEventHandler {};
+	std::unique_ptr<ReadyEventHandler> m_ReadyEventHandler {};
+	std::unique_ptr<GuildsEventsHandler> m_GuildEventsHandler {};
+	std::unique_ptr<MessagesEventsHandler> m_MessagesEventsHandler {};
 };
