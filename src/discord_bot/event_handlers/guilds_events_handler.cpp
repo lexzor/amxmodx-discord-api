@@ -1,9 +1,9 @@
 #include "guilds_events_handler.h"
 
 #include "amxxmodule.h"
-#include "discord_bot.h"
-#include "events_queue.h"
-#include "amx_forwards.h"
+#include "discord_bot/discord_bot.h"
+#include "mpsc/events_queue.h"
+#include "amxx/amx_forwards.h"
 
 GuildsEventsHandler::GuildsEventsHandler(DiscordBot* bot)
     : m_Bot(bot)

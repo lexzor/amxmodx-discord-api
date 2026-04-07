@@ -1,9 +1,9 @@
 #include "precompiled.h"
 
 #include "dllmain.h"
-#include "amx_natives.h"
-#include "amx_forwards.h"
-#include "events_queue.h"
+#include "amxx/amx_natives.h"
+#include "amxx/amx_forwards.h"
+#include "mpsc/events_queue.h"
 #include "console_commands/concmds.h"
 
 void OnAmxxAttach()
@@ -29,15 +29,17 @@ void OnPluginsUnloading()
 
 void OnMetaAttach(PLUG_LOADTIME current_phase)
 {
+	InitializeDiscordBotsManager();
 	InitializeEventsQueue();
 	RegisterConsoleCommands();
+	
 	gpMetaUtilFuncs->pfnLogConsole(PLID, "[DiscordAPI] Success: Version %s compiled (%s)", MODULE_VERSION, MODULE_DATE);
 }
 
 void OnMetaDetach(PLUG_LOADTIME iCurrentPhase, PL_UNLOAD_REASON iReason)
 {
 	ConsumeQueueEvents();
-	g_EventsQueue.reset();
-	g_DiscordBotsManager.reset();
+	DeinitializeDiscordBotsManager();
+
 	gpMetaUtilFuncs->pfnLogConsole(PLID, "[DiscordAPI] Module detached");
 }

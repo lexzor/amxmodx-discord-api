@@ -1,5 +1,4 @@
 #include "discord_bots_manager.h"
-#include "precompiled.h"
 
 DiscordBotsManager::~DiscordBotsManager()
 {
@@ -52,5 +51,3 @@ void DiscordBotsManager::ForEach(OnDiscordBotFunction function)
 		function(*bot);
 	}
 }
-
-std::unique_ptr<DiscordBotsManager> g_DiscordBotsManager = std::make_unique<DiscordBotsManager>();

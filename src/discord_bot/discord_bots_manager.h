@@ -4,7 +4,7 @@
 #include <string>
 #include <functional>
 
-#include "discord_bot.h"
+#include "discord_bot/discord_bot.h"
 
 class DiscordBotsManager
 {
@@ -31,5 +31,3 @@ public:
 private:
 	DiscordBotMap m_BotsMap;
 };
-
-extern std::unique_ptr<DiscordBotsManager> g_DiscordBotsManager;

@@ -6,8 +6,8 @@
 #include <functional>
 #include <atomic>
 
-#include "discord_bot_options.h"
-#include "discord_bot_slash_command.h"
+#include "discord_bot/discord_bot_options.h"
+#include "discord_bot/discord_bot_slash_command.h"
 #include "event_handlers/guilds_events_handler.h"
 #include "event_handlers/messages_events_handler.h"
 #include "event_handlers/ready_event_handler.h"

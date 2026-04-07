@@ -1,8 +1,8 @@
 #include <amxxmodule.h>
-#include "discord_bot.h"
-#include "amx_forwards.h"
+#include "discord_bot/discord_bot.h"
+#include "amxx/amx_forwards.h"
 #include "dpp/nlohmann/json.hpp"
-#include "events_queue.h"
+#include "mpsc/events_queue.h"
 
 DiscordBot::DiscordBot(const std::string &identifier, const std::string &token)
     : m_BotCluster(token, dpp::i_default_intents | dpp::i_message_content, 1), m_Identifier(identifier)

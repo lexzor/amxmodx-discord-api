@@ -1,6 +1,6 @@
-#include "natives/bot.h"
-#include "natives/guilds.h"
-#include "natives/channels.h"
+#include "amxx/natives/bot.h"
+#include "amxx/natives/guilds.h"
+#include "amxx/natives/channels.h"
 
 AMX_NATIVE_INFO g_DiscordBotNatives[] =
 	{
