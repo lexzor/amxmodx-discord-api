@@ -1,7 +1,7 @@
 #pragma once
 
 #include "precompiled.h"
-#include "discord_bot_options.h"
+#include "discord_bot/discord_bot_options.h"
 
 static inline DiscordBotOptions ParseBotOptionsFromAmxArray(const cell *options)
 {

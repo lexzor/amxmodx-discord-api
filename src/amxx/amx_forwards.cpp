@@ -1,5 +1,5 @@
 #include <amxxmodule.h>
-#include "amx_forwards.h"
+#include "amxx/amx_forwards.h"
 
 const char* g_ForwardsNames[] = {
 	{ "OnBotReady" },

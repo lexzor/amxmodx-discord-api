@@ -9,7 +9,7 @@
 
 #include <concepts>
 
-#include "discord_bots_manager.h"
+#include "discord_bot/discord_bots_manager_impl.h"
 
 #define MAX_IDENTIFIER_LENGTH			32
 #define MAX_CONSOLE_PREFIX_LENGTH		32

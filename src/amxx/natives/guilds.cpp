@@ -12,7 +12,7 @@ cell AMX_NATIVE_CALL GetGuilds(AMX* amx, cell* params)
 		return FALSE;
 	}
 
-	if (!bot->GetReadyState())
+	if (!bot->IsStarted())
 	{
 		MF_LogError(amx, AMX_ERR_NATIVE, "(GetGuilds) Bot with identifier '%s' is not ready", identifier);
 		return FALSE;

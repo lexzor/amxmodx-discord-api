@@ -12,7 +12,7 @@ cell AMX_NATIVE_CALL SendMessageToChannel(AMX* amx, cell* params)
 		return FALSE;
 	}
 
-	if (!bot->GetReadyState())
+	if (!bot->IsStarted())
 	{
 		MF_LogError(amx, AMX_ERR_NATIVE, "(SendMessageToChannel) Bot with identifier '%s' is ready", identifier);
 		return FALSE;

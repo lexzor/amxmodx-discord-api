@@ -1,5 +1,4 @@
 #include "discord_bots_manager.h"
-#include "precompiled.h"
 
 DiscordBotsManager::~DiscordBotsManager()
 {
@@ -40,9 +39,15 @@ DiscordBot* DiscordBotsManager::GetBotRawPtrByIdentifier(const std::string& iden
 	return it->second.get();
 }
 
-const DiscordBotsManager::DiscordBotMap& DiscordBotsManager::GetDiscordBotsMap() const
+const DiscordBotsManager::DiscordBotMap& DiscordBotsManager::GetDiscordBotsMap() const noexcept
 {
 	return m_BotsMap;
 }
 
-std::unique_ptr<DiscordBotsManager> g_DiscordBotsManager = std::make_unique<DiscordBotsManager>();
+void DiscordBotsManager::ForEach(OnDiscordBotFunction function)
+{
+	for(const auto& [identifier, bot] : m_BotsMap)
+	{
+		function(*bot);
+	}
+}

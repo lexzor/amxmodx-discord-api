@@ -1,4 +1,4 @@
-#include "events_queue.h"
+#include "mpsc/events_queue.h"
 #include "precompiled.h"
 
 std::unique_ptr<Queue<EventFn>> g_EventsQueue = std::make_unique<Queue<EventFn>>();

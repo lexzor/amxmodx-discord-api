@@ -23,6 +23,13 @@ public:
 		m_Tail.store(dummy);
 	}
 
+	void Deinitialize()
+	{
+		std::shared_ptr<Node> m_Head = nullptr;
+		std::atomic<std::shared_ptr<Node>> m_Tail = nullptr;
+		bool m_IsProcessingLocked = false;
+	}
+
 	void Push(Func&& data)
 	{
 		std::shared_ptr<Node> node = std::make_shared<Node>();
