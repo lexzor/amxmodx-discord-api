@@ -28,5 +28,6 @@
 * @param buffer         	Buffer to store the version string.
 * @param len              	Length of the buffer.
 *
+* @return 					Number of cells written or -1 on error.
 */
-// native GetModuleVersionString(const buffer[], const len);
+native any:GetModuleVersionString(const buffer[], const len);
