@@ -27,16 +27,16 @@
 *
 * @return True if version matches or false otherwise 
 */
-// stock boolean:CheckAPIVersion()
-// {
-//     new buffer[16]
-//     GetModuleVersionString(buffer, charsmax(buffer));
+stock boolean:CheckAPIVersion(const bool:log_error = false)
+{
+    new buffer[16]
+    GetModuleVersionString(buffer, charsmax(buffer));
 
-//     if(!equal(buffer, DISCORD_API_AMXX_API_VERSION_STRING))
-//     {
-//         log_amx("[DiscordAPI] AMXX API version %s does not correspond with module version %s", DISCORD_API_AMXX_API_VERSION_STRING, buffer);
-//         return false;
-//     }
+    if(!equal(buffer, DISCORD_API_AMXX_API_VERSION_STRING))
+    {
+        log_amx("[DiscordAPI] AMXX API version %s does not correspond with module version %s", DISCORD_API_AMXX_API_VERSION_STRING, buffer);
+        return false;
+    }
 
-//     return true;
-// }
+    return true;
+}
