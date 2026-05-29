@@ -30,4 +30,4 @@
 *
 * @return 					Number of cells written or -1 on error.
 */
-native any:GetModuleVersionString(const buffer[], const len);
+native any:GetModuleVersionString(buffer[], len);
