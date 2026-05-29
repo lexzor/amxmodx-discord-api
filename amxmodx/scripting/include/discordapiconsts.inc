@@ -6,7 +6,6 @@
 *
 */
 
-
 #pragma reqlib discordapi
 #if !defined AMXMODX_NOAUTOLOAD
 	#pragma loadlib discordapi
