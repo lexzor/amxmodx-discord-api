@@ -6,6 +6,12 @@ It uses <a href="https://github.com/brainboxdotcc/DPP">D++ (DPP)</a> as the unde
 
 ## Requirements
 
+* AMXModX v1.9.0.5294^
+  - JSON Module
+* Metamod-r v1.3.0.149^
+
+Note: Other Metamod projects or versions may work too, but full compatibility it's assured with the above Metamod project and version.
+
 ## Usage
 Before installing the module, you have to know it may not work on outdated operating system because the project uses <b>C++20</b>. If you use <a href="https://github.com/pterodactyl/panel">Pterodactyl Panel</a> to run your server in a <b>Docker container</b>, you may want to update the docker image to `ghcr.io/parkervcp/steamcmd:debian`.
 
