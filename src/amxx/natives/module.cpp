@@ -2,20 +2,19 @@
 
 cell AMX_NATIVE_CALL GetModuleVersionString(AMX* amx, cell* params)
 {
-    char* buffer = MF_GetAmxString(amx, params[1], 0, nullptr);
-    uint32_t bufferLen = static_cast<uint32_t>(params[2]);
+    if (params[0] < 2)
+        return 0;
 
-    const uint8_t versionStrLen = strlen(MODULE_VERSION);
+    size_t versionStrLen = strlen(MODULE_VERSION);
 
-    if(versionStrLen > bufferLen)
+    // params[2] = buffer size
+    if (versionStrLen >= static_cast<size_t>(params[2]))
     {
         MF_LogError(amx, AMX_ERR_BOUNDS, "index out of bounds");
         return -1;
     }
 
-    memset(buffer, 0x00, bufferLen);
-    strncpy(buffer, MODULE_VERSION, versionStrLen);
-    buffer[versionStrLen] = 0x0;
+    MF_SetAmxString(amx, params[1], MODULE_VERSION, params[2]);
 
-    return versionStrLen;
+    return static_cast<cell>(versionStrLen);
 }
