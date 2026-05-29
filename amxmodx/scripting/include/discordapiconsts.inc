@@ -1,3 +1,12 @@
+/*
+* Discord API Module for AMX Mod X. Below you will find constats used in AMXX plugins and Metamod plugin. 
+*
+* Author: lexzor
+* Website: https://github.com/lexzor/amxmodx-discord-api
+*
+*/
+
+
 #pragma reqlib discordapi
 #if !defined AMXMODX_NOAUTOLOAD
 	#pragma loadlib discordapi
@@ -8,11 +17,13 @@
 #endif
 #define _discordapiconsts_included
 
-#define DISCORD_API_AMXX_API_VERSION_STRING "1.3.1"
+#define DISCORD_API_AMXX_API_VERSION_STRING "1.3.3"
 
 const MAX_IDENTIFIER_LENGTH			= 32;
 const MAX_CONSOLE_PREFIX_LENGTH 	= 32;
 
+
+// Log level of the module
 enum LogLevel
 {
 	NONE,
@@ -20,6 +31,7 @@ enum LogLevel
 	VERBOSE
 }
 
+// Enum used to create an array which will be passed to native SetBotOptions
 enum Options
 {
 	LogLevel:LOG_LEVEL,									// Log level for bot console messages.
