@@ -6,9 +6,9 @@ It uses <a href="https://github.com/brainboxdotcc/DPP">D++ (DPP)</a> as the unde
 
 ## Requirements
 
-* AMXModX v1.9.0.5294^
-  - JSON Module
-* Metamod-r v1.3.0.149^
+* **AMX Mod X** `v1.9.0.5294^`
+  - **JSON Module** `v1.9.0.5294^`
+* **Metamod-R** `v1.3.0.149^`
 
 Note: Other Metamod projects or versions may work too, but full compatibility it's assured with the above Metamod project and version.
 
