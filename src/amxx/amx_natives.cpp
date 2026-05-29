@@ -1,9 +1,13 @@
+#include "natives/module.h"
 #include "natives/bot.h"
 #include "natives/guilds.h"
 #include "natives/channels.h"
 
 AMX_NATIVE_INFO g_DiscordBotNatives[] =
-	{
+	{	
+		// module.h
+		{ "GetModuleVersionString", GetModuleVersionString },
+
 		// bot.h
 		{"CreateBot", CreateBot},
 		{"SetBotOptions", SetBotOptions},
