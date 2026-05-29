@@ -1,7 +1,8 @@
 #include <amxmodx>
 #include <amxmisc>
-#include <discordapi>
 #include <json>
+#include <discordapi>
+#include <discordapiutils>
 
 // Debug logs for library API
 //#define DEBUG
@@ -21,7 +22,10 @@ new g_eCvar[CVARS];
 
 public plugin_init()
 {
-    register_plugin("[DiscordAPI] Discord BOT", "0.5.1", "lexzor");
+    register_plugin("[DiscordAPI] Discord BOT", "0.5.2", "lexzor");
+
+    if(!CheckAPIVersion(true))
+        set_fail_state("Plugin version does not match with module version");
 
     bind_pcvar_string(
 		create_cvar(

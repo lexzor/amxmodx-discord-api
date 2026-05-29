@@ -2,6 +2,7 @@
 #include <amxmisc>
 #include <json>
 #include <discordapi>
+#include <discordapiutils>
 
 #define IDENTIFIER "discord_bot"
 
@@ -18,7 +19,10 @@ new g_eCvar[CVARS];
 
 public plugin_init()
 {
-    register_plugin("[DiscordAPI] Chat Relay", "0.8.0", "lexzor");
+    register_plugin("[DiscordAPI] Chat Relay", "0.8.1", "lexzor");
+
+    if(!CheckAPIVersion(true))
+        set_fail_state("Plugin version does not match with module version");
     
     register_clcmd("say", "cmd_say");
     register_clcmd("say_team", "cmd_say");
