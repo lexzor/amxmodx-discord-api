@@ -6,19 +6,19 @@
 *
 */
 
-#if defined _discordapiutils_included
-	#endinput
-#endif
-#define _discordapiutils_included
-
 #pragma reqlib discordapi
 #if !defined AMXMODX_NOAUTOLOAD
 	#pragma loadlib discordapi
 #endif
 
+#if defined _discordapiutils_included
+	#endinput
+#endif
+#define _discordapiutils_included
+
 #include <amxmodx>
 #include <amxmisc>
-#include <discordapiconsts>
+#include <discordapi>
 
 /**
 * Checks if the plugin API have same version as module.
@@ -27,16 +27,15 @@
 *
 * @return True if version matches or false otherwise 
 */
-stock boolean:CheckAPIVersion(const bool:log_error = false)
+stock bool:CheckAPIVersion(const bool:log_error)
 {
     new buffer[16]
-    GetModuleVersionString(buffer, charsmax(buffer));
+    GetModuleVersionString(buffer, charsmax(buffer)); 
 
-    if(!equal(buffer, DISCORD_API_AMXX_API_VERSION_STRING))
-    {
-        log_amx("[DiscordAPI] AMXX API version %s does not correspond with module version %s", DISCORD_API_AMXX_API_VERSION_STRING, buffer);
-        return false;
-    }
+    new bool:same = bool:equal(DISCORD_API_AMXX_API_VERSION_STRING, buffer);
 
-    return true;
+    if(!same && log_error)
+        log_amx("AMXX API version %s does not correspond with module version %s", DISCORD_API_AMXX_API_VERSION_STRING, buffer);
+
+    return same;
 }
