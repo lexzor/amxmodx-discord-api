@@ -176,7 +176,7 @@ jobs:
 
       - name: Compile plugins
         run: |
-          COMPILER_DIR="addons/amxmodx/scripting"
+          COMPILER_DIR="${{ github.workspace }}/addons/amxmodx/scripting"
           COMPILER="$COMPILER_DIR/amxxpc"
           FAILED=()
 
@@ -184,9 +184,10 @@ jobs:
             NAME=$(basename "$SMA" .sma)
             echo "Compiling $NAME.sma..."
 
-            "$COMPILER" "$SMA" \
+            # cd into compiler dir so amxxpc32.so is found next to amxxpc
+            (cd "$COMPILER_DIR" && ./amxxpc "$SMA" \
               -i"$COMPILER_DIR/include" \
-              -o"${{ github.workspace }}/compiled_plugins/$NAME.amxx"
+              -o"${{ github.workspace }}/compiled_plugins/$NAME.amxx")
 
             if [ $? -ne 0 ]; then
               echo "::warning::Failed to compile $NAME.sma"
