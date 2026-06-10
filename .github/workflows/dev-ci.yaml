@@ -24,6 +24,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Compute Docker hash
+        id: hash
+        run: |
+          HASH=$(find ${{ matrix.image.context }} -type f -print0 \
+            | sort -z \
+            | xargs -0 sha256sum \
+            | sha256sum \
+            | awk '{print $1}')
+          echo "hash=$HASH" >> $GITHUB_OUTPUT
+
       - uses: docker/setup-buildx-action@v3
         with:
           driver: docker-container
@@ -37,8 +47,8 @@ jobs:
           tags: amxmodx-discord-api/${{ matrix.image.name }}:dev
           push: false
           load: true
-          cache-from: type=gha,scope=dev-${{ matrix.image.name }}
-          cache-to: type=gha,mode=max,scope=dev-${{ matrix.image.name }}
+          cache-from: type=gha,scope=docker-${{ matrix.image.name }}-${{ steps.hash.outputs.hash }}
+          cache-to: type=gha,mode=max,scope=docker-${{ matrix.image.name }}-${{ steps.hash.outputs.hash }}
 
 
 # ---------------------------------------------------
@@ -53,24 +63,12 @@ jobs:
         image:
           - name: debian12-i386
 
+    outputs:
+      cache-hit: ${{ steps.cache.outputs.cache-hit }}
+      libs-hash: ${{ steps.hash.outputs.hash }}
+
     steps:
       - uses: actions/checkout@v4
-
-      - uses: docker/setup-buildx-action@v3
-        with:
-          driver: docker-container
-          name: shared-builder
-
-      - name: Build Docker image (runtime)
-        uses: docker/build-push-action@v6
-        with:
-          context: ./docker-images/${{ matrix.image.name }}
-          file: ./docker-images/${{ matrix.image.name }}/Dockerfile
-          tags: amxmodx-discord-api/${{ matrix.image.name }}:dev
-          push: false
-          load: true
-          cache-from: type=gha,scope=dev-${{ matrix.image.name }}
-          cache-to: type=gha,mode=max,scope=dev-${{ matrix.image.name }}
 
       - name: Compute libs hash
         id: hash
@@ -84,10 +82,39 @@ jobs:
 
       - name: Restore libs cache
         id: cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache@v4
         with:
           path: vendor/bin
           key: libs-${{ matrix.image.name }}-${{ steps.hash.outputs.hash }}
+
+      - name: Compute Docker hash
+        id: docker-hash
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          HASH=$(find docker-images/${{ matrix.image.name }} -type f -print0 \
+            | sort -z \
+            | xargs -0 sha256sum \
+            | sha256sum \
+            | awk '{print $1}')
+          echo "hash=$HASH" >> $GITHUB_OUTPUT
+
+      - uses: docker/setup-buildx-action@v3
+        if: steps.cache.outputs.cache-hit != 'true'
+        with:
+          driver: docker-container
+          name: shared-builder
+
+      - name: Build Docker image (runtime)
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: ./docker-images/${{ matrix.image.name }}
+          file: ./docker-images/${{ matrix.image.name }}/Dockerfile
+          tags: amxmodx-discord-api/${{ matrix.image.name }}:dev
+          push: false
+          load: true
+          cache-from: type=gha,scope=docker-${{ matrix.image.name }}-${{ steps.docker-hash.outputs.hash }}
+          cache-to: type=gha,mode=max,scope=docker-${{ matrix.image.name }}-${{ steps.docker-hash.outputs.hash }}
 
       - name: Build libs (cache miss only)
         if: steps.cache.outputs.cache-hit != 'true'
@@ -98,14 +125,7 @@ jobs:
             amxmodx-discord-api/${{ matrix.image.name }}:dev \
             bash ./libs_builder.sh
 
-      - name: Save libs cache
-        if: steps.cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
-        with:
-          path: vendor/bin
-          key: libs-${{ matrix.image.name }}-${{ steps.hash.outputs.hash }}
-
-      - name: Upload libs artifact (MANDATORY fallback)
+      - name: Upload libs artifact
         uses: actions/upload-artifact@v4
         with:
           name: vendor-bin
@@ -136,6 +156,16 @@ jobs:
           name: vendor-bin
           path: vendor/bin
 
+      - name: Compute Docker hash
+        id: docker-hash
+        run: |
+          HASH=$(find docker-images/debian12-i386 -type f -print0 \
+            | sort -z \
+            | xargs -0 sha256sum \
+            | sha256sum \
+            | awk '{print $1}')
+          echo "hash=$HASH" >> $GITHUB_OUTPUT
+
       - uses: docker/setup-buildx-action@v3
         with:
           driver: docker-container
@@ -149,8 +179,8 @@ jobs:
           tags: amxmodx-discord-api/debian12-i386:dev
           push: false
           load: true
-          cache-from: type=gha,scope=dev-debian12-i386
-          cache-to: type=gha,mode=max,scope=dev-debian12-i386
+          cache-from: type=gha,scope=docker-debian12-i386-${{ steps.docker-hash.outputs.hash }}
+          cache-to: type=gha,mode=max,scope=docker-debian12-i386-${{ steps.docker-hash.outputs.hash }}
 
       - name: Build project
         run: |
