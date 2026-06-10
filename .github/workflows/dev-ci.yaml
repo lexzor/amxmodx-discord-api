@@ -6,9 +6,7 @@ on:
     branches:
       - dev
 
-
 jobs:
-
   # ---------------------------------------------------
   # 1. DOCKER + LIBS BUILD
   # ---------------------------------------------------
@@ -134,14 +132,11 @@ jobs:
           mkdir -p package/bin/linux
           cp -r build/*.so package/bin/linux/ || true
 
-          mkdir -p package/addons/amxmodx/plugins
-          cp -r addons/amxmodx/plugins/*.amxx package/addons/amxmodx/plugins/ || true
-
           mkdir -p package/addons/amxmodx/scripting
-          cp -r addons/amxmodx/scripting/* package/addons/amxmodx/scripting/ || true
+          cp -r amxmodx/scripting/* package/addons/amxmodx/scripting/ || true
 
           mkdir -p package/addons/amxmodx/configs
-          cp -r addons/amxmodx/configs/* package/addons/amxmodx/configs/ || true
+          cp -r amxmodx/configs/* package/addons/amxmodx/configs/ || true
 
       - name: Create ZIP
         run: |
