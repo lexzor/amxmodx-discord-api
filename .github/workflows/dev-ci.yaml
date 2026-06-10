@@ -151,11 +151,15 @@ jobs:
           # Base package (compiler + stock includes)
           curl -L "https://github.com/alliedmodders/amxmodx/releases/download/1.9.0.5303/amxmodx-1.9.0-git5303-base-linux.tar.gz" \
             -o amxmodx-base.tar.gz
+
+          # List tarball contents so we can see exact paths
+          echo "=== TARBALL CONTENTS ==="
+          tar -tzf amxmodx-base.tar.gz
+
           tar -xzf amxmodx-base.tar.gz
 
-          # Verify compiler files are present
-          ls -la addons/amxmodx/scripting/amxxpc
-          ls -la addons/amxmodx/scripting/amxxpc32.so
+          echo "=== SCRIPTING DIR CONTENTS ==="
+          ls -la addons/amxmodx/scripting/
 
           chmod +x addons/amxmodx/scripting/amxxpc
 
