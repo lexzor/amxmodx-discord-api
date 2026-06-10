@@ -133,11 +133,87 @@ jobs:
 
 
 # ---------------------------------------------------
-# 3. BUILD PROJECT + PACKAGE
+# 3. COMPILE AMXX SCRIPTS (independent, runs in parallel)
+# ---------------------------------------------------
+  compile-amxx:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download & extract AMXX compiler
+        run: |
+          curl -L "https://github.com/alliedmodders/amxmodx/releases/download/1.9.0.5303/amxmodx-1.9.0-git5303-base-linux.tar.gz" \
+            -o amxmodx-base.tar.gz
+          tar -xzf amxmodx-base.tar.gz
+
+      - name: Prepare compiler workspace
+        run: |
+          COMPILER_DIR="addons/amxmodx/scripting"
+
+          # Make sure include dir exists
+          mkdir -p "$COMPILER_DIR/include"
+
+          # Clear ALL .sma files from compiler dir to ensure
+          # only our workspace scripts get compiled
+          rm -f "$COMPILER_DIR"/*.sma
+
+          # Copy ONLY our workspace .sma sources
+          cp addons/amxmodx/scripting/*.sma "$COMPILER_DIR/" 2>/dev/null || true
+
+          # Overlay our .inc files on top of the compiler's stock includes
+          cp addons/amxmodx/scripting/include/*.inc "$COMPILER_DIR/include/" 2>/dev/null || true
+
+          # Make compiler executable
+          chmod +x "$COMPILER_DIR/amxxpc"
+
+          # Output dir
+          mkdir -p compiled_plugins
+
+      - name: Compile plugins
+        run: |
+          COMPILER_DIR="addons/amxmodx/scripting"
+          COMPILER="$COMPILER_DIR/amxxpc"
+          FAILED=()
+
+          SMA_FILES=("$COMPILER_DIR"/*.sma)
+          if [ ${#SMA_FILES[@]} -eq 0 ] || [ ! -f "${SMA_FILES[0]}" ]; then
+            echo "::error::No .sma files found to compile"
+            exit 1
+          fi
+
+          for SMA in "${SMA_FILES[@]}"; do
+            NAME=$(basename "$SMA" .sma)
+            echo "Compiling $NAME.sma..."
+
+            "$COMPILER" "$SMA" \
+              -i"$COMPILER_DIR/include" \
+              -o"${{ github.workspace }}/compiled_plugins/$NAME.amxx"
+
+            if [ $? -ne 0 ]; then
+              echo "::warning::Failed to compile $NAME.sma"
+              FAILED+=("$NAME.sma")
+            fi
+          done
+
+          if [ ${#FAILED[@]} -gt 0 ]; then
+            echo "::error::The following plugins failed to compile: ${FAILED[*]}"
+            exit 1
+          fi
+
+      - name: Upload compiled plugins artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: amxx-plugins
+          path: compiled_plugins/
+
+
+# ---------------------------------------------------
+# 4. BUILD PROJECT + PACKAGE
 # ---------------------------------------------------
   build-project:
     runs-on: ubuntu-latest
-    needs: libs-build
+    needs: [libs-build, compile-amxx]
 
     strategy:
       matrix:
@@ -155,6 +231,12 @@ jobs:
         with:
           name: vendor-bin
           path: vendor/bin
+
+      - name: Download compiled plugins
+        uses: actions/download-artifact@v4
+        with:
+          name: amxx-plugins
+          path: amxx-plugins/
 
       - name: Compute Docker hash
         id: docker-hash
@@ -192,35 +274,38 @@ jobs:
               rm -rf build &&
               mkdir build &&
               cd build &&
-              cmake .. -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} && \
+              cmake .. -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
+                -DLIB_DIR=/workspace/vendor/bin &&
               make -j$(nproc || echo 2)
             "
 
       - name: Package
         run: |
-          mkdir -p package/bin/linux32
-          cp -r build/*.so package/bin/linux32/ || true
+          # .so binaries
+          mkdir -p package/bin/linux
+          cp -r build/*.so package/bin/linux/ || true
 
+          # scripting sources
           mkdir -p package/addons/amxmodx/scripting
           cp -r amxmodx/scripting/* package/addons/amxmodx/scripting/ || true
 
+          # configs
           mkdir -p package/addons/amxmodx/configs
           cp -r amxmodx/configs/* package/addons/amxmodx/configs/ || true
 
-      - name: Create ZIP
-        run: |
-          VERSION="v0.0.0-${GITHUB_SHA::7}"
-          ZIP="amxmodx-discord-api-${VERSION}-${{ matrix.config.name }}.zip"
-          echo "ZIP=$ZIP" >> $GITHUB_ENV
+          # compiled plugins from compile-amxx job
+          mkdir -p package/addons/amxmodx/plugins
+          cp amxx-plugins/*.amxx package/addons/amxmodx/plugins/ || true
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: amxmodx-discord-api-v0.0.0-${{ github.sha }}-${{ matrix.config.name }}
-          path: package/ 
+          path: package/
+
 
 # ---------------------------------------------------
-# 4. PUBLISH GITHUB RELEASE
+# 5. PUBLISH GITHUB RELEASE
 # ---------------------------------------------------
   publish-release:
     runs-on: ubuntu-latest
