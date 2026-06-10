@@ -39,6 +39,7 @@ jobs:
           load: true
           cache-from: type=gha,scope=docker-${{ matrix.image.name }}
           cache-to: type=gha,mode=max,scope=docker-${{ matrix.image.name }}
+          provenance: false
 
 
 # ---------------------------------------------------
@@ -94,6 +95,7 @@ jobs:
           load: true
           cache-from: type=gha,scope=docker-${{ matrix.image.name }}
           cache-to: type=gha,mode=max,scope=docker-${{ matrix.image.name }}
+          provenance: false
 
       - name: Build libs (cache miss only)
         if: steps.cache.outputs.cache-hit != 'true'
@@ -229,6 +231,7 @@ jobs:
           load: true
           cache-from: type=gha,scope=docker-debian12-i386
           cache-to: type=gha,mode=max,scope=docker-debian12-i386
+          provenance: false
 
       - name: Build project
         run: |
@@ -276,10 +279,12 @@ jobs:
       contents: write
 
     steps:
-      - name: Download all artifacts
+      - name: Download release artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts/
+          pattern: amxmodx-discord-api-*
+          merge-multiple: false
 
       - name: Create pre-release
         uses: softprops/action-gh-release@v2
@@ -287,4 +292,4 @@ jobs:
           tag_name: v0.0.0-${{ github.sha }}
           name: Dev build ${{ github.sha }}
           prerelease: true
-          files: artifacts/**/*.zip
+          files: artifacts/**/*
