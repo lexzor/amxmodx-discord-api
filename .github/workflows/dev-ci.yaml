@@ -146,28 +146,25 @@ jobs:
           curl -L "https://github.com/alliedmodders/amxmodx/releases/download/1.9.0.5303/amxmodx-1.9.0-git5303-base-linux.tar.gz" \
             -o amxmodx-base.tar.gz
           tar -xzf amxmodx-base.tar.gz
+          # compiler is now at: addons/amxmodx/scripting/amxxpc
+          # stock includes at:  addons/amxmodx/scripting/include/
+          chmod +x addons/amxmodx/scripting/amxxpc
 
       - name: Prepare compiler workspace
         run: |
           COMPILER_DIR="addons/amxmodx/scripting"
+          WORKSPACE_SMA="amxmodx/scripting"
+          WORKSPACE_INC="amxmodx/scripting/include"
 
-          # Make sure include dir exists
-          mkdir -p "$COMPILER_DIR/include"
-
-          # Clear ALL .sma files from compiler dir to ensure
-          # only our workspace scripts get compiled
+          # Clear any stock .sma files from the compiler dir
           rm -f "$COMPILER_DIR"/*.sma
 
-          # Copy ONLY our workspace .sma sources
-          cp addons/amxmodx/scripting/*.sma "$COMPILER_DIR/" 2>/dev/null || true
+          # Copy ONLY our .sma files into the compiler dir
+          cp "$WORKSPACE_SMA"/*.sma "$COMPILER_DIR/"
 
-          # Overlay our .inc files on top of the compiler's stock includes
-          cp addons/amxmodx/scripting/include/*.inc "$COMPILER_DIR/include/" 2>/dev/null || true
+          # Overlay our .inc files on top of stock includes
+          cp "$WORKSPACE_INC"/*.inc "$COMPILER_DIR/include/"
 
-          # Make compiler executable
-          chmod +x "$COMPILER_DIR/amxxpc"
-
-          # Output dir
           mkdir -p compiled_plugins
 
       - name: Compile plugins
@@ -177,7 +174,7 @@ jobs:
           FAILED=()
 
           SMA_FILES=("$COMPILER_DIR"/*.sma)
-          if [ ${#SMA_FILES[@]} -eq 0 ] || [ ! -f "${SMA_FILES[0]}" ]; then
+          if [ ! -f "${SMA_FILES[0]}" ]; then
             echo "::error::No .sma files found to compile"
             exit 1
           fi
