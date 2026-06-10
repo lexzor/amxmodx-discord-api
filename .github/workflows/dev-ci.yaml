@@ -248,7 +248,7 @@ jobs:
               make -j$(nproc || echo 2)
             "
 
-      - name: Package
+      - name: Package & ZIP
         run: |
           mkdir -p package/bin/linux
           cp -r build/*.so package/bin/linux/ || true
@@ -262,11 +262,16 @@ jobs:
           mkdir -p package/addons/amxmodx/plugins
           cp amxx-plugins/*.amxx package/addons/amxmodx/plugins/ || true
 
+          VERSION="v0.0.0-${GITHUB_SHA::7}"
+          ZIP="amxmodx-discord-api-${VERSION}-${{ matrix.config.name }}.zip"
+          cd package && zip -r "../$ZIP" .
+          echo "ZIP=$ZIP" >> $GITHUB_ENV
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: amxmodx-discord-api-v0.0.0-${{ github.sha }}-${{ matrix.config.name }}
-          path: package/
+          path: ${{ env.ZIP }}
 
 
 # ---------------------------------------------------
@@ -292,4 +297,4 @@ jobs:
           tag_name: v0.0.0-${{ github.sha }}
           name: Dev build ${{ github.sha }}
           prerelease: true
-          files: artifacts/**/*
+          files: artifacts/**/*.zip
