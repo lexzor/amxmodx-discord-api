@@ -8,7 +8,6 @@ BIN="$VENDOR/bin"
 mkdir -p "$BIN" "$VENDOR/libssrc"
 
 echo "----- Building ZLIB -----"
- sleep 1
 
  cd "$ROOT/vendor/libssrc"
  if [ ! -d zlib ]; then
@@ -24,34 +23,33 @@ echo "----- Building ZLIB -----"
  make -j$(nproc)
  make install
 
- echo "----- Building OpenSSL 3.0.0 -----"
- sleep 1
+ echo "----- Building OpenSSL 4.0.1 -----"
 
  cd "$ROOT/vendor/libssrc"
- if [ ! -d openssl-3.0.0 ]; then
-     if [ ! -f openssl-3.0.0.tar.gz ]; then
-         wget https://www.openssl.org/source/openssl-3.0.0.tar.gz
+ if [ ! -d openssl-4.0.1 ]; then
+     if [ ! -f openssl-4.0.1.tar.gz ]; then
+         wget https://www.openssl.org/source/openssl-4.0.1.tar.gz
      fi
-     tar xf openssl-3.0.0.tar.gz
+     tar xf openssl-4.0.1.tar.gz
+     rm openssl-4.0.1.tar.gz
  fi
- cd openssl-3.0.0
+ cd openssl-4.0.1
 
- ./Configure linux-x86 no-shared --prefix="$VENDOR/openssl" CFLAGS="-m32" LDFLAGS="-m32"
+./Configure linux-x86 no-shared no-docs --prefix="$VENDOR/openssl" CFLAGS="-m32" LDFLAGS="-m32"
 
  make -j$(nproc)
  make install
 
- echo "----- Building CURL 7.87.0 -----"
- sleep 1
+ echo "----- Building CURL 8.20.0 -----"
 
  cd "$ROOT/vendor/libssrc"
- if [ ! -d curl-7.87.0 ]; then
-     if [ ! -f curl-7.87.0.tar.gz ]; then
-         wget https://curl.se/download/curl-7.87.0.tar.gz
+ if [ ! -d curl-8.20.0 ]; then
+     if [ ! -f curl-8.20.0.tar.gz ]; then
+         wget https://curl.se/download/curl-8.20.0.tar.gz
      fi
-     tar xf curl-7.87.0.tar.gz
+     tar xf curl-8.20.0.tar.gz
  fi
- cd curl-7.87.0
+ cd curl-8.20.0
 
  cmake . \
    -DBUILD_SHARED_LIBS=OFF \
@@ -69,12 +67,11 @@ echo "----- Building ZLIB -----"
  make -j$(nproc)
  make install
 
-echo "----- Building DPP -----"
-sleep 1
+echo "----- Building DPP (v10.1.5) -----"
 
 cd "$ROOT/vendor/libssrc"
 if [ ! -d DPP ]; then
-    git clone https://github.com/brainboxdotcc/DPP.git
+    git clone --branch v10.1.5 --depth 1 https://github.com/brainboxdotcc/DPP.git
 fi
 cd DPP
 
@@ -82,11 +79,10 @@ cmake . \
   -DCMAKE_C_COMPILER=clang \
   -DCMAKE_CXX_COMPILER=clang++ \
   -DCMAKE_CXX_STANDARD=17 \
-  -DCMAKE_C_FLAGS="-m32" \
-  -DCMAKE_CXX_FLAGS="-m32 -std=gnu++17" \
+  -DCMAKE_C_FLAGS="-m32 -I/workspace/vendor/libssrc/DPP/include" \
+  -DCMAKE_CXX_FLAGS="-m32 -std=gnu++17 -I/workspace/vendor/libssrc/DPP/include" \
   -DCMAKE_INSTALL_PREFIX="$VENDOR/dpp" \
-  -DBUILD_SHARED_LIBS=ON \
-  -DDPP_STATIC=OFF \
+  -DBUILD_SHARED_LIBS=OFF \
   -DDPP_BUILD_TESTS=OFF \
   -DDPP_BUILD_EXAMPLES=OFF \
   -DDPP_NO_CORO=ON \
@@ -119,5 +115,6 @@ rm -rf "$ROOT/vendor/curl"
 rm -rf "$ROOT/vendor/libssrc"
 rm -rf "$ROOT/vendor/openssl"
 rm -rf "$ROOT/vendor/zlib"
+rm -rf "$ROOT/vendor/dpp"
 
 echo "----- Cleanup complete! -----"

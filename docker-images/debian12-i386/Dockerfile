@@ -9,7 +9,7 @@ RUN dpkg --add-architecture i386
 # Update + install dependencies
 RUN apt-get update && apt-get install -y \
     ca-certificates \
-    apt-transport-https \
+    # apt-transport-https \
     gnupg \
     curl \
     wget \
