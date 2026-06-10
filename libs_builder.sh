@@ -102,12 +102,12 @@ echo "----- Finished building libraries! -----"
 
 echo "Copying static libraries and headers to bin folder..."
 
-cp "$VENDOR/libssrc/DPP/library/libdpp.a" "$BIN/"
-cp "$VENDOR/curl/lib/libcurl.a" "$BIN/"
-cp "$VENDOR/openssl/lib/libcrypto.a" "$BIN/"
-cp "$VENDOR/openssl/lib/libssl.a" "$BIN/"
-cp "$VENDOR/zlib/lib/libz.a" "$BIN/"
-cp -r "$VENDOR/libssrc/DPP/include/dpp" "$VENDOR/include"
+cp "$VENDOR/dpp/lib/libdpp.a" "$BIN/" || true
+cp "$VENDOR/curl/lib/libcurl.a" "$BIN/" || true
+cp "$VENDOR/openssl/lib/libcrypto.a" "$BIN/" || true
+cp "$VENDOR/openssl/lib/libssl.a" "$BIN/" || true
+cp "$VENDOR/zlib/lib/libz.a" "$BIN/" || true
+cp -r "$VENDOR/libssrc/DPP/include/dpp" "$VENDOR/include" || true
 
 echo "Cleaning up source/build folders..."
 
