@@ -1,0 +1,295 @@
+name: Dev CI Pipeline
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - dev
+
+
+# ---------------------------------------------------
+# 1. DOCKER IMAGE (cached in GHA)
+# ---------------------------------------------------
+jobs:
+  docker-cache:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        image:
+          - name: debian12-i386
+            context: ./docker-images/debian12-i386
+            dockerfile: ./docker-images/debian12-i386/Dockerfile
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker-container
+          name: shared-builder
+
+      - name: Build Docker image (cache only)
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.image.context }}
+          file: ${{ matrix.image.dockerfile }}
+          tags: amxmodx-discord-api/${{ matrix.image.name }}:dev
+          push: false
+          load: true
+          cache-from: type=gha,scope=docker-${{ matrix.image.name }}
+          cache-to: type=gha,mode=max,scope=docker-${{ matrix.image.name }}
+          provenance: false
+
+
+# ---------------------------------------------------
+# 2. LIBS BUILD (cached + artifact)
+# ---------------------------------------------------
+  libs-build:
+    runs-on: ubuntu-latest
+    needs: docker-cache
+
+    strategy:
+      matrix:
+        image:
+          - name: debian12-i386
+
+    outputs:
+      cache-hit: ${{ steps.cache.outputs.cache-hit }}
+      libs-hash: ${{ steps.hash.outputs.hash }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compute libs hash
+        id: hash
+        run: |
+          HASH=$(find libs_builder.sh docker-images -type f -print0 \
+            | sort -z \
+            | xargs -0 sha256sum \
+            | sha256sum \
+            | awk '{print $1}')
+          echo "hash=$HASH" >> $GITHUB_OUTPUT
+
+      - name: Restore libs cache
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: vendor/bin
+          key: libs-${{ matrix.image.name }}-${{ steps.hash.outputs.hash }}
+
+      - uses: docker/setup-buildx-action@v3
+        if: steps.cache.outputs.cache-hit != 'true'
+        with:
+          driver: docker-container
+          name: shared-builder
+
+      - name: Build Docker image (runtime)
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: ./docker-images/${{ matrix.image.name }}
+          file: ./docker-images/${{ matrix.image.name }}/Dockerfile
+          tags: amxmodx-discord-api/${{ matrix.image.name }}:dev
+          push: false
+          load: true
+          cache-from: type=gha,scope=docker-${{ matrix.image.name }}
+          cache-to: type=gha,mode=max,scope=docker-${{ matrix.image.name }}
+          provenance: false
+
+      - name: Build libs (cache miss only)
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace \
+            amxmodx-discord-api/${{ matrix.image.name }}:dev \
+            bash ./libs_builder.sh
+
+      - name: Upload libs artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vendor-bin
+          path: vendor/bin
+
+
+# ---------------------------------------------------
+# 3. COMPILE AMXX SCRIPTS (independent, runs in parallel)
+# ---------------------------------------------------
+  compile-amxx:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download & extract AMXX compiler
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update -qq
+          sudo apt-get install -y libc6:i386 libstdc++6:i386
+
+          curl -L "https://github.com/alliedmodders/amxmodx/releases/download/1.9.0.5303/amxmodx-1.9.0-git5303-base-linux.tar.gz" \
+            -o amxmodx-base.tar.gz
+          tar -xzf amxmodx-base.tar.gz
+
+          chmod +x addons/amxmodx/scripting/amxxpc
+
+      - name: Prepare compiler workspace
+        run: |
+          COMPILER_DIR="addons/amxmodx/scripting"
+          WORKSPACE_SMA="amxmodx/scripting"
+          WORKSPACE_INC="amxmodx/scripting/include"
+
+          # Remove ALL stock .sma files so only ours get compiled
+          rm -f "$COMPILER_DIR"/*.sma
+
+          # Copy OUR .sma files into the compiler dir
+          cp "$WORKSPACE_SMA"/*.sma "$COMPILER_DIR/"
+
+          # Overlay OUR .inc files on top of stock includes
+          cp "$WORKSPACE_INC"/*.inc "$COMPILER_DIR/include/"
+
+          mkdir -p compiled_plugins
+
+          echo "=== SMA files to compile ==="
+          ls -la "$COMPILER_DIR"/*.sma
+
+      - name: Compile plugins
+        run: |
+          COMPILER_DIR="${{ github.workspace }}/addons/amxmodx/scripting"
+          FAILED=()
+
+          for SMA in "$COMPILER_DIR"/*.sma; do
+            NAME=$(basename "$SMA" .sma)
+            echo "Compiling $NAME.sma..."
+
+            # cd into compiler dir so amxxpc32.so is found next to amxxpc
+            (cd "$COMPILER_DIR" && ./amxxpc "$SMA" \
+              -i"$COMPILER_DIR/include" \
+              -o"${{ github.workspace }}/compiled_plugins/$NAME.amxx")
+
+            if [ $? -ne 0 ]; then
+              echo "::warning::Failed to compile $NAME.sma"
+              FAILED+=("$NAME.sma")
+            fi
+          done
+
+          if [ ${#FAILED[@]} -gt 0 ]; then
+            echo "::error::The following plugins failed to compile: ${FAILED[*]}"
+            exit 1
+          fi
+
+      - name: Upload compiled plugins artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: amxx-plugins
+          path: compiled_plugins/
+
+
+# ---------------------------------------------------
+# 4. BUILD PROJECT + PACKAGE
+# ---------------------------------------------------
+  build-project:
+    runs-on: ubuntu-latest
+    needs: [libs-build, compile-amxx]
+
+    strategy:
+      matrix:
+        config:
+          - name: release
+            build_type: Release
+          - name: debug
+            build_type: Debug
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download libs
+        uses: actions/download-artifact@v4
+        with:
+          name: vendor-bin
+          path: vendor/bin
+
+      - name: Download compiled plugins
+        uses: actions/download-artifact@v4
+        with:
+          name: amxx-plugins
+          path: amxx-plugins/
+
+      - uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker-container
+          name: shared-builder
+
+      - name: Build Docker image (runtime)
+        uses: docker/build-push-action@v6
+        with:
+          context: ./docker-images/debian12-i386
+          file: ./docker-images/debian12-i386/Dockerfile
+          tags: amxmodx-discord-api/debian12-i386:dev
+          push: false
+          load: true
+          cache-from: type=gha,scope=docker-debian12-i386
+          cache-to: type=gha,mode=max,scope=docker-debian12-i386
+          provenance: false
+
+      - name: Build project
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace \
+            amxmodx-discord-api/debian12-i386:dev \
+            bash -c "
+              rm -rf build &&
+              mkdir build &&
+              cd build &&
+              cmake .. -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
+                -DLIB_DIR=/workspace/vendor/bin &&
+              make -j$(nproc || echo 2)
+            "
+
+      - name: Package
+        run: |
+          mkdir -p package/bin/linux
+          cp -r build/*.so package/bin/linux/ || true
+
+          mkdir -p package/addons/amxmodx/scripting
+          cp -r amxmodx/scripting/* package/addons/amxmodx/scripting/ || true
+
+          mkdir -p package/addons/amxmodx/configs
+          cp -r amxmodx/configs/* package/addons/amxmodx/configs/ || true
+
+          mkdir -p package/addons/amxmodx/plugins
+          cp amxx-plugins/*.amxx package/addons/amxmodx/plugins/ || true
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: amxmodx-discord-api-v0.0.0-${{ github.sha }}-${{ matrix.config.name }}
+          path: package/
+
+
+# ---------------------------------------------------
+# 5. PUBLISH GITHUB RELEASE
+# ---------------------------------------------------
+  publish-release:
+    runs-on: ubuntu-latest
+    needs: build-project
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download release artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+          pattern: amxmodx-discord-api-*
+          merge-multiple: false
+
+      - name: Create pre-release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v0.0.0-${{ github.sha }}
+          name: Dev build ${{ github.sha }}
+          prerelease: true
+          files: artifacts/**/*
