@@ -6,11 +6,11 @@ on:
     branches:
       - dev
 
+jobs:
 
 # ---------------------------------------------------
-# 1. DOCKER IMAGE CACHE WARMER
+# 1. BUILD DOCKER IMAGE (cached globally)
 # ---------------------------------------------------
-jobs:
   docker-cache:
     runs-on: ubuntu-latest
 
@@ -22,16 +22,14 @@ jobs:
             dockerfile: ./docker-images/debian12-i386/Dockerfile
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v3
         with:
           driver: docker-container
           name: shared-builder
 
-      - name: Build Docker image (cached)
+      - name: Build Docker image
         uses: docker/build-push-action@v6
         with:
           context: ${{ matrix.image.context }}
@@ -42,9 +40,8 @@ jobs:
           cache-from: type=gha,scope=dev-${{ matrix.image.name }}
           cache-to: type=gha,mode=max,scope=dev-${{ matrix.image.name }}
 
-
 # ---------------------------------------------------
-# 2. LIBS BUILD (only if changed)
+# 2. BUILD LIBS (cached via GHA + artifact fallback)
 # ---------------------------------------------------
   libs-build:
     runs-on: ubuntu-latest
@@ -56,11 +53,10 @@ jobs:
           - name: debian12-i386
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Compute libs hash
-        id: libs_hash
+        id: hash
         run: |
           HASH=$(find libs_builder.sh docker-images -type f -print0 \
             | sort -z \
@@ -73,10 +69,10 @@ jobs:
         id: cache
         uses: actions/cache/restore@v4
         with:
-          path: vendor/
-          key: libs-${{ matrix.image.name }}-${{ steps.libs_hash.outputs.hash }}
+          path: vendor/lib
+          key: libs-${{ matrix.image.name }}-${{ steps.hash.outputs.hash }}
 
-      - name: Run libs builder (only on cache miss)
+      - name: Build libs (only if cache miss)
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
           docker run --rm \
@@ -89,15 +85,14 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
-          path: vendor/
-          key: libs-${{ matrix.image.name }}-${{ steps.libs_hash.outputs.hash }}
+          path: vendor/lib
+          key: libs-${{ matrix.image.name }}-${{ steps.hash.outputs.hash }}
 
-      - name: Upload vendor artifact
+      - name: Upload libs artifact (for safety)
         uses: actions/upload-artifact@v4
         with:
-          name: vendor-${{ matrix.image.name }}
-          path: vendor/
-
+          name: vendor-lib
+          path: vendor/lib
 
 # ---------------------------------------------------
 # 3. BUILD PROJECT + PACKAGE
@@ -115,22 +110,20 @@ jobs:
             build_type: Debug
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Download vendor artifact
+      - name: Download libs
         uses: actions/download-artifact@v4
         with:
-          name: vendor-debian12-i386
-          path: vendor/
+          name: vendor-lib
+          path: vendor/lib
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v3
         with:
           driver: docker-container
           name: shared-builder
 
-      - name: Build Docker image (runtime)
+      - name: Build Docker runtime image
         uses: docker/build-push-action@v6
         with:
           context: ./docker-images/debian12-i386
@@ -138,11 +131,10 @@ jobs:
           tags: amxmodx-discord-api/debian12-i386:dev
           push: false
           load: true
-
           cache-from: type=gha,scope=dev-debian12-i386
           cache-to: type=gha,mode=max,scope=dev-debian12-i386
 
-      - name: Build project (CMake)
+      - name: Build project
         run: |
           docker run --rm \
             -v ${{ github.workspace }}:/workspace \
@@ -156,10 +148,8 @@ jobs:
               make -j$(nproc || echo 2)
             "
 
-      - name: Prepare package
+      - name: Package
         run: |
-          mkdir -p package
-
           mkdir -p package/bin/linux
           cp -r build/*.so package/bin/linux/ || true
 
@@ -172,15 +162,15 @@ jobs:
       - name: Create ZIP
         run: |
           VERSION="v0.0.0-${GITHUB_SHA::7}"
-          ZIP_NAME="amxmodx-discord-api-${VERSION}-${{ matrix.config.name }}.zip"
+          ZIP="amxmodx-discord-api-${VERSION}-${{ matrix.config.name }}.zip"
 
           cd package
-          zip -r ../$ZIP_NAME .
+          zip -r ../$ZIP .
 
-          echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
+          echo "ZIP=$ZIP" >> $GITHUB_ENV
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.ZIP_NAME }}
-          path: ${{ env.ZIP_NAME }}
+          name: ${{ env.ZIP }}
+          path: ${{ env.ZIP }}
