@@ -102,19 +102,29 @@ echo "----- Finished building libraries! -----"
 
 echo "Copying static libraries and headers to bin folder..."
 
-cp "$VENDOR/libssrc/DPP/library/libdpp.a" "$BIN/"
+cp "$VENDOR/dpp/lib/libdpp.a" "$BIN/"
 cp "$VENDOR/curl/lib/libcurl.a" "$BIN/"
 cp "$VENDOR/openssl/lib/libcrypto.a" "$BIN/"
 cp "$VENDOR/openssl/lib/libssl.a" "$BIN/"
 cp "$VENDOR/zlib/lib/libz.a" "$BIN/"
 cp -r "$VENDOR/libssrc/DPP/include/dpp" "$VENDOR/include"
 
+echo "----- VERIFYING OUTPUT LIBS -----"
+
+ls -lah "$BIN"
+
+test -f "$BIN/libdpp.a"
+test -f "$BIN/libcurl.a"
+test -f "$BIN/libssl.a"
+test -f "$BIN/libcrypto.a"
+test -f "$BIN/libz.a"
+
 echo "Cleaning up source/build folders..."
 
-rm -rf "$ROOT/vendor/curl"
-rm -rf "$ROOT/vendor/libssrc"
-rm -rf "$ROOT/vendor/openssl"
-rm -rf "$ROOT/vendor/zlib"
-rm -rf "$ROOT/vendor/dpp"
+rm -rf "$VENDOR/curl"
+rm -rf "$VENDOR/libssrc"
+rm -rf "$VENDOR/openssl"
+rm -rf "$VENDOR/zlib"
+rm -rf "$VENDOR/dpp"
 
 echo "----- Cleanup complete! -----"
