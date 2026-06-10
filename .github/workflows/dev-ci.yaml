@@ -6,11 +6,11 @@ on:
     branches:
       - dev
 
-jobs:
 
 # ---------------------------------------------------
-# 1. BUILD DOCKER IMAGE (cached globally)
+# 1. DOCKER IMAGE (cached in GHA)
 # ---------------------------------------------------
+jobs:
   docker-cache:
     runs-on: ubuntu-latest
 
@@ -29,7 +29,7 @@ jobs:
           driver: docker-container
           name: shared-builder
 
-      - name: Build Docker image
+      - name: Build Docker image (cache only)
         uses: docker/build-push-action@v6
         with:
           context: ${{ matrix.image.context }}
@@ -40,8 +40,9 @@ jobs:
           cache-from: type=gha,scope=dev-${{ matrix.image.name }}
           cache-to: type=gha,mode=max,scope=dev-${{ matrix.image.name }}
 
+
 # ---------------------------------------------------
-# 2. BUILD LIBS (cached via GHA + artifact fallback)
+# 2. LIBS BUILD (cached + artifact)
 # ---------------------------------------------------
   libs-build:
     runs-on: ubuntu-latest
@@ -69,10 +70,10 @@ jobs:
         id: cache
         uses: actions/cache/restore@v4
         with:
-          path: vendor/lib
+          path: vendor/bin
           key: libs-${{ matrix.image.name }}-${{ steps.hash.outputs.hash }}
 
-      - name: Build libs (only if cache miss)
+      - name: Build libs (cache miss only)
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
           docker run --rm \
@@ -85,14 +86,15 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
-          path: vendor/lib
+          path: vendor/bin
           key: libs-${{ matrix.image.name }}-${{ steps.hash.outputs.hash }}
 
-      - name: Upload libs artifact (for safety)
+      - name: Upload libs artifact (MANDATORY fallback)
         uses: actions/upload-artifact@v4
         with:
-          name: vendor-lib
-          path: vendor/lib
+          name: vendor-bin
+          path: vendor/bin
+
 
 # ---------------------------------------------------
 # 3. BUILD PROJECT + PACKAGE
@@ -112,18 +114,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # IMPORTANT: restore libs correctly
       - name: Download libs
         uses: actions/download-artifact@v4
         with:
-          name: vendor-lib
-          path: vendor/lib
+          name: vendor-bin
+          path: vendor/bin
 
       - uses: docker/setup-buildx-action@v3
         with:
           driver: docker-container
           name: shared-builder
 
-      - name: Build Docker runtime image
+      # IMPORTANT FIX: image MUST exist in this job
+      - name: Build Docker image (runtime)
         uses: docker/build-push-action@v6
         with:
           context: ./docker-images/debian12-i386
@@ -144,7 +148,8 @@ jobs:
               rm -rf build &&
               mkdir build &&
               cd build &&
-              cmake .. -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} &&
+              cmake .. -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
+                -DLIB_DIR=/workspace/vendor/bin &&
               make -j$(nproc || echo 2)
             "
 
