@@ -13,9 +13,9 @@ jobs:
     strategy:
       matrix:
         image:
-          - name: debian13-i386
-            context: ./docker-images/debian13-i386
-            dockerfile: ./docker-images/debian13-i386/Dockerfile
+          - name: debian12-i386
+            context: ./docker-images/debian12-i386
+            dockerfile: ./docker-images/debian12-i386/Dockerfile
 
     steps:
       - name: Checkout repository
