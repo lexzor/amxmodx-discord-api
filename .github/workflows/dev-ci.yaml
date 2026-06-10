@@ -192,34 +192,52 @@ jobs:
               rm -rf build &&
               mkdir build &&
               cd build &&
-              cmake .. -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
-                -DLIB_DIR=/workspace/vendor/bin &&
+              cmake .. -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} && \
               make -j$(nproc || echo 2)
             "
 
       - name: Package
         run: |
-          mkdir -p package/bin/linux
-          cp -r build/*.so package/bin/linux/ || true
+          mkdir -p package/bin/linux32
+          cp -r build/*.so package/bin/linux32/ || true
 
           mkdir -p package/addons/amxmodx/scripting
-          cp -r addons/amxmodx/scripting/* package/addons/amxmodx/scripting/ || true
+          cp -r amxmodx/scripting/* package/addons/amxmodx/scripting/ || true
 
           mkdir -p package/addons/amxmodx/configs
-          cp -r addons/amxmodx/configs/* package/addons/amxmodx/configs/ || true
+          cp -r amxmodx/configs/* package/addons/amxmodx/configs/ || true
 
       - name: Create ZIP
         run: |
           VERSION="v0.0.0-${GITHUB_SHA::7}"
           ZIP="amxmodx-discord-api-${VERSION}-${{ matrix.config.name }}.zip"
-
-          cd package
-          zip -r ../$ZIP .
-
           echo "ZIP=$ZIP" >> $GITHUB_ENV
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.ZIP }}
-          path: ${{ env.ZIP }}
+          name: amxmodx-discord-api-v0.0.0-${{ github.sha }}-${{ matrix.config.name }}
+          path: package/ 
+
+# ---------------------------------------------------
+# 4. PUBLISH GITHUB RELEASE
+# ---------------------------------------------------
+  publish-release:
+    runs-on: ubuntu-latest
+    needs: build-project
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+
+      - name: Create pre-release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v0.0.0-${{ github.sha }}
+          name: Dev build ${{ github.sha }}
+          prerelease: true
+          files: artifacts/**/*.zip
