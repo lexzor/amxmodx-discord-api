@@ -8,7 +8,6 @@ BIN="$VENDOR/bin"
 mkdir -p "$BIN" "$VENDOR/libssrc"
 
 echo "----- Building ZLIB -----"
- sleep 1
 
  cd "$ROOT/vendor/libssrc"
  if [ ! -d zlib ]; then
@@ -25,7 +24,6 @@ echo "----- Building ZLIB -----"
  make install
 
  echo "----- Building OpenSSL 4.0.1 -----"
- sleep 1
 
  cd "$ROOT/vendor/libssrc"
  if [ ! -d openssl-4.0.1 ]; then
@@ -43,7 +41,6 @@ echo "----- Building ZLIB -----"
  make install
 
  echo "----- Building CURL 8.20.0 -----"
- sleep 1
 
  cd "$ROOT/vendor/libssrc"
  if [ ! -d curl-8.20.0 ]; then
@@ -70,12 +67,11 @@ echo "----- Building ZLIB -----"
  make -j$(nproc)
  make install
 
-echo "----- Building DPP -----"
-sleep 1
+echo "----- Building DPP (v10.1.5) -----"
 
 cd "$ROOT/vendor/libssrc"
 if [ ! -d DPP ]; then
-    git clone https://github.com/brainboxdotcc/DPP.git
+    git clone --branch v10.1.5 --depth 1 https://github.com/brainboxdotcc/DPP.git
 fi
 cd DPP
 
