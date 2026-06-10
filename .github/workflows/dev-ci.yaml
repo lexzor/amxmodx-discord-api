@@ -148,37 +148,31 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y libc6:i386 libstdc++6:i386
 
-          # Base package (compiler + stock includes)
           curl -L "https://github.com/alliedmodders/amxmodx/releases/download/1.9.0.5303/amxmodx-1.9.0-git5303-base-linux.tar.gz" \
             -o amxmodx-base.tar.gz
-
-          # List tarball contents so we can see exact paths
-          echo "=== TARBALL CONTENTS ==="
-          tar -tzf amxmodx-base.tar.gz
-
           tar -xzf amxmodx-base.tar.gz
-
-          echo "=== SCRIPTING DIR CONTENTS ==="
-          ls -la addons/amxmodx/scripting/
 
           chmod +x addons/amxmodx/scripting/amxxpc
 
       - name: Prepare compiler workspace
         run: |
-          COMPILER_DIR="addons/amxmodx/scripting"
-          WORKSPACE_SMA="amxmodx/scripting"
-          WORKSPACE_INC="amxmodx/scripting/include"
+          COMPILER_DIR="addons/amxmodx/scripting"   # from tarball: has amxxpc + amxxpc32.so + stock includes
+          WORKSPACE_SMA="amxmodx/scripting"          # YOUR repo sources
+          WORKSPACE_INC="amxmodx/scripting/include"  # YOUR repo includes
 
-          # Clear any stock .sma files from the compiler dir
+          # Remove ALL stock .sma files so only ours get compiled
           rm -f "$COMPILER_DIR"/*.sma
 
-          # Copy ONLY our .sma files into the compiler dir
+          # Copy OUR .sma files into the compiler dir
           cp "$WORKSPACE_SMA"/*.sma "$COMPILER_DIR/"
 
-          # Overlay our .inc files on top of stock includes
+          # Overlay OUR .inc files on top of stock includes
           cp "$WORKSPACE_INC"/*.inc "$COMPILER_DIR/include/"
 
           mkdir -p compiled_plugins
+
+          echo "=== SMA files to compile ==="
+          ls -la "$COMPILER_DIR"/*.sma
 
       - name: Compile plugins
         run: |
@@ -186,13 +180,7 @@ jobs:
           COMPILER="$COMPILER_DIR/amxxpc"
           FAILED=()
 
-          SMA_FILES=("$COMPILER_DIR"/*.sma)
-          if [ ! -f "${SMA_FILES[0]}" ]; then
-            echo "::error::No .sma files found to compile"
-            exit 1
-          fi
-
-          for SMA in "${SMA_FILES[@]}"; do
+          for SMA in "$COMPILER_DIR"/*.sma; do
             NAME=$(basename "$SMA" .sma)
             echo "Compiling $NAME.sma..."
 
@@ -216,8 +204,6 @@ jobs:
         with:
           name: amxx-plugins
           path: compiled_plugins/
-
-
 # ---------------------------------------------------
 # 4. BUILD PROJECT + PACKAGE
 # ---------------------------------------------------
