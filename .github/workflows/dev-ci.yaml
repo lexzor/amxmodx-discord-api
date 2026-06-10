@@ -143,11 +143,20 @@ jobs:
 
       - name: Download & extract AMXX compiler
         run: |
+          # Base package (stock includes)
           curl -L "https://github.com/alliedmodders/amxmodx/releases/download/1.9.0.5303/amxmodx-1.9.0-git5303-base-linux.tar.gz" \
             -o amxmodx-base.tar.gz
           tar -xzf amxmodx-base.tar.gz
-          # compiler is now at: addons/amxmodx/scripting/amxxpc
-          # stock includes at:  addons/amxmodx/scripting/include/
+
+          # Compiler package (amxxpc + amxxpc32.so)
+          curl -L "https://github.com/alliedmodders/amxmodx/releases/download/1.9.0.5303/amxmodx-1.9.0-git5303-scripting.tar.gz" \
+            -o amxmodx-scripting.tar.gz
+          tar -xzf amxmodx-scripting.tar.gz
+
+          # Verify both files are present
+          ls -la addons/amxmodx/scripting/amxxpc
+          ls -la addons/amxmodx/scripting/amxxpc32.so
+
           chmod +x addons/amxmodx/scripting/amxxpc
 
       - name: Prepare compiler workspace
