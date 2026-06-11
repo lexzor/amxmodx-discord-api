@@ -381,10 +381,11 @@ jobs:
 
           echo "## ✨ Features" >> "$GITHUB_OUTPUT"
           echo "$PRS" | jq -r '
-            .[]
+            .[] 
             | select(.title | test("^feat(\\(.*\\))?:"))
-            | "- [" + (.title | sub("^feat(\\(.*\\))?: "; "")) + "]("
-              + .url + ") (#" + (.number|tostring) + ") · @"
+            | "- " 
+              + (.title | sub("^feat(\\(.*\\))?: "; "")) 
+              + " (#" + (.number|tostring) + ") · " 
               + .author.login
           ' >> "$GITHUB_OUTPUT"
 
@@ -392,10 +393,11 @@ jobs:
 
           echo "## 🐛 Bug Fixes" >> "$GITHUB_OUTPUT"
           echo "$PRS" | jq -r '
-            .[]
+            .[] 
             | select(.title | test("^fix(\\(.*\\))?:"))
-            | "- [" + (.title | sub("^fix(\\(.*\\))?: "; "")) + "]("
-              + .url + ") (#" + (.number|tostring) + ") · @"
+            | "- " 
+              + (.title | sub("^fix(\\(.*\\))?: "; "")) 
+              + " (#" + (.number|tostring) + ") · " 
               + .author.login
           ' >> "$GITHUB_OUTPUT"
 
@@ -403,10 +405,11 @@ jobs:
 
           echo "## ⚡ Performance" >> "$GITHUB_OUTPUT"
           echo "$PRS" | jq -r '
-            .[]
+            .[] 
             | select(.title | test("^perf(\\(.*\\))?:"))
-            | "- [" + (.title | sub("^perf(\\(.*\\))?: "; "")) + "]("
-              + .url + ") (#" + (.number|tostring) + ") · @"
+            | "- " 
+              + (.title | sub("^perf(\\(.*\\))?: "; "")) 
+              + " (#" + (.number|tostring) + ") · " 
               + .author.login
           ' >> "$GITHUB_OUTPUT"
 
@@ -414,9 +417,11 @@ jobs:
 
           echo "## 💥 Breaking Changes" >> "$GITHUB_OUTPUT"
           echo "$PRS" | jq -r '
-            .[]
+            .[] 
             | select(.title | test("!"))
-            | "- [" + .title + "](" + .url + ") (#" + (.number|tostring) + ") · @"
+            | "- " 
+              + .title 
+              + " (#" + (.number|tostring) + ") · " 
               + .author.login
           ' >> "$GITHUB_OUTPUT"
 
