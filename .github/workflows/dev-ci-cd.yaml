@@ -156,7 +156,7 @@ jobs:
         run: |
           set -euo pipefail
           sed -i \
-            "s/^#define DISCORDAPI_VERSION.*/#define DISCORDAPI_VERSION \"$VERSION\"/" \
+            "s/^#define DISCORD_API_AMXX_API_VERSION_STRING.*/#define DISCORD_API_AMXX_API_VERSION_STRING \"$VERSION\"/" \
             amxmodx/scripting/include/discordapiconsts.inc
 
       - name: Download & extract AMXX compiler
@@ -344,13 +344,46 @@ jobs:
         run: |
           set -euo pipefail
 
+          BASE_VERSION=$(tr -d '\n' < VERSION)
+
+          # ---------------------------------------------------
+          # GET LAST FINAL RELEASE (ignore betas)
+          # ---------------------------------------------------
+          LAST_TAG=$(gh release list \
+            --limit 100 \
+            --json tagName,isPrerelease \
+            -q '.[] | select(.isPrerelease == false) | .tagName' \
+            | head -n 1)
+
+          LAST_VERSION=${LAST_TAG#v}
+
+          # ---------------------------------------------------
+          # BETA COUNTER (RESET ON VERSION CHANGE)
+          # ---------------------------------------------------
+          if [ "$BASE_VERSION" != "$LAST_VERSION" ]; then
+            BETA=1
+          else
+            BETA=$(gh release list \
+              --limit 100 \
+              --json tagName,isPrerelease \
+              -q ".[] | select(.tagName | test(\"^v${BASE_VERSION}-beta\")) | .tagName" \
+              | wc -l)
+
+            BETA=$((BETA + 1))
+          fi
+
+          VERSION="${BASE_VERSION}-beta.${BETA}"
+
+          # ---------------------------------------------------
+          # OUTPUT HEADER
+          # ---------------------------------------------------
           echo "CHANGELOG<<EOF" >> "$GITHUB_OUTPUT"
-          echo "# 🚀 Pre-Release v${{ needs.versioning.outputs.version }}" >> "$GITHUB_OUTPUT"
-          echo "Below are all changes made in this pre-release!" >> "$GITHUB_OUTPUT"
+          echo "# 🚀 Pre-Release v$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Beta build for development changes." >> "$GITHUB_OUTPUT"
           echo "" >> "$GITHUB_OUTPUT"
 
           # ---------------------------------------------------
-          # Get ONLY the latest merged PR (this run)
+          # ONLY LAST MERGED PR
           # ---------------------------------------------------
           PR=$(gh pr list \
             --state merged \
@@ -358,7 +391,6 @@ jobs:
             --json title,number,author,url,mergedAt \
             --jq '.[0]')
 
-          # wrap into array so existing jq logic works unchanged
           PRS=$(echo "$PR" | jq -s '.[0] | [.]')
 
           # ---------------------------------------------------
@@ -419,6 +451,8 @@ jobs:
 
           echo "EOF" >> "$GITHUB_OUTPUT"
 
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
       - name: Download release artifacts
         uses: actions/download-artifact@v4
         with:
@@ -429,7 +463,7 @@ jobs:
       - name: Create pre-release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ needs.versioning.outputs.version }}
+          tag_name: ${{ steps.changelog.outputs.version }}
           name: Pre-Release v${{ needs.versioning.outputs.version }}
           prerelease: true
           generate_release_notes: false
