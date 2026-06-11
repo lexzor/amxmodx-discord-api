@@ -422,7 +422,7 @@ jobs:
           files: artifacts/**/*.zip
 
 # ---------------------------------------------------
-  # 7. SYNC DEV WITH MAIN (after squash merge)
+  # 7. SYNC DEV WITH MAIN (rebase after squash merge)
   # ---------------------------------------------------
   sync-dev:
     runs-on: ubuntu-latest
@@ -436,11 +436,11 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Merge main into dev
+      - name: Rebase dev onto main
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout dev
           git pull origin dev
-          git merge origin/main --no-edit
-          git push origin dev
+          git rebase origin/main
+          git push origin dev --force-with-lease

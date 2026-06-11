@@ -117,6 +117,8 @@ jobs:
         with:
           path: vendor/bin
           key: libs-${{ matrix.image.name }}-${{ steps.hash.outputs.hash }}
+          restore-keys: |
+            libs-${{ matrix.image.name }}-
 
       - name: Set up Docker Buildx
         if: steps.cache.outputs.cache-hit != 'true'
