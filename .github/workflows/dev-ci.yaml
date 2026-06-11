@@ -333,7 +333,7 @@ jobs:
           echo "## 🚀 Features" >> $GITHUB_OUTPUT
           echo "$PRS" | jq -r '
             .[]
-            | select(.labels[].name? == "feature")
+            | select(.labels[].name? == "feat")
             | "- " + .title + " (#" + (.number|tostring) + ") by " + .author.login
           ' >> $GITHUB_OUTPUT
           echo "" >> $GITHUB_OUTPUT
@@ -341,7 +341,7 @@ jobs:
           echo "## 🐛 Bug Fixes" >> $GITHUB_OUTPUT
           echo "$PRS" | jq -r '
             .[]
-            | select(.labels[].name? == "bug")
+            | select(.labels[].name? == "fix")
             | "- " + .title + " (#" + (.number|tostring) + ") by " + .author.login
           ' >> $GITHUB_OUTPUT
           echo "" >> $GITHUB_OUTPUT
@@ -357,7 +357,7 @@ jobs:
           echo "## 💥 Breaking Changes" >> $GITHUB_OUTPUT
           echo "$PRS" | jq -r '
             .[]
-            | select(.labels[].name? == "breaking")
+            | select(.labels[].name? == "feat!")
             | "- " + .title + " (#" + (.number|tostring) + ") by " + .author.login
           ' >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
@@ -373,7 +373,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ needs.versioning.outputs.version }}
-          name: Release v${{ needs.versioning.outputs.version }}
+          name: Pre-Release v${{ needs.versioning.outputs.version }}
           prerelease: true
           generate_release_notes: false
           body: ${{ steps.changelog.outputs.CHANGELOG }}
