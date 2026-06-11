@@ -176,9 +176,16 @@ jobs:
       - name: Patch versioned include for discordapiconsts.inc
         run: |
           set -euo pipefail
+          
           sed -i \
             "s/^#define DISCORD_API_AMXX_API_VERSION_STRING.*/#define DISCORD_API_AMXX_API_VERSION_STRING \"$VERSION\"/" \
+<<<<<<< HEAD
             amxmodx/scripting/include/discordapiconsts.inc
+=======
+            "amxmodx/scripting/include/discordapiconsts.inc"
+
+          echo "Patched version to $VERSION"
+>>>>>>> main
 
       - name: Download & extract AMXX compiler
         run: |
