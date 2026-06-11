@@ -173,18 +173,13 @@ jobs:
           path: vendor/bin
 
 # ---------------------------------------------------
-# 4. COMPILE AMXX SCRIPTS
+# 4. COMPILE AMXX SCRIPTS (independent, runs in parallel)
 # ---------------------------------------------------
-  compile-amxx:
+  compile-amxx-plugins:
     runs-on: ubuntu-latest
-    needs: versioning # Wait for versioning to finish and push the files first
-    env:
-      VERSION: ${{ needs.versioning.outputs.version }}
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.ref }} # Ensure we check out the branch containing the newly pushed commit
 
       - name: Patch versioned include for compiler
         run: |
@@ -205,47 +200,44 @@ jobs:
           sudo dpkg --add-architecture i386
           sudo apt-get update -qq
           sudo apt-get install -y libc6:i386 libstdc++6:i386
-
-          # Restored your exact working, direct URL here:
-          curl -L "https://github.com/alliedmodders/amxmodx/releases/download/1.9.0.5303/amxmodx-base-linux.tar.gz" -o amxmodx-base.tar.gz || \
-          curl -L "https://github.com/alliedmodders/amxmodx/releases/download/1.9.0.5303/amxmodx-1.9.0-git5303-base-linux.tar.gz" -o amxmodx-base.tar.gz
+          curl -L "https://github.com/alliedmodders/amxmodx/releases/download/1.9.0.5303/amxmodx-1.9.0-git5303-base-linux.tar.gz" \
+            -o amxmodx-base.tar.gz
           tar -xzf amxmodx-base.tar.gz
-
           chmod +x addons/amxmodx/scripting/amxxpc
-
       - name: Prepare compiler workspace
         run: |
-          set -euo pipefail
           COMPILER_DIR="addons/amxmodx/scripting"
           WORKSPACE_SMA="amxmodx/scripting"
           WORKSPACE_INC="amxmodx/scripting/include"
-
+          # Remove ALL stock .sma files so only ours get compiled
           rm -f "$COMPILER_DIR"/*.sma
+          # Copy OUR .sma files into the compiler dir
           cp "$WORKSPACE_SMA"/*.sma "$COMPILER_DIR/"
+          # Overlay OUR .inc files on top of stock includes
           cp "$WORKSPACE_INC"/*.inc "$COMPILER_DIR/include/"
-
           mkdir -p compiled_plugins
-
+          echo "=== SMA files to compile ==="
+          ls -la "$COMPILER_DIR"/*.sma
       - name: Compile plugins
         run: |
-          set -euo pipefail
           COMPILER_DIR="${{ github.workspace }}/addons/amxmodx/scripting"
           FAILED=()
-
           for SMA in "$COMPILER_DIR"/*.sma; do
             NAME=$(basename "$SMA" .sma)
             echo "Compiling $NAME.sma..."
-
+            # cd into compiler dir so amxxpc32.so is found next to amxxpc
             (cd "$COMPILER_DIR" && ./amxxpc "$SMA" \
               -i"$COMPILER_DIR/include" \
-              -o"${{ github.workspace }}/compiled_plugins/$NAME.amxx") || FAILED+=("$NAME.sma")
+              -o"${{ github.workspace }}/compiled_plugins/$NAME.amxx")
+            if [ $? -ne 0 ]; then
+              echo "::warning::Failed to compile $NAME.sma"
+              FAILED+=("$NAME.sma")
+            fi
           done
-
           if [ ${#FAILED[@]} -gt 0 ]; then
             echo "::error::The following plugins failed to compile: ${FAILED[*]}"
             exit 1
           fi
-
       - name: Upload compiled plugins artifact
         uses: actions/upload-artifact@v4
         with:
@@ -257,7 +249,7 @@ jobs:
 # ---------------------------------------------------
   build-project:
     runs-on: ubuntu-latest
-    needs: [libs-build, compile-amxx, versioning]
+    needs: [libs-build, compile-amxx-plugins, versioning]
     env:
       VERSION: ${{ needs.versioning.outputs.version }}
 
