@@ -35,7 +35,6 @@ jobs:
 # ---------------------------------------------------
   docker-cache:
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
         image:
@@ -72,6 +71,8 @@ jobs:
       matrix:
         image:
           - name: debian12-i386
+            context: ./docker-images/debian12-i386
+            dockerfile: ./docker-images/debian12-i386/Dockerfile
 
     outputs:
       cache-hit: ${{ steps.cache.outputs.cache-hit }}
@@ -98,18 +99,16 @@ jobs:
           path: vendor/bin
           key: libs-${{ matrix.image.name }}-${{ steps.hash.outputs.hash }}
 
-      - uses: docker/setup-buildx-action@v3
+      - name: Set up Docker Buildx
         if: steps.cache.outputs.cache-hit != 'true'
-        with:
-          driver: docker-container
-          name: shared-builder
+        uses: docker/setup-buildx-action@v3
 
       - name: Build Docker image (cache-miss only)
         if: steps.cache.outputs.cache-hit != 'true'
         uses: docker/build-push-action@v6
         with:
-          context: ./docker-images/${{ matrix.image.name }}
-          file: ./docker-images/${{ matrix.image.name }}/Dockerfile
+          context: ${{ matrix.image.context }}
+          file: ${{ matrix.image.dockerfile }}
           tags: amxx-builder:${{ matrix.image.name }}
           load: true
           cache-from: type=gha,scope=docker-${{ matrix.image.name }}
@@ -126,7 +125,6 @@ jobs:
             bash ./libs_builder.sh
 
       - name: Upload libs artifact
-        if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/upload-artifact@v4
         with:
           name: vendor-bin
@@ -246,12 +244,10 @@ jobs:
           name: amxx-plugins
           path: amxx-plugins/
 
-      - uses: docker/setup-buildx-action@v3
-        with:
-          driver: docker-container
-          name: shared-builder
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Build Docker image
+      - name: Build/Pull Docker image
         uses: docker/build-push-action@v6
         with:
           context: ./docker-images/debian12-i386
@@ -262,6 +258,9 @@ jobs:
           cache-to: type=gha,mode=max,scope=docker-debian12-i386
           provenance: false
 
+      # ---------------------------------------------------
+      # BUILD PROJECT
+      # ---------------------------------------------------
       - name: Build project
         run: |
           docker run --rm \
@@ -277,6 +276,9 @@ jobs:
               make -j$(nproc || echo 2)
             "
 
+      # ---------------------------------------------------
+      # PACKAGE
+      # ---------------------------------------------------
       - name: Package & ZIP
         id: package
         run: |
@@ -298,6 +300,9 @@ jobs:
           (cd package && zip -r "../$ZIP" .)
           echo "zip=$ZIP" >> "$GITHUB_OUTPUT"
 
+      # ---------------------------------------------------
+      # UPLOAD ARTIFACT
+      # ---------------------------------------------------
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -326,62 +331,64 @@ jobs:
 
       - name: Generate changelog
         id: changelog
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -e
 
-          echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
-
-          echo "# 🚀 Pre-Release v${{ needs.versioning.outputs.version }}" >> $GITHUB_OUTPUT
-          echo "" >> $GITHUB_OUTPUT
+          # Safely configure multiline output for GitHub Actions via EOF delimiter
+          echo "CHANGELOG<<EOF" >> "$GITHUB_OUTPUT"
+          echo "# 🚀 Pre-Release v${{ needs.versioning.outputs.version }}" >> "$GITHUB_OUTPUT"
+          echo "" >> "$GITHUB_OUTPUT"
 
           PRS=$(gh pr list --state merged --limit 50 --json title,number,author,labels,url,mergedAt)
 
           # FEATURES (feat prefix)
-          echo "## ✨ Features" >> $GITHUB_OUTPUT
+          echo "## ✨ Features" >> "$GITHUB_OUTPUT"
           echo "$PRS" | jq -r '
             .[]
             | select(.title | test("^feat(\\(.*\\))?:"))
             | "- [" + (.title | sub("^feat(\\(.*\\))?: "; "")) + "]("
               + .url + ") (#" + (.number|tostring) + ") · @"
               + .author.login
-          ' >> $GITHUB_OUTPUT
+          ' >> "$GITHUB_OUTPUT"
 
-          echo "" >> $GITHUB_OUTPUT
+          echo "" >> "$GITHUB_OUTPUT"
 
           # FIXES
-          echo "## 🐛 Bug Fixes" >> $GITHUB_OUTPUT
+          echo "## 🐛 Bug Fixes" >> "$GITHUB_OUTPUT"
           echo "$PRS" | jq -r '
             .[]
             | select(.title | test("^fix(\\(.*\\))?:"))
             | "- [" + (.title | sub("^fix(\\(.*\\))?: "; "")) + "]("
               + .url + ") (#" + (.number|tostring) + ") · @"
               + .author.login
-          ' >> $GITHUB_OUTPUT
+          ' >> "$GITHUB_OUTPUT"
 
-          echo "" >> $GITHUB_OUTPUT
+          echo "" >> "$GITHUB_OUTPUT"
 
           # PERF
-          echo "## ⚡ Performance" >> $GITHUB_OUTPUT
+          echo "## ⚡ Performance" >> "$GITHUB_OUTPUT"
           echo "$PRS" | jq -r '
             .[]
             | select(.title | test("^perf(\\(.*\\))?:"))
             | "- [" + (.title | sub("^perf(\\(.*\\))?: "; "")) + "]("
               + .url + ") (#" + (.number|tostring) + ") · @"
               + .author.login
-          ' >> $GITHUB_OUTPUT
+          ' >> "$GITHUB_OUTPUT"
 
-          echo "" >> $GITHUB_OUTPUT
+          echo "" >> "$GITHUB_OUTPUT"
 
           # BREAKING (title contains !)
-          echo "## 💥 Breaking Changes" >> $GITHUB_OUTPUT
+          echo "## 💥 Breaking Changes" >> "$GITHUB_OUTPUT"
           echo "$PRS" | jq -r '
             .[]
             | select(.title | test("!"))
             | "- [" + .title + "](" + .url + ") (#" + (.number|tostring) + ") · @"
               + .author.login
-          ' >> $GITHUB_OUTPUT
+          ' >> "$GITHUB_OUTPUT"
 
-          echo "EOF" >> $GITHUB_OUTPUT
+          echo "EOF" >> "$GITHUB_OUTPUT"
 
       - name: Download release artifacts
         uses: actions/download-artifact@v4
