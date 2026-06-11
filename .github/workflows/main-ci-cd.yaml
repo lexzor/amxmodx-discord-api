@@ -378,7 +378,7 @@ jobs:
             fi
 
             echo "CHANGELOG<<EOF" >> "$GITHUB_OUTPUT"
-            echo "# 🚀 Release v$VERSION" >> "$GITHUB_OUTPUT"
+            echo "## 🚀 Release" >> "$GITHUB_OUTPUT"
             echo "See what's new in this stable release version!" >> "$GITHUB_OUTPUT"
 
             # FEATURES

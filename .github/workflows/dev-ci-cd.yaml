@@ -403,7 +403,7 @@ jobs:
           # OUTPUT HEADER
           # ---------------------------------------------------
           echo "CHANGELOG<<EOF" >> "$GITHUB_OUTPUT"
-          echo "# 🚀 Pre-Release v$VERSION" >> "$GITHUB_OUTPUT"
+          echo "## 🚀 Pre-Release" >> "$GITHUB_OUTPUT"
           echo "Beta build for development changes." >> "$GITHUB_OUTPUT"
           echo "" >> "$GITHUB_OUTPUT"
 
