@@ -307,7 +307,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: amxmodx-discord-api-v${{ needs.versioning.outputs.version }}-${{ matrix.config.name }}
-          path: package/${{ steps.package.outputs.zip }}
+          path: ${{ github.workspace }}/amxmodx-discord-api-v${{ needs.versioning.outputs.version }}-${{ matrix.config.name }}.zip
+
 
 
 # ---------------------------------------------------
@@ -318,8 +319,49 @@ jobs:
     needs: [build-project, versioning]
     permissions:
       contents: write
+      pull-requests: read
 
     steps:
+      - name: Install GH CLI
+        run: sudo apt-get install -y gh jq
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
+
+          echo "## 🚀 Features" >> $GITHUB_OUTPUT
+          echo "$PRS" | jq -r '
+            .[]
+            | select(.labels[].name? == "feature")
+            | "- " + .title + " (#" + (.number|tostring) + ") by " + .author.login
+          ' >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+
+          echo "## 🐛 Bug Fixes" >> $GITHUB_OUTPUT
+          echo "$PRS" | jq -r '
+            .[]
+            | select(.labels[].name? == "bug")
+            | "- " + .title + " (#" + (.number|tostring) + ") by " + .author.login
+          ' >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+
+          echo "## ⚡ Performance" >> $GITHUB_OUTPUT
+          echo "$PRS" | jq -r '
+            .[]
+            | select(.labels[].name? == "perf")
+            | "- " + .title + " (#" + (.number|tostring) + ") by " + .author.login
+          ' >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+
+          echo "## 💥 Breaking Changes" >> $GITHUB_OUTPUT
+          echo "$PRS" | jq -r '
+            .[]
+            | select(.labels[].name? == "breaking")
+            | "- " + .title + " (#" + (.number|tostring) + ") by " + .author.login
+          ' >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
       - name: Download release artifacts
         uses: actions/download-artifact@v4
         with:
@@ -333,4 +375,6 @@ jobs:
           tag_name: v${{ needs.versioning.outputs.version }}
           name: Release v${{ needs.versioning.outputs.version }}
           prerelease: true
+          generate_release_notes: false
+          body: ${{ steps.changelog.outputs.CHANGELOG }}
           files: artifacts/**/*.zip
