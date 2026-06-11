@@ -51,7 +51,7 @@ jobs:
 
           echo "base_version=$BASE" >> "$GITHUB_OUTPUT"
           echo "beta_version=$BETA" >> "$GITHUB_OUTPUT"
-          echo "full_version=$FULL" >> "$GITHUB_OUTPUT"
+          echo "full_version=v$FULL" >> "$GITHUB_OUTPUT"
 
   # ---------------------------------------------------
   # 2. DOCKER IMAGE (GHA CACHE ONLY)
@@ -489,7 +489,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.changelog.outputs.version }}
-          name: Pre-Release v${{ needs.versioning.outputs.version }}
+          name: Pre-Release ${{ steps.changelog.outputs.version }}
           prerelease: true
           generate_release_notes: false
           body: ${{ steps.changelog.outputs.CHANGELOG }}
