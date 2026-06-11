@@ -375,6 +375,7 @@ jobs:
 
           echo "CHANGELOG<<EOF" >> "$GITHUB_OUTPUT"
           echo "# 🚀 Pre-Release v${{ needs.versioning.outputs.version }}" >> "$GITHUB_OUTPUT"
+          echo "Below are all changes made in this pre-release!" >> "$GITHUB_OUTPUT"
           echo "" >> "$GITHUB_OUTPUT"
 
           PRS=$(gh pr list --state merged --limit 50 --json title,number,author,labels,url,mergedAt)
