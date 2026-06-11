@@ -26,7 +26,7 @@
  *   to add multiple entries.
  */
 #define MODULE_NAME "Discord API"
-#define MODULE_VERSION "1.4.4"
+#define MODULE_VERSION "1.4.5"
 #define MODULE_AUTHOR "lexzor"
 #define MODULE_URL "https://github.com/lexzor/amxmodx-discord-api"
 #define MODULE_LOGTAG "Discord API"
