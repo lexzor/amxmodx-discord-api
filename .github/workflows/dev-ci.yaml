@@ -48,13 +48,6 @@ jobs:
   docker-cache:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        image:
-          - name: debian12-i386
-            context: ./docker-images/debian12-i386
-            dockerfile: ./docker-images/debian12-i386/Dockerfile
-
     steps:
       - uses: actions/checkout@v4
 
@@ -63,17 +56,23 @@ jobs:
           driver: docker-container
           name: shared-builder
 
-      - name: Build Docker image (cache only)
+      - name: Build Docker image
         uses: docker/build-push-action@v6
         with:
-          context: ${{ matrix.image.context }}
-          file: ${{ matrix.image.dockerfile }}
-          tags: amxmodx-discord-api/${{ matrix.image.name }}:dev
-          push: false
+          context: ./docker-images/debian12-i386
+          file: ./docker-images/debian12-i386/Dockerfile
+          tags: amxx-builder:latest
           load: true
-          cache-from: type=gha,scope=docker-${{ matrix.image.name }}
-          cache-to: type=gha,mode=max,scope=docker-${{ matrix.image.name }}
-          provenance: false
+          cache-from: type=gha,scope=docker-debian12-i386
+          cache-to: type=gha,mode=max,scope=docker-debian12-i386
+
+      - name: Save Docker image as tar
+        run: docker save amxx-builder:latest -o builder.tar
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: docker-image
+          path: builder.tar
 
 
 # ---------------------------------------------------
@@ -112,24 +111,21 @@ jobs:
           path: vendor/bin
           key: libs-${{ matrix.image.name }}-${{ steps.hash.outputs.hash }}
 
+      - name: Download Docker image
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image
+
+      - name: Load Docker image
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: docker load -i builder.tar
+
       - uses: docker/setup-buildx-action@v3
         if: steps.cache.outputs.cache-hit != 'true'
         with:
           driver: docker-container
           name: shared-builder
-
-      - name: Build Docker image (runtime)
-        if: steps.cache.outputs.cache-hit != 'true'
-        uses: docker/build-push-action@v6
-        with:
-          context: ./docker-images/${{ matrix.image.name }}
-          file: ./docker-images/${{ matrix.image.name }}/Dockerfile
-          tags: amxmodx-discord-api/${{ matrix.image.name }}:dev
-          push: false
-          load: true
-          cache-from: type=gha,scope=docker-${{ matrix.image.name }}
-          cache-to: type=gha,mode=max,scope=docker-${{ matrix.image.name }}
-          provenance: false
 
       - name: Build libs (cache miss only)
         if: steps.cache.outputs.cache-hit != 'true'
@@ -145,7 +141,6 @@ jobs:
         with:
           name: vendor-bin
           path: vendor/bin
-
 
 # ---------------------------------------------------
 # 4. COMPILE AMXX SCRIPTS (independent, runs in parallel)
@@ -239,6 +234,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      # ---------------------------------------------------
+      # LOAD LIBS + PLUGINS
+      # ---------------------------------------------------
       - name: Download libs
         uses: actions/download-artifact@v4
         with:
@@ -251,29 +250,26 @@ jobs:
           name: amxx-plugins
           path: amxx-plugins/
 
-      - uses: docker/setup-buildx-action@v3
+      # ---------------------------------------------------
+      # LOAD DOCKER IMAGE (FAST, NO BUILD)
+      # ---------------------------------------------------
+      - name: Download Docker image
+        uses: actions/download-artifact@v4
         with:
-          driver: docker-container
-          name: shared-builder
+          name: docker-image
 
-      - name: Build Docker image (runtime)
-        uses: docker/build-push-action@v6
-        with:
-          context: ./docker-images/debian12-i386
-          file: ./docker-images/debian12-i386/Dockerfile
-          tags: amxmodx-discord-api/debian12-i386:dev
-          push: false
-          load: true
-          cache-from: type=gha,scope=docker-debian12-i386
-          cache-to: type=gha,mode=max,scope=docker-debian12-i386
-          provenance: false
+      - name: Load Docker image
+        run: docker load -i builder.tar
 
+      # ---------------------------------------------------
+      # BUILD PROJECT
+      # ---------------------------------------------------
       - name: Build project
         run: |
           docker run --rm \
             -v ${{ github.workspace }}:/workspace \
             -w /workspace \
-            amxmodx-discord-api/debian12-i386:dev \
+            amxx-builder:latest \
             bash -c "
               rm -rf build &&
               mkdir build &&
@@ -283,6 +279,9 @@ jobs:
               make -j$(nproc || echo 2)
             "
 
+      # ---------------------------------------------------
+      # PACKAGE
+      # ---------------------------------------------------
       - name: Package & ZIP
         id: package
         run: |
@@ -303,13 +302,14 @@ jobs:
 
           echo "zip=$ZIP" >> $GITHUB_OUTPUT
 
+      # ---------------------------------------------------
+      # UPLOAD ARTIFACT
+      # ---------------------------------------------------
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: amxmodx-discord-api-v${{ needs.versioning.outputs.version }}-${{ matrix.config.name }}
           path: ${{ github.workspace }}/amxmodx-discord-api-v${{ needs.versioning.outputs.version }}-${{ matrix.config.name }}.zip
-
-
 
 # ---------------------------------------------------
 # 6. PUBLISH GITHUB RELEASE
