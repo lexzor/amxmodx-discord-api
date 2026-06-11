@@ -376,28 +376,28 @@ jobs:
             FEATURES=$(echo "$PRS" | jq '[.[] | select(.title | test("^feat(\\(.*\\))?:"))]')
             if [ "$(echo "$FEATURES" | jq 'length')" -gt 0 ]; then
               echo "## ✨ Features"
-              echo "$FEATURES" | jq -r '.[] | "- " + (.title | sub("^feat(\\(.*\\))?: *"; "")) + " (#" + (.number|tostring) + ")"'
+              echo "$FEATURES" | jq -r '.[] | "- " + (.title | sub("^feat(\\(.*\\))?: *"; "")) + " (#" + (.number|tostring) + ") by @" + .author.login'
               echo ""
             fi
 
             FIXES=$(echo "$PRS" | jq '[.[] | select(.title | test("^fix(\\(.*\\))?:"))]')
             if [ "$(echo "$FIXES" | jq 'length')" -gt 0 ]; then
               echo "## 🐛 Bug Fixes"
-              echo "$FIXES" | jq -r '.[] | "- " + (.title | sub("^fix(\\(.*\\))?: *"; "")) + " (#" + (.number|tostring) + ")"'
+              echo "$FIXES" | jq -r '.[] | "- " + (.title | sub("^fix(\\(.*\\))?: *"; "")) + " (#" + (.number|tostring) + ") by @" + .author.login'
               echo ""
             fi
 
             PERF=$(echo "$PRS" | jq '[.[] | select(.title | test("^perf(\\(.*\\))?:"))]')
             if [ "$(echo "$PERF" | jq 'length')" -gt 0 ]; then
               echo "## ⚡ Performance"
-              echo "$PERF" | jq -r '.[] | "- " + (.title | sub("^perf(\\(.*\\))?: *"; "")) + " (#" + (.number|tostring) + ")"'
+              echo "$PERF" | jq -r '.[] | "- " + (.title | sub("^perf(\\(.*\\))?: *"; "")) + " (#" + (.number|tostring) + ") by @" + .author.login'
               echo ""
             fi
 
             BREAKING=$(echo "$PRS" | jq '[.[] | select(.title | test("!"))]')
             if [ "$(echo "$BREAKING" | jq 'length')" -gt 0 ]; then
               echo "## 💥 Breaking Changes"
-              echo "$BREAKING" | jq -r '.[] | "- " + .title + " (#" + (.number|tostring) + ")"'
+              echo "$BREAKING" | jq -r '.[] | "- " + .title + " (#" + (.number|tostring) + ") by @" + .author.login'
               echo ""
             fi
 
