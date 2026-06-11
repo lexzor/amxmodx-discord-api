@@ -1,7 +1,7 @@
 FROM debian:12
 
 ENV DEBIAN_FRONTEND=noninteractive
-ENV LD_LIBRARY_PATH=/usr/lib/i386-linux-gnu:$LD_LIBRARY_PATH
+ENV LD_LIBRARY_PATH=/usr/lib/i386-linux-gnu
 
 # Enable i386 architecture BEFORE any apt commands
 RUN dpkg --add-architecture i386
