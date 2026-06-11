@@ -8,68 +8,30 @@ on:
 
 jobs:
 # ---------------------------------------------------
-# 1. VERSIONING & SILENT SOURCE PATCHING
+# 1. VERSIONING (READ ONLY, NO GIT PUSH)
 # ---------------------------------------------------
-  versioning:
+versioning:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write # Crucial: Allows the bot to push the modified files back to your repo
 
     outputs:
       version: ${{ steps.ver.outputs.version }}
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          # Fetch all history so git push works cleanly
-          fetch-depth: 0 
 
       - name: Read version
         id: ver
         run: |
           set -euo pipefail
+
           VERSION=$(tr -d '\n' < VERSION)
+
           if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "::error::VERSION must be semantic version format like 1.2.3"
+            echo "::error::VERSION must be semantic version like 1.2.3"
             exit 1
           fi
+
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-
-      - name: Patch files with version
-        env:
-          VERSION: ${{ steps.ver.outputs.version }}
-        run: |
-          set -euo pipefail
-          
-          # Patch AMXX compiler include file
-          sed -i \
-            "s/^#define DISCORDAPI_VERSION.*/#define DISCORDAPI_VERSION \"$VERSION\"/" \
-            amxmodx/scripting/include/discordapiconsts.inc
-
-          # Patch C++ module configuration file
-          sed -i \
-            "s/#define MODULE_VERSION.*/#define MODULE_VERSION \"$VERSION\"/" \
-            vendor/include/amxmodx/sdk/moduleconfig.h
-
-      - name: Silently commit and push changes
-        env:
-          VERSION: ${{ steps.ver.outputs.version }}
-        run: |
-          set -euo pipefail
-          
-          # Configure a standard GitHub Bot identity
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          
-          git add amxmodx/scripting/include/discordapiconsts.inc vendor/include/amxmodx/sdk/moduleconfig.h
-          
-          # [skip ci] prevents this commit from triggering a loop
-          if git commit -m "chore: silent version bump to v$VERSION [skip ci]"; then
-            echo "Changes detected, pushing to origin..."
-            git push origin HEAD:${{ github.ref_name }}
-          else
-            echo "No changes to commit. Version files are already up to date."
-          fi
 
 # ---------------------------------------------------
 # 2. DOCKER IMAGE (GHA CACHE ONLY)
