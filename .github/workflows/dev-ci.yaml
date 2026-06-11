@@ -60,7 +60,6 @@ jobs:
           load: true
           cache-from: type=gha,scope=docker-${{ matrix.image.name }}
           cache-to: type=gha,mode=max,scope=docker-${{ matrix.image.name }}
-          provenance: false
 
 # ---------------------------------------------------
 # 3. LIBS BUILD (cached + artifact)
@@ -327,80 +326,62 @@ jobs:
 
       - name: Generate changelog
         id: changelog
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
-          set -euo pipefail
+          set -e
 
-          git fetch --tags --force
+          echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
 
-          LAST_TAG="$(git describe --tags --abbrev=0 --match 'v*' 2>/dev/null || true)"
+          echo "# 🚀 Pre-Release v${{ needs.versioning.outputs.version }}" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
 
-          if [ -n "$LAST_TAG" ]; then
-            LAST_TAG_DATE="$(git show -s --format=%cI "$LAST_TAG")"
-            PRS_JSON="$(gh pr list --state merged --limit 200 --json number,title,author,url,mergedAt \
-              | jq --arg dt "$LAST_TAG_DATE" '[.[] | select(.mergedAt > $dt)]')"
-          else
-            PRS_JSON="$(gh pr list --state merged --limit 200 --json number,title,author,url,mergedAt)"
-          fi
+          PRS=$(gh pr list --state merged --limit 50 --json title,number,author,labels,url,mergedAt)
 
-          section() {
-            local heading="$1"
-            local jq_expr="$2"
-            local rendered
-            rendered="$(echo "$PRS_JSON" | jq -r "$jq_expr")"
-
-            if [ -n "$rendered" ]; then
-              {
-                echo "## $heading"
-                echo "$rendered"
-                echo ""
-              } >> "$GITHUB_OUTPUT"
-            fi
-          }
-
-          {
-            echo "CHANGELOG<<EOF"
-            echo "# 🚀 Pre-Release v${{ needs.versioning.outputs.version }}"
-            echo ""
-          } >> "$GITHUB_OUTPUT"
-
-          section "✨ Features" '
+          # FEATURES (feat prefix)
+          echo "## ✨ Features" >> $GITHUB_OUTPUT
+          echo "$PRS" | jq -r '
             .[]
             | select(.title | test("^feat(\\(.*\\))?:"))
-            | "- [" + (.title | sub("^feat(\\(.*\\))?: "; "")) + "](" + .url + ") (#" + (.number|tostring) + ") · [@" + (.author.login // "unknown") + "](https://github.com/" + (.author.login // "unknown") + ")"
-          '
+            | "- [" + (.title | sub("^feat(\\(.*\\))?: "; "")) + "]("
+              + .url + ") (#" + (.number|tostring) + ") · @"
+              + .author.login
+          ' >> $GITHUB_OUTPUT
 
-          section "🐛 Bug Fixes" '
+          echo "" >> $GITHUB_OUTPUT
+
+          # FIXES
+          echo "## 🐛 Bug Fixes" >> $GITHUB_OUTPUT
+          echo "$PRS" | jq -r '
             .[]
             | select(.title | test("^fix(\\(.*\\))?:"))
-            | "- [" + (.title | sub("^fix(\\(.*\\))?: "; "")) + "](" + .url + ") (#" + (.number|tostring) + ") · [@" + (.author.login // "unknown") + "](https://github.com/" + (.author.login // "unknown") + ")"
-          '
+            | "- [" + (.title | sub("^fix(\\(.*\\))?: "; "")) + "]("
+              + .url + ") (#" + (.number|tostring) + ") · @"
+              + .author.login
+          ' >> $GITHUB_OUTPUT
 
-          section "⚡ Performance" '
+          echo "" >> $GITHUB_OUTPUT
+
+          # PERF
+          echo "## ⚡ Performance" >> $GITHUB_OUTPUT
+          echo "$PRS" | jq -r '
             .[]
             | select(.title | test("^perf(\\(.*\\))?:"))
-            | "- [" + (.title | sub("^perf(\\(.*\\))?: "; "")) + "](" + .url + ") (#" + (.number|tostring) + ") · [@" + (.author.login // "unknown") + "](https://github.com/" + (.author.login // "unknown") + ")"
-          '
+            | "- [" + (.title | sub("^perf(\\(.*\\))?: "; "")) + "]("
+              + .url + ") (#" + (.number|tostring) + ") · @"
+              + .author.login
+          ' >> $GITHUB_OUTPUT
 
-          section "💥 Breaking Changes" '
+          echo "" >> $GITHUB_OUTPUT
+
+          # BREAKING (title contains !)
+          echo "## 💥 Breaking Changes" >> $GITHUB_OUTPUT
+          echo "$PRS" | jq -r '
             .[]
-            | select(.title | test("^feat(!|\\(.*\\)!):"))
-            | "- [" + (.title | sub("^feat(!|\\(.*\\)!):[ ]*"; "")) + "](" + .url + ") (#" + (.number|tostring) + ") · [@" + (.author.login // "unknown") + "](https://github.com/" + (.author.login // "unknown") + ")"
-          '
+            | select(.title | test("!"))
+            | "- [" + .title + "](" + .url + ") (#" + (.number|tostring) + ") · @"
+              + .author.login
+          ' >> $GITHUB_OUTPUT
 
-          section "🔧 Other Changes" '
-            .[]
-            | select(
-                (.title | test("^feat(\\(.*\\))?:") | not) and
-                (.title | test("^fix(\\(.*\\))?:") | not) and
-                (.title | test("^perf(\\(.*\\))?:") | not) and
-                (.title | test("^feat(!|\\(.*\\)!):") | not)
-              )
-            | "- [" + .title + "](" + .url + ") (#" + (.number|tostring) + ") · [@" + (.author.login // "unknown") + "](https://github.com/" + (.author.login // "unknown") + ")"
-          '
-
-          echo "EOF" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Download release artifacts
         uses: actions/download-artifact@v4
