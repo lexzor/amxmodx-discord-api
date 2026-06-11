@@ -10,7 +10,7 @@ jobs:
 # ---------------------------------------------------
 # 1. VERSIONING (READ ONLY, NO GIT PUSH)
 # ---------------------------------------------------
-versioning:
+  versioning:
     runs-on: ubuntu-latest
 
     outputs:
