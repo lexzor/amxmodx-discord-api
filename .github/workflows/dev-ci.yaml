@@ -186,6 +186,20 @@ jobs:
         with:
           ref: ${{ github.ref }} # Ensure we check out the branch containing the newly pushed commit
 
+      - name: Patch versioned include for compiler
+        run: |
+          set -euo pipefail
+          sed -i \
+            "s/^#define DISCORDAPI_VERSION.*/#define DISCORDAPI_VERSION \"$VERSION\"/" \
+            amxmodx/scripting/include/discordapiconsts.inc
+
+      - name: Patch versioned include for compiler
+        run: |
+          set -euo pipefail
+          sed -i \
+            "s/^#define DISCORDAPI_VERSION.*/#define DISCORDAPI_VERSION \"$VERSION\"/" \
+            amxmodx/scripting/include/discordapiconsts.inc
+
       - name: Download & extract AMXX compiler
         run: |
           sudo dpkg --add-architecture i386
@@ -193,6 +207,7 @@ jobs:
           sudo apt-get install -y libc6:i386 libstdc++6:i386
 
           # Restored your exact working, direct URL here:
+          curl -L "https://github.com/alliedmodders/amxmodx/releases/download/1.9.0.5303/amxmodx-base-linux.tar.gz" -o amxmodx-base.tar.gz || \
           curl -L "https://github.com/alliedmodders/amxmodx/releases/download/1.9.0.5303/amxmodx-1.9.0-git5303-base-linux.tar.gz" -o amxmodx-base.tar.gz
           tar -xzf amxmodx-base.tar.gz
 
