@@ -181,6 +181,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Patch versioned include for compiler
+        run: |
+          set -euo pipefail
+          sed -i \
+            "s/^#define DISCORDAPI_VERSION.*/#define DISCORDAPI_VERSION \"$VERSION\"/" \
+            amxmodx/scripting/include/discordapiconsts.inc
+
+      - name: Patch versioned include for compiler
+        run: |
+          set -euo pipefail
+          sed -i \
+            "s/^#define DISCORDAPI_VERSION.*/#define DISCORDAPI_VERSION \"$VERSION\"/" \
+            amxmodx/scripting/include/discordapiconsts.inc
+
       - name: Download & extract AMXX compiler
         run: |
           sudo dpkg --add-architecture i386
@@ -229,13 +243,13 @@ jobs:
         with:
           name: amxx-plugins
           path: compiled_plugins/
-          
+
 # ---------------------------------------------------
 # 5. BUILD PROJECT + PACKAGE
 # ---------------------------------------------------
   build-project:
     runs-on: ubuntu-latest
-    needs: [libs-build, compile-amxx, versioning]
+    needs: [libs-build, compile-amxx-plugins, versioning]
     env:
       VERSION: ${{ needs.versioning.outputs.version }}
 
