@@ -8,16 +8,21 @@ on:
 
 jobs:
 # ---------------------------------------------------
-# 1. VERSIONING
+# 1. VERSIONING & SILENT SOURCE PATCHING
 # ---------------------------------------------------
   versioning:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # Crucial: Allows the bot to push the modified files back to your repo
 
     outputs:
       version: ${{ steps.ver.outputs.version }}
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Fetch all history so git push works cleanly
+          fetch-depth: 0 
 
       - name: Read version
         id: ver
@@ -30,11 +35,53 @@ jobs:
           fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
+      - name: Patch files with version
+        env:
+          VERSION: ${{ steps.ver.outputs.version }}
+        run: |
+          set -euo pipefail
+          
+          # Patch AMXX compiler include file
+          sed -i \
+            "s/^#define DISCORDAPI_VERSION.*/#define DISCORDAPI_VERSION \"$VERSION\"/" \
+            amxmodx/scripting/include/discordapiconsts.inc
+
+          # Patch C++ module configuration file
+          sed -i \
+            "s/#define MODULE_VERSION.*/#define MODULE_VERSION \"$VERSION\"/" \
+            vendor/include/amxmodx/sdk/moduleconfig.h
+
+      - name: Silently commit and push changes
+        env:
+          VERSION: ${{ steps.ver.outputs.version }}
+        run: |
+          set -euo pipefail
+          
+          # Configure a standard GitHub Bot identity
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          
+          git add amxmodx/scripting/include/discordapiconsts.inc vendor/include/amxmodx/sdk/moduleconfig.h
+          
+          # [skip ci] prevents this commit from triggering a loop
+          if git commit -m "chore: silent version bump to v$VERSION [skip ci]"; then
+            echo "Changes detected, pushing to origin..."
+            git push origin HEAD:${{ github.ref_name }}
+          else
+            echo "No changes to commit. Version files are already up to date."
+          fi
+
 # ---------------------------------------------------
 # 2. DOCKER IMAGE (GHA CACHE ONLY)
 # ---------------------------------------------------
   docker-cache:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        image:
+          - name: debian12-i386
+            context: ./docker-images/debian12-i386
+            dockerfile: ./docker-images/debian12-i386/Dockerfile
 
     steps:
       - uses: actions/checkout@v4
@@ -65,6 +112,8 @@ jobs:
       matrix:
         image:
           - name: debian12-i386
+            context: ./docker-images/debian12-i386
+            dockerfile: ./docker-images/debian12-i386/Dockerfile
 
     outputs:
       cache-hit: ${{ steps.cache.outputs.cache-hit }}
@@ -91,17 +140,16 @@ jobs:
           path: vendor/bin
           key: libs-${{ matrix.image.name }}-${{ steps.hash.outputs.hash }}
 
-      - name: Download Docker image
+      - name: Set up Docker Buildx
         if: steps.cache.outputs.cache-hit != 'true'
-        uses: actions/download-artifact@v4
-        with:
-          name: docker-image
+        uses: docker/setup-buildx-action@v3
 
       - name: Build Docker image (cache-miss only)
         if: steps.cache.outputs.cache-hit != 'true'
+        uses: docker/build-push-action@v6
         with:
-          context: ./docker-images/${{ matrix.image.name }}
-          file: ./docker-images/${{ matrix.image.name }}/Dockerfile
+          context: ${{ matrix.image.context }}
+          file: ${{ matrix.image.dockerfile }}
           tags: amxx-builder:${{ matrix.image.name }}
           load: true
           cache-from: type=gha,scope=docker-${{ matrix.image.name }}
@@ -129,12 +177,21 @@ jobs:
 # ---------------------------------------------------
   compile-amxx:
     runs-on: ubuntu-latest
-    needs: versioning
+    needs: versioning # Wait for versioning to finish and push the files first
     env:
       VERSION: ${{ needs.versioning.outputs.version }}
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }} # Ensure we check out the branch containing the newly pushed commit
+
+      - name: Patch versioned include for compiler
+        run: |
+          set -euo pipefail
+          sed -i \
+            "s/^#define DISCORDAPI_VERSION.*/#define DISCORDAPI_VERSION \"$VERSION\"/" \
+            amxmodx/scripting/include/discordapiconsts.inc
 
       - name: Patch versioned include for compiler
         run: |
@@ -149,8 +206,8 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y libc6:i386 libstdc++6:i386
 
-          curl -L "https://github.com/alliedmodders/amxmodx/releases/download/1.9.0.5303/amxmodx-1.9.0-git5303-base-linux.tar.gz" \
-            -o amxmodx-base.tar.gz
+          curl -L "https://github.com/alliedmodders/amxmodx/releases/download/1.9.0.5303/amxmodx-base-linux.tar.gz" -o amxmodx-base.tar.gz || \
+          curl -L "https://github.com/alliedmodders/amxmodx/releases/download/1.9.0.5303/amxmodx-1.9.0-git5303-base-linux.tar.gz" -o amxmodx-base.tar.gz
           tar -xzf amxmodx-base.tar.gz
 
           chmod +x addons/amxmodx/scripting/amxxpc
@@ -167,7 +224,6 @@ jobs:
           cp "$WORKSPACE_INC"/*.inc "$COMPILER_DIR/include/"
 
           mkdir -p compiled_plugins
-          ls -la "$COMPILER_DIR"/*.sma
 
       - name: Compile plugins
         run: |
@@ -214,17 +270,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
-      - name: Patch versioned files for build
-        run: |
-          set -euo pipefail
-          sed -i \
-            "s/#define MODULE_VERSION.*/#define MODULE_VERSION \"$VERSION\"/" \
-            vendor/include/amxmodx/sdk/moduleconfig.h
-
-          sed -i \
-            "s/^#define DISCORDAPI_VERSION.*/#define DISCORDAPI_VERSION \"$VERSION\"/" \
-            amxmodx/scripting/include/discordapiconsts.inc
+        with:
+          ref: ${{ github.ref }} # Pull down the updated files from the versioning commit
 
       - name: Download libs
         uses: actions/download-artifact@v4
@@ -238,15 +285,10 @@ jobs:
           name: amxx-plugins
           path: amxx-plugins/
 
-      # ---------------------------------------------------
-      # LOAD DOCKER IMAGE (FAST, NO BUILD)
-      # ---------------------------------------------------
-      - name: Download Docker image
-        uses: actions/download-artifact@v4
-        with:
-          name: docker-image
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Build Docker image
+      - name: Build/Pull Docker image
         uses: docker/build-push-action@v6
         with:
           context: ./docker-images/debian12-i386
@@ -257,9 +299,6 @@ jobs:
           cache-to: type=gha,mode=max,scope=docker-debian12-i386
           provenance: false
 
-      # ---------------------------------------------------
-      # BUILD PROJECT
-      # ---------------------------------------------------
       - name: Build project
         run: |
           docker run --rm \
@@ -275,9 +314,6 @@ jobs:
               make -j$(nproc || echo 2)
             "
 
-      # ---------------------------------------------------
-      # PACKAGE
-      # ---------------------------------------------------
       - name: Package & ZIP
         id: package
         run: |
@@ -299,9 +335,6 @@ jobs:
           (cd package && zip -r "../$ZIP" .)
           echo "zip=$ZIP" >> "$GITHUB_OUTPUT"
 
-      # ---------------------------------------------------
-      # UPLOAD ARTIFACT
-      # ---------------------------------------------------
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -330,62 +363,59 @@ jobs:
 
       - name: Generate changelog
         id: changelog
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -e
 
-          echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
-
-          echo "# 🚀 Pre-Release v${{ needs.versioning.outputs.version }}" >> $GITHUB_OUTPUT
-          echo "" >> $GITHUB_OUTPUT
+          echo "CHANGELOG<<EOF" >> "$GITHUB_OUTPUT"
+          echo "# 🚀 Pre-Release v${{ needs.versioning.outputs.version }}" >> "$GITHUB_OUTPUT"
+          echo "" >> "$GITHUB_OUTPUT"
 
           PRS=$(gh pr list --state merged --limit 50 --json title,number,author,labels,url,mergedAt)
 
-          # FEATURES (feat prefix)
-          echo "## ✨ Features" >> $GITHUB_OUTPUT
+          echo "## ✨ Features" >> "$GITHUB_OUTPUT"
           echo "$PRS" | jq -r '
             .[]
             | select(.title | test("^feat(\\(.*\\))?:"))
             | "- [" + (.title | sub("^feat(\\(.*\\))?: "; "")) + "]("
               + .url + ") (#" + (.number|tostring) + ") · @"
               + .author.login
-          ' >> $GITHUB_OUTPUT
+          ' >> "$GITHUB_OUTPUT"
 
-          echo "" >> $GITHUB_OUTPUT
+          echo "" >> "$GITHUB_OUTPUT"
 
-          # FIXES
-          echo "## 🐛 Bug Fixes" >> $GITHUB_OUTPUT
+          echo "## 🐛 Bug Fixes" >> "$GITHUB_OUTPUT"
           echo "$PRS" | jq -r '
             .[]
             | select(.title | test("^fix(\\(.*\\))?:"))
             | "- [" + (.title | sub("^fix(\\(.*\\))?: "; "")) + "]("
               + .url + ") (#" + (.number|tostring) + ") · @"
               + .author.login
-          ' >> $GITHUB_OUTPUT
+          ' >> "$GITHUB_OUTPUT"
 
-          echo "" >> $GITHUB_OUTPUT
+          echo "" >> "$GITHUB_OUTPUT"
 
-          # PERF
-          echo "## ⚡ Performance" >> $GITHUB_OUTPUT
+          echo "## ⚡ Performance" >> "$GITHUB_OUTPUT"
           echo "$PRS" | jq -r '
             .[]
             | select(.title | test("^perf(\\(.*\\))?:"))
             | "- [" + (.title | sub("^perf(\\(.*\\))?: "; "")) + "]("
               + .url + ") (#" + (.number|tostring) + ") · @"
               + .author.login
-          ' >> $GITHUB_OUTPUT
+          ' >> "$GITHUB_OUTPUT"
 
-          echo "" >> $GITHUB_OUTPUT
+          echo "" >> "$GITHUB_OUTPUT"
 
-          # BREAKING (title contains !)
-          echo "## 💥 Breaking Changes" >> $GITHUB_OUTPUT
+          echo "## 💥 Breaking Changes" >> "$GITHUB_OUTPUT"
           echo "$PRS" | jq -r '
             .[]
             | select(.title | test("!"))
             | "- [" + .title + "](" + .url + ") (#" + (.number|tostring) + ") · @"
               + .author.login
-          ' >> $GITHUB_OUTPUT
+          ' >> "$GITHUB_OUTPUT"
 
-          echo "EOF" >> $GITHUB_OUTPUT
+          echo "EOF" >> "$GITHUB_OUTPUT"
 
       - name: Download release artifacts
         uses: actions/download-artifact@v4
