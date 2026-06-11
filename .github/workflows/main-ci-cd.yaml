@@ -1,10 +1,10 @@
-name: Dev CI Pipeline
+name: Production CI/CD Pipeline
 
 on:
   workflow_dispatch:
   push:
     branches:
-      - dev
+      - main
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -138,6 +138,7 @@ jobs:
         with:
           name: vendor-bin-${{ matrix.image.name }}
           path: vendor/bin
+          retention-days: 7
 
   # ---------------------------------------------------
   # 4. COMPILE AMXX SCRIPTS (independent, runs in parallel)
@@ -208,6 +209,7 @@ jobs:
         with:
           name: amxx-plugins
           path: compiled_plugins/
+          retention-days: 1
 
   # ---------------------------------------------------
   # 5. BUILD PROJECT + PACKAGE
@@ -313,6 +315,7 @@ jobs:
         with:
           name: amxmodx-discord-api-v${{ needs.versioning.outputs.version }}-${{ matrix.image.name }}-${{ matrix.config.name }}
           path: ${{ github.workspace }}/${{ steps.package.outputs.zip }}
+          retention-days: 1
 
   # ---------------------------------------------------
   # 6. PUBLISH GITHUB RELEASE
@@ -337,74 +340,88 @@ jobs:
       - name: Generate changelog
         id: changelog
         env:
-          GH_TOKEN: ${{ github.token }}
+            GH_TOKEN: ${{ github.token }}
         run: |
-          set -euo pipefail
+            set -euo pipefail
 
-          echo "CHANGELOG<<EOF" >> "$GITHUB_OUTPUT"
-          echo "# 🚀 Pre-Release v${{ needs.versioning.outputs.version }}" >> "$GITHUB_OUTPUT"
-          echo "Below are all changes made in this pre-release!" >> "$GITHUB_OUTPUT"
-          echo "" >> "$GITHUB_OUTPUT"
+            VERSION="${{ needs.versioning.outputs.version }}"
 
-          PRS=$(gh pr list --state merged --limit 50 --json title,number,author,url,mergedAt)
+            # Get latest FULL release tag (ignore pre-releases)
+            LAST_TAG=$(gh release list \
+            --limit 50 \
+            --json tagName,isPrerelease \
+            -q '.[] | select(.isPrerelease == false) | .tagName' \
+            | head -n 1)
 
-          format_list () {
-            echo "$1" | jq -r '
-              .[]
-              | "- " + (.title | sub("^(feat|fix|perf)(\\(.*\\))?: *"; "")) +
-                " (#" + (.number|tostring) + ")"
-            '
-          }
+            if [ -z "$LAST_TAG" ]; then
+            echo "No previous release found, using all history"
+            RANGE=""
+            else
+            RANGE="$LAST_TAG..HEAD"
+            fi
 
-          # ---------------- FEATURES ----------------
-          FEATURES=$(echo "$PRS" | jq '[.[] | select(.title | test("^feat(\\(.*\\))?:"))]')
-          if [ "$(echo "$FEATURES" | jq 'length')" -gt 0 ]; then
+            echo "Using range: $RANGE"
+
+            # Get merged PRs since last release commit
+            if [ -z "$RANGE" ]; then
+            PRS=$(gh pr list --state merged --limit 100 --json title,number,author,url,mergedAt)
+            else
+            PRS=$(gh pr list --state merged --search "merged:>$LAST_TAG" --limit 100 --json title,number,author,url,mergedAt)
+            fi
+
+            echo "CHANGELOG<<EOF" >> "$GITHUB_OUTPUT"
+            echo "# 🚀 Release v$VERSION" >> "$GITHUB_OUTPUT"
+            echo "See what's new in this stable release version!" >> "$GITHUB_OUTPUT"
+
+            # FEATURES
+            FEATURES=$(echo "$PRS" | jq '[.[] | select(.title | test("^feat(\\(.*\\))?:"))]')
+            if [ "$(echo "$FEATURES" | jq 'length')" -gt 0 ]; then
             echo "## ✨ Features" >> "$GITHUB_OUTPUT"
             echo "$FEATURES" | jq -r '
-              .[]
-              | "- " + (.title | sub("^feat(\\(.*\\))?: *"; "")) +
+                .[]
+                | "- " + (.title | sub("^feat(\\(.*\\))?: *"; "")) +
                 " (#" + (.number|tostring) + ")"
             ' >> "$GITHUB_OUTPUT"
             echo "" >> "$GITHUB_OUTPUT"
-          fi
+            fi
 
-          # ---------------- FIXES ----------------
-          FIXES=$(echo "$PRS" | jq '[.[] | select(.title | test("^fix(\\(.*\\))?:"))]')
-          if [ "$(echo "$FIXES" | jq 'length')" -gt 0 ]; then
+            # FIXES
+            FIXES=$(echo "$PRS" | jq '[.[] | select(.title | test("^fix(\\(.*\\))?:"))]')
+            if [ "$(echo "$FIXES" | jq 'length')" -gt 0 ]; then
             echo "## 🐛 Bug Fixes" >> "$GITHUB_OUTPUT"
             echo "$FIXES" | jq -r '
-              .[]
-              | "- " + (.title | sub("^fix(\\(.*\\))?: *"; "")) +
+                .[]
+                | "- " + (.title | sub("^fix(\\(.*\\))?: *"; "")) +
                 " (#" + (.number|tostring) + ")"
             ' >> "$GITHUB_OUTPUT"
             echo "" >> "$GITHUB_OUTPUT"
-          fi
+            fi
 
-          # ---------------- PERF ----------------
-          PERF=$(echo "$PRS" | jq '[.[] | select(.title | test("^perf(\\(.*\\))?:"))]')
-          if [ "$(echo "$PERF" | jq 'length')" -gt 0 ]; then
+            # PERF
+            PERF=$(echo "$PRS" | jq '[.[] | select(.title | test("^perf(\\(.*\\))?:"))]')
+            if [ "$(echo "$PERF" | jq 'length')" -gt 0 ]; then
             echo "## ⚡ Performance" >> "$GITHUB_OUTPUT"
             echo "$PERF" | jq -r '
-              .[]
-              | "- " + (.title | sub("^perf(\\(.*\\))?: *"; "")) +
+                .[]
+                | "- " + (.title | sub("^perf(\\(.*\\))?: *"; "")) +
                 " (#" + (.number|tostring) + ")"
             ' >> "$GITHUB_OUTPUT"
             echo "" >> "$GITHUB_OUTPUT"
-          fi
+            fi
 
-          # ---------------- BREAKING ----------------
-          BREAKING=$(echo "$PRS" | jq '[.[] | select(.title | test("!"))]')
-          if [ "$(echo "$BREAKING" | jq 'length')" -gt 0 ]; then
+            # BREAKING
+            BREAKING=$(echo "$PRS" | jq '[.[] | select(.title | test("!"))]')
+            if [ "$(echo "$BREAKING" | jq 'length')" -gt 0 ]; then
             echo "## 💥 Breaking Changes" >> "$GITHUB_OUTPUT"
             echo "$BREAKING" | jq -r '
-              .[]
-              | "- " + .title +
+                .[]
+                | "- " + .title +
                 " (#" + (.number|tostring) + ")"
             ' >> "$GITHUB_OUTPUT"
             echo "" >> "$GITHUB_OUTPUT"
-          fi
+            fi
 
-          echo "EOF" >> "$GITHUB_OUTPUT"
+            echo "EOF" >> "$GITHUB_OUTPUT"
 
       - name: Download release artifacts
         uses: actions/download-artifact@v4

@@ -1,0 +1,437 @@
+name: Development CI/CD Pipeline
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - dev
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      
+jobs:
+  # ---------------------------------------------------
+  # 1. VERSIONING (READ ONLY, NO GIT PUSH)
+  # ---------------------------------------------------
+  versioning:
+    runs-on: ubuntu-latest
+
+    outputs:
+      version: ${{ steps.ver.outputs.version }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read version
+        id: ver
+        run: |
+          set -euo pipefail
+
+          VERSION=$(tr -d '\n' < VERSION)
+
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::VERSION must be semantic version like 1.2.3"
+            exit 1
+          fi
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+  # ---------------------------------------------------
+  # 2. DOCKER IMAGE (GHA CACHE ONLY)
+  # ---------------------------------------------------
+  docker-cache:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        image:
+          - name: debian12-i386
+            context: ./docker-images/debian12-i386
+            dockerfile: ./docker-images/debian12-i386/Dockerfile
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker-container
+          name: shared-builder
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.image.context }}
+          file: ${{ matrix.image.dockerfile }}
+          tags: amxx-builder:${{ matrix.image.name }}
+          load: true
+          cache-from: type=gha,scope=docker-${{ matrix.image.name }}
+          cache-to: type=gha,mode=max,scope=docker-${{ matrix.image.name }}
+
+  # ---------------------------------------------------
+  # 3. LIBS BUILD (cached + artifact)
+  # ---------------------------------------------------
+  libs-build:
+    runs-on: ubuntu-latest
+    needs: docker-cache
+
+    strategy:
+      matrix:
+        image:
+          - name: debian12-i386
+            context: ./docker-images/debian12-i386
+            dockerfile: ./docker-images/debian12-i386/Dockerfile
+
+    outputs:
+      cache-hit: ${{ steps.cache.outputs.cache-hit }}
+      libs-hash: ${{ steps.hash.outputs.hash }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compute libraries hash
+        id: hash
+        run: |
+          set -euo pipefail
+          HASH=$(find libs_builder.sh docker-images -type f -print0 \
+            | sort -z \
+            | xargs -0 sha256sum \
+            | sha256sum \
+            | awk '{print $1}')
+          echo "hash=$HASH" >> "$GITHUB_OUTPUT"
+
+      - name: Restore libraries cache
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: vendor/bin
+          key: libs-${{ matrix.image.name }}-${{ steps.hash.outputs.hash }}
+
+      - name: Set up Docker Buildx
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker-container
+          name: shared-builder
+
+      - name: Build Docker image
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.image.context }}
+          file: ${{ matrix.image.dockerfile }}
+          tags: amxx-builder:${{ matrix.image.name }}
+          load: true
+          cache-from: type=gha,scope=docker-${{ matrix.image.name }}
+          cache-to: type=gha,mode=max,scope=docker-${{ matrix.image.name }}
+          provenance: false
+
+      - name: Build libs
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace \
+            amxx-builder:${{ matrix.image.name }} \
+            bash ./libs_builder.sh
+
+      - name: Upload libraries artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vendor-bin-${{ matrix.image.name }}
+          path: vendor/bin
+          retention-days: 7
+
+  # ---------------------------------------------------
+  # 4. COMPILE AMXX SCRIPTS (independent, runs in parallel)
+  # ---------------------------------------------------
+  compile-amxx-plugins:
+    runs-on: ubuntu-latest
+    needs: versioning
+    env:
+      VERSION: ${{ needs.versioning.outputs.version }}
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Patch versioned include for discordapiconsts.inc
+        run: |
+          set -euo pipefail
+          sed -i \
+            "s/^#define DISCORDAPI_VERSION.*/#define DISCORDAPI_VERSION \"$VERSION\"/" \
+            amxmodx/scripting/include/discordapiconsts.inc
+
+      - name: Download & extract AMXX compiler
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update -qq
+          sudo apt-get install -y libc6:i386 libstdc++6:i386
+          curl -L "https://github.com/alliedmodders/amxmodx/releases/download/1.9.0.5303/amxmodx-1.9.0-git5303-base-linux.tar.gz" \
+            -o amxmodx-base.tar.gz
+          tar -xzf amxmodx-base.tar.gz
+          chmod +x addons/amxmodx/scripting/amxxpc
+
+      - name: Prepare compiler workspace
+        run: |
+          COMPILER_DIR="addons/amxmodx/scripting"
+          WORKSPACE_SMA="amxmodx/scripting"
+          WORKSPACE_INC="amxmodx/scripting/include"
+          # Remove ALL stock .sma files so only ours get compiled
+          rm -f "$COMPILER_DIR"/*.sma
+          # Copy OUR .sma files into the compiler dir
+          cp "$WORKSPACE_SMA"/*.sma "$COMPILER_DIR/"
+          # Overlay OUR .inc files on top of stock includes
+          cp "$WORKSPACE_INC"/*.inc "$COMPILER_DIR/include/"
+          mkdir -p compiled_plugins
+          echo "=== SMA files to compile ==="
+          ls -la "$COMPILER_DIR"/*.sma
+
+      - name: Compile AMXX plugins
+        run: |
+          COMPILER_DIR="${{ github.workspace }}/addons/amxmodx/scripting"
+          FAILED=()
+          for SMA in "$COMPILER_DIR"/*.sma; do
+            NAME=$(basename "$SMA" .sma)
+            echo "Compiling $NAME.sma..."
+            # cd into compiler dir so amxxpc32.so is found next to amxxpc
+            (cd "$COMPILER_DIR" && ./amxxpc "$SMA" \
+              -i"$COMPILER_DIR/include" \
+              -o"${{ github.workspace }}/compiled_plugins/$NAME.amxx")
+            if [ $? -ne 0 ]; then
+              echo "::warning::Failed to compile $NAME.sma"
+              FAILED+=("$NAME.sma")
+            fi
+          done
+          if [ ${#FAILED[@]} -gt 0 ]; then
+            echo "::error::The following plugins failed to compile: ${FAILED[*]}"
+            exit 1
+          fi
+      - name: Upload compiled AMXX plugins artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: amxx-plugins
+          path: compiled_plugins/
+          retention-days: 1
+
+  # ---------------------------------------------------
+  # 5. BUILD PROJECT + PACKAGE
+  # ---------------------------------------------------
+  build-project:
+    runs-on: ubuntu-latest
+    needs: [libs-build, compile-amxx-plugins, versioning]
+    env:
+      VERSION: ${{ needs.versioning.outputs.version }}
+
+    strategy:
+      matrix:
+        image:
+          - name: debian12-i386
+            context: ./docker-images/debian12-i386
+            dockerfile: ./docker-images/debian12-i386/Dockerfile
+        config:
+          - name: release
+            build_type: Release
+          - name: debug
+            build_type: Debug
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Inject module version
+        run: |
+          set -euo pipefail
+
+          sed -i \
+            "s/^#define MODULE_VERSION.*/#define MODULE_VERSION \"$VERSION\"/" \
+            vendor/include/amxmodx/sdk/moduleconfig.h
+
+      - name: Download libraries
+        uses: actions/download-artifact@v4
+        with:
+          name: vendor-bin-${{ matrix.image.name }}
+          path: vendor/bin
+
+      - name: Download compiled AMXX plugins
+        uses: actions/download-artifact@v4
+        with:
+          name: amxx-plugins
+          path: amxx-plugins/
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker-container
+          name: shared-builder
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.image.context }}
+          file: ${{ matrix.image.dockerfile }}
+          tags: amxx-builder:${{ matrix.image.name }}
+          load: true
+          cache-from: type=gha,scope=docker-${{ matrix.image.name }}
+          cache-to: type=gha,mode=max,scope=docker-${{ matrix.image.name }}
+          provenance: false
+
+      - name: Build project
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace \
+            amxx-builder:${{ matrix.image.name }} \
+            bash -c "
+              rm -rf build &&
+              mkdir build &&
+              cd build &&
+              cmake .. -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
+                -DLIB_DIR=/workspace/vendor/bin &&
+              make -j$(nproc || echo 2)
+            "
+
+      - name: Create package archive artifact
+        id: package
+        run: |
+          set -euo pipefail
+
+          mkdir -p package/bin/linux32
+          cp -r build/*.so package/bin/linux32/ || true
+
+          mkdir -p package/addons/amxmodx/scripting
+          cp -r amxmodx/scripting/* package/addons/amxmodx/scripting/ || true
+
+          mkdir -p package/addons/amxmodx/configs
+          cp -r amxmodx/configs/* package/addons/amxmodx/configs/ || true
+
+          mkdir -p package/addons/amxmodx/plugins
+          cp amxx-plugins/*.amxx package/addons/amxmodx/plugins/ || true
+
+          ZIP="amxmodx-discord-api-v${VERSION}-${{ matrix.image.name }}-${{ matrix.config.name }}.zip"
+          (cd package && zip -r "../$ZIP" .)
+          echo "zip=$ZIP" >> "$GITHUB_OUTPUT"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: amxmodx-discord-api-v${{ needs.versioning.outputs.version }}-${{ matrix.image.name }}-${{ matrix.config.name }}
+          path: ${{ github.workspace }}/${{ steps.package.outputs.zip }}
+          retention-days: 1
+
+  # ---------------------------------------------------
+  # 6. PUBLISH GITHUB RELEASE
+  # ---------------------------------------------------
+  publish-release:
+    runs-on: ubuntu-latest
+    needs: [build-project, versioning]
+    permissions:
+      contents: write
+      pull-requests: read
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y jq gh
+
+      - name: Generate changelog
+        id: changelog
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          echo "CHANGELOG<<EOF" >> "$GITHUB_OUTPUT"
+          echo "# 🚀 Pre-Release v${{ needs.versioning.outputs.version }}" >> "$GITHUB_OUTPUT"
+          echo "Below are all changes made in this pre-release!" >> "$GITHUB_OUTPUT"
+          echo "" >> "$GITHUB_OUTPUT"
+
+          # ---------------------------------------------------
+          # Get ONLY the latest merged PR (this run)
+          # ---------------------------------------------------
+          PR=$(gh pr list \
+            --state merged \
+            --limit 1 \
+            --json title,number,author,url,mergedAt \
+            --jq '.[0]')
+
+          # wrap into array so existing jq logic works unchanged
+          PRS=$(echo "$PR" | jq -s '.[0] | [.]')
+
+          # ---------------------------------------------------
+          # FEATURES
+          # ---------------------------------------------------
+          FEATURES=$(echo "$PRS" | jq '[.[] | select(.title | test("^feat(\\(.*\\))?:"))]')
+          if [ "$(echo "$FEATURES" | jq 'length')" -gt 0 ]; then
+            echo "## ✨ Features" >> "$GITHUB_OUTPUT"
+            echo "$FEATURES" | jq -r '
+              .[]
+              | "- " + (.title | sub("^feat(\\(.*\\))?: *"; "")) +
+                " (#" + (.number|tostring) + ")"
+            ' >> "$GITHUB_OUTPUT"
+            echo "" >> "$GITHUB_OUTPUT"
+          fi
+
+          # ---------------------------------------------------
+          # FIXES
+          # ---------------------------------------------------
+          FIXES=$(echo "$PRS" | jq '[.[] | select(.title | test("^fix(\\(.*\\))?:"))]')
+          if [ "$(echo "$FIXES" | jq 'length')" -gt 0 ]; then
+            echo "## 🐛 Bug Fixes" >> "$GITHUB_OUTPUT"
+            echo "$FIXES" | jq -r '
+              .[]
+              | "- " + (.title | sub("^fix(\\(.*\\))?: *"; "")) +
+                " (#" + (.number|tostring) + ")"
+            ' >> "$GITHUB_OUTPUT"
+            echo "" >> "$GITHUB_OUTPUT"
+          fi
+
+          # ---------------------------------------------------
+          # PERF
+          # ---------------------------------------------------
+          PERF=$(echo "$PRS" | jq '[.[] | select(.title | test("^perf(\\(.*\\))?:"))]')
+          if [ "$(echo "$PERF" | jq 'length')" -gt 0 ]; then
+            echo "## ⚡ Performance" >> "$GITHUB_OUTPUT"
+            echo "$PERF" | jq -r '
+              .[]
+              | "- " + (.title | sub("^perf(\\(.*\\))?: *"; "")) +
+                " (#" + (.number|tostring) + ")"
+            ' >> "$GITHUB_OUTPUT"
+            echo "" >> "$GITHUB_OUTPUT"
+          fi
+
+          # ---------------------------------------------------
+          # BREAKING CHANGES
+          # ---------------------------------------------------
+          BREAKING=$(echo "$PRS" | jq '[.[] | select(.title | test("!"))]')
+          if [ "$(echo "$BREAKING" | jq 'length')" -gt 0 ]; then
+            echo "## 💥 Breaking Changes" >> "$GITHUB_OUTPUT"
+            echo "$BREAKING" | jq -r '
+              .[]
+              | "- " + .title +
+                " (#" + (.number|tostring) + ")"
+            ' >> "$GITHUB_OUTPUT"
+            echo "" >> "$GITHUB_OUTPUT"
+          fi
+
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+      - name: Download release artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+          pattern: amxmodx-discord-api-*
+          merge-multiple: false
+
+      - name: Create pre-release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.versioning.outputs.version }}
+          name: Pre-Release v${{ needs.versioning.outputs.version }}
+          prerelease: true
+          generate_release_notes: false
+          body: ${{ steps.changelog.outputs.CHANGELOG }}
+          files: artifacts/**/*.zip
