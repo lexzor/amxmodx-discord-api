@@ -84,7 +84,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Compute libs hash
+      - name: Compute libraries hash
         id: hash
         run: |
           set -euo pipefail
@@ -95,7 +95,7 @@ jobs:
             | awk '{print $1}')
           echo "hash=$HASH" >> "$GITHUB_OUTPUT"
 
-      - name: Restore libs cache
+      - name: Restore libraries cache
         id: cache
         uses: actions/cache@v4
         with:
@@ -109,7 +109,7 @@ jobs:
           driver: docker-container
           name: shared-builder
 
-      - name: Build Docker image (cache-miss only)
+      - name: Build Docker image
         if: steps.cache.outputs.cache-hit != 'true'
         uses: docker/build-push-action@v6
         with:
@@ -121,7 +121,7 @@ jobs:
           cache-to: type=gha,mode=max,scope=docker-${{ matrix.image.name }}
           provenance: false
 
-      - name: Build libs (cache miss only)
+      - name: Build libs
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
           docker run --rm \
@@ -130,7 +130,7 @@ jobs:
             amxx-builder:${{ matrix.image.name }} \
             bash ./libs_builder.sh
 
-      - name: Upload libs artifact
+      - name: Upload libraries artifact
         uses: actions/upload-artifact@v4
         with:
           name: vendor-bin-${{ matrix.image.name }}
@@ -148,14 +148,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Patch versioned include for compiler
-        run: |
-          set -euo pipefail
-          sed -i \
-            "s/^#define DISCORDAPI_VERSION.*/#define DISCORDAPI_VERSION \"$VERSION\"/" \
-            amxmodx/scripting/include/discordapiconsts.inc
-
-      - name: Patch versioned include for compiler
+      - name: Patch versioned include for discordapiconsts.inc
         run: |
           set -euo pipefail
           sed -i \
@@ -171,6 +164,7 @@ jobs:
             -o amxmodx-base.tar.gz
           tar -xzf amxmodx-base.tar.gz
           chmod +x addons/amxmodx/scripting/amxxpc
+
       - name: Prepare compiler workspace
         run: |
           COMPILER_DIR="addons/amxmodx/scripting"
@@ -185,7 +179,8 @@ jobs:
           mkdir -p compiled_plugins
           echo "=== SMA files to compile ==="
           ls -la "$COMPILER_DIR"/*.sma
-      - name: Compile plugins
+
+      - name: Compile AMXX plugins
         run: |
           COMPILER_DIR="${{ github.workspace }}/addons/amxmodx/scripting"
           FAILED=()
@@ -205,7 +200,7 @@ jobs:
             echo "::error::The following plugins failed to compile: ${FAILED[*]}"
             exit 1
           fi
-      - name: Upload compiled plugins artifact
+      - name: Upload compiled AMXX plugins artifact
         uses: actions/upload-artifact@v4
         with:
           name: amxx-plugins
@@ -237,13 +232,21 @@ jobs:
         with:
           ref: ${{ github.ref }}
 
-      - name: Download libs
+      - name: Inject module version
+        run: |
+          set -euo pipefail
+
+          sed -i \
+            "s/^#define MODULE_VERSION.*/#define MODULE_VERSION \"$VERSION\"/" \
+            vendor/include/amxmodx/sdk/moduleconfig.h
+
+      - name: Download libraries
         uses: actions/download-artifact@v4
         with:
           name: vendor-bin-${{ matrix.image.name }}
           path: vendor/bin
 
-      - name: Download compiled plugins
+      - name: Download compiled AMXX plugins
         uses: actions/download-artifact@v4
         with:
           name: amxx-plugins
@@ -255,7 +258,7 @@ jobs:
           driver: docker-container
           name: shared-builder
 
-      - name: Build/Pull Docker image
+      - name: Build Docker image
         uses: docker/build-push-action@v6
         with:
           context: ${{ matrix.image.context }}
@@ -281,7 +284,7 @@ jobs:
               make -j$(nproc || echo 2)
             "
 
-      - name: Package & ZIP
+      - name: Create package archive artifact
         id: package
         run: |
           set -euo pipefail
