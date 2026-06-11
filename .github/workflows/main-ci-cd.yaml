@@ -8,10 +8,10 @@ on:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-      
+
 jobs:
   # ---------------------------------------------------
-  # 1. VERSIONING (READ ONLY, NO GIT PUSH)
+  # 1. VERSIONING
   # ---------------------------------------------------
   versioning:
     runs-on: ubuntu-latest
@@ -30,11 +30,11 @@ jobs:
           VERSION=$(tr -d '\n' < VERSION)
 
           if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "::error::VERSION must be semantic version like 1.2.3"
+            echo "::error::VERSION file must contain a semver like 1.2.3"
             exit 1
           fi
 
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
 
   # ---------------------------------------------------
   # 2. DOCKER IMAGE (GHA CACHE ONLY)
@@ -56,7 +56,7 @@ jobs:
           driver: docker-container
           name: shared-builder
 
-      - name: Build Docker image
+      - name: Build and cache Docker image
         uses: docker/build-push-action@v6
         with:
           context: ${{ matrix.image.context }}
@@ -65,6 +65,7 @@ jobs:
           load: true
           cache-from: type=gha,scope=docker-${{ matrix.image.name }}
           cache-to: type=gha,mode=max,scope=docker-${{ matrix.image.name }}
+          provenance: false
 
   # ---------------------------------------------------
   # 3. LIBS BUILD (cached + artifact)
@@ -79,10 +80,6 @@ jobs:
           - name: debian12-i386
             context: ./docker-images/debian12-i386
             dockerfile: ./docker-images/debian12-i386/Dockerfile
-
-    outputs:
-      cache-hit: ${{ steps.cache.outputs.cache-hit }}
-      libs-hash: ${{ steps.hash.outputs.hash }}
 
     steps:
       - uses: actions/checkout@v4
@@ -141,26 +138,28 @@ jobs:
           retention-days: 7
 
   # ---------------------------------------------------
-  # 4. COMPILE AMXX SCRIPTS (independent, runs in parallel)
+  # 4. COMPILE AMXX PLUGINS
   # ---------------------------------------------------
   compile-amxx-plugins:
     runs-on: ubuntu-latest
     needs: versioning
     env:
       VERSION: ${{ needs.versioning.outputs.version }}
-    
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: Patch versioned include for discordapiconsts.inc
+      - name: Patch discordapiconsts.inc (copy, never touch tracked file)
         run: |
           set -euo pipefail
-          
+          # Work on a copy — the tracked file is never modified
+          cp amxmodx/scripting/include/discordapiconsts.inc \
+             amxmodx/scripting/include/discordapiconsts.inc.patched
           sed -i \
-            "s/^#define DISCORD_API_AMXX_API_VERSION_STRING.*/#define DISCORD_API_AMXX_API_VERSION_STRING \"$VERSION\"/" \
-            "amxmodx/scripting/include/discordapiconsts.inc"
-
-          echo "Patched version to $VERSION"
+            "s/^#define DISCORD_API_AMXX_API_VERSION_STRING.*/#define DISCORD_API_AMXX_API_VERSION_STRING \"${VERSION}\"/" \
+            amxmodx/scripting/include/discordapiconsts.inc.patched
+          cp amxmodx/scripting/include/discordapiconsts.inc.patched \
+             amxmodx/scripting/include/discordapiconsts.inc
 
       - name: Download & extract AMXX compiler
         run: |
@@ -177,11 +176,8 @@ jobs:
           COMPILER_DIR="addons/amxmodx/scripting"
           WORKSPACE_SMA="amxmodx/scripting"
           WORKSPACE_INC="amxmodx/scripting/include"
-          # Remove ALL stock .sma files so only ours get compiled
           rm -f "$COMPILER_DIR"/*.sma
-          # Copy OUR .sma files into the compiler dir
           cp "$WORKSPACE_SMA"/*.sma "$COMPILER_DIR/"
-          # Overlay OUR .inc files on top of stock includes
           cp "$WORKSPACE_INC"/*.inc "$COMPILER_DIR/include/"
           mkdir -p compiled_plugins
           echo "=== SMA files to compile ==="
@@ -194,7 +190,6 @@ jobs:
           for SMA in "$COMPILER_DIR"/*.sma; do
             NAME=$(basename "$SMA" .sma)
             echo "Compiling $NAME.sma..."
-            # cd into compiler dir so amxxpc32.so is found next to amxxpc
             (cd "$COMPILER_DIR" && ./amxxpc "$SMA" \
               -i"$COMPILER_DIR/include" \
               -o"${{ github.workspace }}/compiled_plugins/$NAME.amxx")
@@ -207,6 +202,7 @@ jobs:
             echo "::error::The following plugins failed to compile: ${FAILED[*]}"
             exit 1
           fi
+
       - name: Upload compiled AMXX plugins artifact
         uses: actions/upload-artifact@v4
         with:
@@ -237,16 +233,17 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.ref }}
 
-      - name: Inject module version
+      - name: Patch moduleconfig.h (copy, never touch tracked file)
         run: |
           set -euo pipefail
-
+          cp vendor/include/amxmodx/sdk/moduleconfig.h \
+             vendor/include/amxmodx/sdk/moduleconfig.h.patched
           sed -i \
-            "s/^#define MODULE_VERSION.*/#define MODULE_VERSION \"$VERSION\"/" \
-            vendor/include/amxmodx/sdk/moduleconfig.h
+            "s/^#define MODULE_VERSION.*/#define MODULE_VERSION \"${VERSION}\"/" \
+            vendor/include/amxmodx/sdk/moduleconfig.h.patched
+          cp vendor/include/amxmodx/sdk/moduleconfig.h.patched \
+             vendor/include/amxmodx/sdk/moduleconfig.h
 
       - name: Download libraries
         uses: actions/download-artifact@v4
@@ -292,7 +289,7 @@ jobs:
               make -j$(nproc || echo 2)
             "
 
-      - name: Create package archive artifact
+      - name: Create package archive
         id: package
         run: |
           set -euo pipefail
@@ -309,14 +306,14 @@ jobs:
           mkdir -p package/addons/amxmodx/plugins
           cp amxx-plugins/*.amxx package/addons/amxmodx/plugins/ || true
 
-          ZIP="amxmodx-discord-api-v${VERSION}-${{ matrix.image.name }}-${{ matrix.config.name }}.zip"
+          ZIP="amxmodx-discord-api-${VERSION}-${{ matrix.image.name }}-${{ matrix.config.name }}.zip"
           (cd package && zip -r "../$ZIP" .)
           echo "zip=$ZIP" >> "$GITHUB_OUTPUT"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: amxmodx-discord-api-v${{ needs.versioning.outputs.version }}-${{ matrix.image.name }}-${{ matrix.config.name }}
+          name: amxmodx-discord-api-${{ needs.versioning.outputs.version }}-${{ matrix.image.name }}-${{ matrix.config.name }}
           path: ${{ github.workspace }}/${{ steps.package.outputs.zip }}
           retention-days: 1
 
@@ -343,88 +340,67 @@ jobs:
       - name: Generate changelog
         id: changelog
         env:
-            GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ github.token }}
         run: |
-            set -euo pipefail
+          set -euo pipefail
 
-            VERSION="${{ needs.versioning.outputs.version }}"
+          VERSION="${{ needs.versioning.outputs.version }}"
 
-            # Get latest FULL release tag (ignore pre-releases)
-            LAST_TAG=$(gh release list \
+          # Get latest stable release tag
+          LAST_TAG=$(gh release list \
             --limit 50 \
             --json tagName,isPrerelease \
             -q '.[] | select(.isPrerelease == false) | .tagName' \
             | head -n 1)
 
-            if [ -z "$LAST_TAG" ]; then
-            echo "No previous release found, using all history"
-            RANGE=""
-            else
-            RANGE="$LAST_TAG..HEAD"
-            fi
+          # Get merged PRs since last stable release
+          if [ -z "$LAST_TAG" ]; then
+            PRS=$(gh pr list --state merged --limit 100 \
+              --json title,number,author,url,mergedAt)
+          else
+            LAST_DATE=$(gh release view "$LAST_TAG" --json createdAt -q '.createdAt')
+            PRS=$(gh pr list --state merged \
+              --search "merged:>${LAST_DATE}" \
+              --limit 100 \
+              --json title,number,author,url,mergedAt)
+          fi
 
-            echo "Using range: $RANGE"
+          {
+            echo "CHANGELOG<<EOF"
+            echo "# 🚀 Release v${VERSION}"
+            echo "See what's new in this stable release!"
+            echo ""
 
-            # Get merged PRs since last release commit
-            if [ -z "$RANGE" ]; then
-            PRS=$(gh pr list --state merged --limit 100 --json title,number,author,url,mergedAt)
-            else
-            PRS=$(gh pr list --state merged --search "merged:>$LAST_TAG" --limit 100 --json title,number,author,url,mergedAt)
-            fi
-
-            echo "CHANGELOG<<EOF" >> "$GITHUB_OUTPUT"
-            echo "# 🚀 Release v$VERSION" >> "$GITHUB_OUTPUT"
-            echo "See what's new in this stable release version!" >> "$GITHUB_OUTPUT"
-
-            # FEATURES
             FEATURES=$(echo "$PRS" | jq '[.[] | select(.title | test("^feat(\\(.*\\))?:"))]')
             if [ "$(echo "$FEATURES" | jq 'length')" -gt 0 ]; then
-            echo "## ✨ Features" >> "$GITHUB_OUTPUT"
-            echo "$FEATURES" | jq -r '
-                .[]
-                | "- " + (.title | sub("^feat(\\(.*\\))?: *"; "")) +
-                " (#" + (.number|tostring) + ")"
-            ' >> "$GITHUB_OUTPUT"
-            echo "" >> "$GITHUB_OUTPUT"
+              echo "## ✨ Features"
+              echo "$FEATURES" | jq -r '.[] | "- " + (.title | sub("^feat(\\(.*\\))?: *"; "")) + " (#" + (.number|tostring) + ")"'
+              echo ""
             fi
 
-            # FIXES
             FIXES=$(echo "$PRS" | jq '[.[] | select(.title | test("^fix(\\(.*\\))?:"))]')
             if [ "$(echo "$FIXES" | jq 'length')" -gt 0 ]; then
-            echo "## 🐛 Bug Fixes" >> "$GITHUB_OUTPUT"
-            echo "$FIXES" | jq -r '
-                .[]
-                | "- " + (.title | sub("^fix(\\(.*\\))?: *"; "")) +
-                " (#" + (.number|tostring) + ")"
-            ' >> "$GITHUB_OUTPUT"
-            echo "" >> "$GITHUB_OUTPUT"
+              echo "## 🐛 Bug Fixes"
+              echo "$FIXES" | jq -r '.[] | "- " + (.title | sub("^fix(\\(.*\\))?: *"; "")) + " (#" + (.number|tostring) + ")"'
+              echo ""
             fi
 
-            # PERF
             PERF=$(echo "$PRS" | jq '[.[] | select(.title | test("^perf(\\(.*\\))?:"))]')
             if [ "$(echo "$PERF" | jq 'length')" -gt 0 ]; then
-            echo "## ⚡ Performance" >> "$GITHUB_OUTPUT"
-            echo "$PERF" | jq -r '
-                .[]
-                | "- " + (.title | sub("^perf(\\(.*\\))?: *"; "")) +
-                " (#" + (.number|tostring) + ")"
-            ' >> "$GITHUB_OUTPUT"
-            echo "" >> "$GITHUB_OUTPUT"
+              echo "## ⚡ Performance"
+              echo "$PERF" | jq -r '.[] | "- " + (.title | sub("^perf(\\(.*\\))?: *"; "")) + " (#" + (.number|tostring) + ")"'
+              echo ""
             fi
 
-            # BREAKING
             BREAKING=$(echo "$PRS" | jq '[.[] | select(.title | test("!"))]')
             if [ "$(echo "$BREAKING" | jq 'length')" -gt 0 ]; then
-            echo "## 💥 Breaking Changes" >> "$GITHUB_OUTPUT"
-            echo "$BREAKING" | jq -r '
-                .[]
-                | "- " + .title +
-                " (#" + (.number|tostring) + ")"
-            ' >> "$GITHUB_OUTPUT"
-            echo "" >> "$GITHUB_OUTPUT"
+              echo "## 💥 Breaking Changes"
+              echo "$BREAKING" | jq -r '.[] | "- " + .title + " (#" + (.number|tostring) + ")"'
+              echo ""
             fi
 
-            echo "EOF" >> "$GITHUB_OUTPUT"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Download release artifacts
         uses: actions/download-artifact@v4
@@ -433,12 +409,12 @@ jobs:
           pattern: amxmodx-discord-api-*
           merge-multiple: false
 
-      - name: Create pre-release
+      - name: Create release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ needs.versioning.outputs.version }}
-          name: Pre-Release v${{ needs.versioning.outputs.version }}
-          prerelease: true
+          name: Release v${{ needs.versioning.outputs.version }}
+          prerelease: false
           generate_release_notes: false
           body: ${{ steps.changelog.outputs.CHANGELOG }}
           files: artifacts/**/*.zip
