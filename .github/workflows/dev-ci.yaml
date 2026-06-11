@@ -166,6 +166,7 @@ jobs:
             bash ./libs_builder.sh
 
       - name: Upload libs artifact
+        if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/upload-artifact@v4
         with:
           name: vendor-bin
@@ -184,6 +185,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }} # Ensure we check out the branch containing the newly pushed commit
+
+      - name: Patch versioned include for compiler
+        run: |
+          set -euo pipefail
+          sed -i \
+            "s/^#define DISCORDAPI_VERSION.*/#define DISCORDAPI_VERSION \"$VERSION\"/" \
+            amxmodx/scripting/include/discordapiconsts.inc
 
       - name: Download & extract AMXX compiler
         run: |
