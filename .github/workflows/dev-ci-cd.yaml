@@ -349,17 +349,21 @@ jobs:
           echo "Below are all changes made in this pre-release!" >> "$GITHUB_OUTPUT"
           echo "" >> "$GITHUB_OUTPUT"
 
-          PRS=$(gh pr list --state merged --limit 50 --json title,number,author,url,mergedAt)
+          # ---------------------------------------------------
+          # Get ONLY the latest merged PR (this run)
+          # ---------------------------------------------------
+          PR=$(gh pr list \
+            --state merged \
+            --limit 1 \
+            --json title,number,author,url,mergedAt \
+            --jq '.[0]')
 
-          format_list () {
-            echo "$1" | jq -r '
-              .[]
-              | "- " + (.title | sub("^(feat|fix|perf)(\\(.*\\))?: *"; "")) +
-                " (#" + (.number|tostring) + ")"
-            '
-          }
+          # wrap into array so existing jq logic works unchanged
+          PRS=$(echo "$PR" | jq -s '.[0] | [.]')
 
-          # ---------------- FEATURES ----------------
+          # ---------------------------------------------------
+          # FEATURES
+          # ---------------------------------------------------
           FEATURES=$(echo "$PRS" | jq '[.[] | select(.title | test("^feat(\\(.*\\))?:"))]')
           if [ "$(echo "$FEATURES" | jq 'length')" -gt 0 ]; then
             echo "## ✨ Features" >> "$GITHUB_OUTPUT"
@@ -371,7 +375,9 @@ jobs:
             echo "" >> "$GITHUB_OUTPUT"
           fi
 
-          # ---------------- FIXES ----------------
+          # ---------------------------------------------------
+          # FIXES
+          # ---------------------------------------------------
           FIXES=$(echo "$PRS" | jq '[.[] | select(.title | test("^fix(\\(.*\\))?:"))]')
           if [ "$(echo "$FIXES" | jq 'length')" -gt 0 ]; then
             echo "## 🐛 Bug Fixes" >> "$GITHUB_OUTPUT"
@@ -383,7 +389,9 @@ jobs:
             echo "" >> "$GITHUB_OUTPUT"
           fi
 
-          # ---------------- PERF ----------------
+          # ---------------------------------------------------
+          # PERF
+          # ---------------------------------------------------
           PERF=$(echo "$PRS" | jq '[.[] | select(.title | test("^perf(\\(.*\\))?:"))]')
           if [ "$(echo "$PERF" | jq 'length')" -gt 0 ]; then
             echo "## ⚡ Performance" >> "$GITHUB_OUTPUT"
@@ -395,7 +403,9 @@ jobs:
             echo "" >> "$GITHUB_OUTPUT"
           fi
 
-          # ---------------- BREAKING ----------------
+          # ---------------------------------------------------
+          # BREAKING CHANGES
+          # ---------------------------------------------------
           BREAKING=$(echo "$PRS" | jq '[.[] | select(.title | test("!"))]')
           if [ "$(echo "$BREAKING" | jq 'length')" -gt 0 ]; then
             echo "## 💥 Breaking Changes" >> "$GITHUB_OUTPUT"
