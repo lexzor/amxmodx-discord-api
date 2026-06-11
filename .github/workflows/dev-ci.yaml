@@ -330,36 +330,85 @@ jobs:
         run: |
           echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
 
-          echo "## 🚀 Features" >> $GITHUB_OUTPUT
-          echo "$PRS" | jq -r '
+          echo "# 🚀 What's Changed In This Pre-Release" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+
+          PRS_JSON="$PRS"
+
+          # ---------------------------------------------------
+          # FEATURES
+          # ---------------------------------------------------
+          echo "## ✨ Features" >> $GITHUB_OUTPUT
+          echo "$PRS_JSON" | jq -r '
             .[]
-            | select(.labels[].name? == "feat")
-            | "- " + .title + " (#" + (.number|tostring) + ") by " + .author.login
+            | select(.title | test("^feat(\\(.*\\))?:"))
+            | "- [" 
+              + (.title | sub("^feat(\\(.*\\))?: "; "")) 
+              + "]("
+              + .html_url
+              + ") (#" + (.number|tostring) + ") · [@" + .author.login + "](https://github.com/" + .author.login + ")"
           ' >> $GITHUB_OUTPUT
           echo "" >> $GITHUB_OUTPUT
 
+          # ---------------------------------------------------
+          # BUG FIXES
+          # ---------------------------------------------------
           echo "## 🐛 Bug Fixes" >> $GITHUB_OUTPUT
-          echo "$PRS" | jq -r '
+          echo "$PRS_JSON" | jq -r '
             .[]
-            | select(.labels[].name? == "fix")
-            | "- " + .title + " (#" + (.number|tostring) + ") by " + .author.login
+            | select(.title | test("^fix(\\(.*\\))?:"))
+            | "- [" 
+              + (.title | sub("^fix(\\(.*\\))?: "; "")) 
+              + "]("
+              + .html_url
+              + ") (#" + (.number|tostring) + ") · [@" + .author.login + "](https://github.com/" + .author.login + ")"
           ' >> $GITHUB_OUTPUT
           echo "" >> $GITHUB_OUTPUT
 
+          # ---------------------------------------------------
+          # PERFORMANCE
+          # ---------------------------------------------------
           echo "## ⚡ Performance" >> $GITHUB_OUTPUT
-          echo "$PRS" | jq -r '
+          echo "$PRS_JSON" | jq -r '
             .[]
-            | select(.labels[].name? == "perf")
-            | "- " + .title + " (#" + (.number|tostring) + ") by " + .author.login
+            | select(.title | test("^perf(\\(.*\\))?:"))
+            | "- [" 
+              + (.title | sub("^perf(\\(.*\\))?: "; "")) 
+              + "]("
+              + .html_url
+              + ") (#" + (.number|tostring) + ") · [@" + .author.login + "](https://github.com/" + .author.login + ")"
           ' >> $GITHUB_OUTPUT
           echo "" >> $GITHUB_OUTPUT
 
+          # ---------------------------------------------------
+          # BREAKING CHANGES
+          # ---------------------------------------------------
           echo "## 💥 Breaking Changes" >> $GITHUB_OUTPUT
-          echo "$PRS" | jq -r '
+          echo "$PRS_JSON" | jq -r '
             .[]
-            | select(.labels[].name? == "feat!")
-            | "- " + .title + " (#" + (.number|tostring) + ") by " + .author.login
+            | select(.title | test("feat!|!"))
+            | "- [" 
+              + (.title | sub("^(feat!|feat\\(.*!\\):?) ?"; "")) 
+              + "]("
+              + .html_url
+              + ") (#" + (.number|tostring) + ") · [@" + .author.login + "](https://github.com/" + .author.login + ")"
           ' >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+
+          # ---------------------------------------------------
+          # OTHER (fallback)
+          # ---------------------------------------------------
+          echo "## 🔧 Other Changes" >> $GITHUB_OUTPUT
+          echo "$PRS_JSON" | jq -r '
+            .[]
+            | select(
+                (.title | test("^feat(\\(.*\\))?:") | not) and
+                (.title | test("^fix(\\(.*\\))?:") | not) and
+                (.title | test("^perf(\\(.*\\))?:") | not)
+              )
+            | "- [" + .title + "](" + .html_url + ") (#" + (.number|tostring) + ") · [@" + .author.login + "](https://github.com/" + .author.login + ")"
+          ' >> $GITHUB_OUTPUT
+
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Download release artifacts
