@@ -99,7 +99,7 @@ cell AMX_NATIVE_CALL GuildChannelExists(AMX* amx, cell* params)
 
 	const char* channelIdentifier = MF_GetAmxString(amx, params[3], 2, nullptr);
 
-	const std::vector<dpp::snowflake> guildChannels = it->second.channels;
+	const std::vector<dpp::snowflake>& guildChannels = it->second.channels;
 	const dpp::snowflake requestedChannel(channelIdentifier);
 
 	for(const dpp::snowflake& channel : guildChannels)
