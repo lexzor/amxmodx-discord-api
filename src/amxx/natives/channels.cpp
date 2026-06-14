@@ -3,6 +3,7 @@
 cell AMX_NATIVE_CALL SendMessageToChannel(AMX* amx, cell* params)
 {
 	const char* identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
+
 	DiscordBot* bot = g_DiscordBotsManager->GetBotRawPtrByIdentifier(identifier);
 
 	if (bot == nullptr)
