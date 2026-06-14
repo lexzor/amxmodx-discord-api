@@ -68,3 +68,47 @@ cell AMX_NATIVE_CALL GetGuilds(AMX* amx, cell* params)
 
 	return static_cast<cell>(guilds.size());
 }
+
+cell AMX_NATIVE_CALL GuildChannelExists(AMX* amx, cell* params)
+{
+	const char* identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
+
+	DiscordBot* bot = g_DiscordBotsManager->GetBotRawPtrByIdentifier(identifier);
+
+	if (bot == nullptr)
+	{
+		MF_LogError(amx, AMX_ERR_NATIVE, "(GuildChannelExistsByID) Bot with identifier '%s' does not exists", identifier);
+		return FALSE;
+	}
+
+	if (!bot->IsStarted())
+	{
+		MF_LogError(amx, AMX_ERR_NATIVE, "(GuildChannelExistsByID) Bot with identifier '%s' is not ready", identifier);
+		return FALSE;
+	}
+
+	const char* guildIdentifier = MF_GetAmxString(amx, params[2], 1, nullptr);
+
+	const DiscordBot::GuildsMap::iterator it = bot->GetGuildsMap().find(dpp::snowflake(guildIdentifier)); 
+
+	if(it == bot->GetGuildsMap().end())
+	{
+		MF_LogError(amx, AMX_ERR_NATIVE, "(GuildChannelExistsByID) Bot %s it is not added in guild %s", identifier, guildIdentifier);
+		return FALSE;
+	}
+
+	const char* channelIdentifier = MF_GetAmxString(amx, params[3], 2, nullptr);
+
+	const std::vector<dpp::snowflake> guildChannels = it->second.channels;
+	const dpp::snowflake requestedChannel(channelIdentifier);
+
+	for(const dpp::snowflake& channel : guildChannels)
+	{
+		if(channel == requestedChannel)
+		{
+			return TRUE;
+		}
+	}
+
+	return FALSE;
+}

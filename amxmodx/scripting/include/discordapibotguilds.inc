@@ -76,4 +76,15 @@ forward OnGuildDeleted(const identifier[], const guild_data[]);
 * @return 0 if bot does not exists or it's not ready, number of guilds otherwise.
 * @return 0 if buffer size is not > 2.
 */
-native GetGuilds(const identifier[], buffer[], const buffer_len);
+native any:GetGuilds(const identifier[], buffer[], const buffer_len);
+
+/**
+* Check if a channel exists in a guild searching by channel ID.
+*
+* @param identifier         			Bot identifier.
+* @param guild_id						Guild ID to check.
+* @param channel_id						Channel ID to search for.
+*
+* @return								True if bot it's in guild and channel has been found, false otherwise.					
+*/
+native bool:GuildChannelExists(const identifier[], const guild_id[], const channel_id[]);
