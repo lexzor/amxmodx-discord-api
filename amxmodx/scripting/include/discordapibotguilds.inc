@@ -88,3 +88,18 @@ native any:GetGuilds(const identifier[], buffer[], const buffer_len);
 * @return								True if bot it's in guild and channel has been found, false otherwise.					
 */
 native bool:GuildChannelExists(const identifier[], const guild_id[], const channel_id[]);
+
+/**
+* Get a guild's channel name and parent id.
+*
+* @param identifier         			Bot identifier.
+* @param guild_id						Guild ID to check.
+* @param channel_id						Channel ID to search for.
+* @param name_buffer					Buffer to copy channel's name in.
+* @param name_buffer_len				Buffer size for name.
+* @param parent_id_buffer				Buffer to copy channel's parent id in.
+* @param parent_id_buffer_len			Buffer size for channel's parent id.
+*
+* @return								True if bot it's in guild and channel has been found, false otherwise.					
+*/
+native bool:GetGuildChannel(const identifier[], const guild_id[], const channel_id[], name_buffer[], name_buffer_len, parent_id_buffer[], parent_id_buffer_len);
