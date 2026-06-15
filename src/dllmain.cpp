@@ -20,6 +20,13 @@ void OnPluginsLoaded()
 	RegisterForwards();
 
 	g_EventsQueue->SetProcessingLock(false);
+
+	// Send OnBotReady event for bots which are started from a previous map
+	g_DiscordBotsManager->ForEach([](DiscordBot& bot) {
+		if (bot.IsStarted())
+			ExecuteForward(ON_BOT_READY, bot.GetIdentifier().c_str());
+		}
+	);
 }
 
 void OnPluginsUnloading()
