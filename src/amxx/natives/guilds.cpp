@@ -343,6 +343,14 @@ cell AMX_NATIVE_CALL DeleteGuildChannel(AMX* amx, cell* params)
 
 cell AMX_NATIVE_CALL SetGuildChannelMemberString(AMX* amx, cell* params)
 {
+	const char* buffer = MF_GetAmxString(amx, params[3], 2, nullptr);
+
+	if (!strlen(buffer))
+	{
+		MF_LogError(amx, AMX_ERR_NATIVE, "(SetGuildChannelMemberString) Buffer can't be empty");
+		return FALSE;
+	}
+
 	cell channelHandle = params[1];
 	dpp::channel* channel = g_PendingAmxObjectStore->GetStoreObject<dpp::channel>(channelHandle);
 
@@ -353,7 +361,6 @@ cell AMX_NATIVE_CALL SetGuildChannelMemberString(AMX* amx, cell* params)
 	}
 
 	cell stringMemberType = params[2];
-	const char* buffer = MF_GetAmxString(amx, params[3], 2, nullptr);
 
 	enum class ChannelMemberString : uint32_t
 	{
