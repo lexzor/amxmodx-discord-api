@@ -9,20 +9,29 @@ AMX_NATIVE_INFO g_DiscordBotNatives[] =
 		{ "GetModuleVersionString", GetModuleVersionString },
 
 		// bot.h
-		{"CreateBot", CreateBot},
-		{"SetBotOptions", SetBotOptions},
-		{"BotExists", BotExists},
-		{"IsBotReady", IsBotReady},
-		{"StartBot", StartBot},
-		{"StopBot", StopBot},
-		{"DeleteBot", DeleteBot},
-		{"SendReply", SendReply},
+		{ "CreateBot", CreateBot },
+		{ "SetBotOptions", SetBotOptions },
+		{ "BotExists", BotExists },
+		{ "IsBotReady", IsBotReady },
+		{ "StartBot", StartBot },
+		{ "StopBot", StopBot },
+		{ "DeleteBot", DeleteBot },
+		{ "SendReply", SendReply },
 
 		// guilds.h
-		{"GetGuilds", GetGuilds},
+		{ "GetGuilds", GetGuilds },
+		{ "GuildChannelExists", GuildChannelExists },
+		{ "GetGuildChannel", GetGuildChannel },
+		{ "BeginCreateGuildChannel", BeginCreateGuildChannel },
+		{ "EndCreateGuildChannel", EndCreateGuildChannel },
+		{ "DeleteGuildChannel", DeleteGuildChannel },
+		{ "SetGuildChannelMemberString", SetGuildChannelMemberString },
+		{ "SetGuildChannelMemberInt", SetGuildChannelMemberInt },
+		{ "BeginEditGuildChannel", BeginEditGuildChannel },
+		{ "EndEditGuildChannel", EndEditGuildChannel },
 
 		// channels.h
-		{"SendMessageToChannel", SendMessageToChannel},
+		{ "SendMessageToChannel", SendMessageToChannel },
 
 		{NULL, NULL}};
 

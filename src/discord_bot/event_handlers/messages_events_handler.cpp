@@ -56,7 +56,7 @@ void MessagesEventsHandler::OnMessageCreate(const dpp::message_create_t& cb)
         MF_PrintSrvConsole("%s OnChannelMessageCreated: \n%s\n", m_Bot->GetConsolePrefix().c_str(), eventData.dump(4).c_str());
 
     m_Bot->SetInteractionReplyAbility(true);
-    ExecuteForward(ON_CHANNEL_MESSAGE_CREATED, m_Bot->GetIdentifier().c_str(), cb.msg.channel_id.str().c_str(), eventData.dump().c_str());
+    ExecuteForward(ON_CHANNEL_MESSAGE_CREATE, m_Bot->GetIdentifier().c_str(), cb.msg.channel_id.str().c_str(), eventData.dump().c_str());
 	m_Bot->SetInteractionReplyAbility(false);
 
 	const std::string& lastInteractionMessage = m_Bot->GetInteractionMessage();

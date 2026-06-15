@@ -8,8 +8,12 @@ enum ForwardType
 
 	ON_GUILD_CREATED,
 	ON_GUILD_DELETED,
+
+	ON_GUILD_CHANNEL_CREATE,
+	ON_GUILD_CHANNEL_DELETE,
+	ON_GUILD_CHANNEL_EDIT,
 	
-	ON_CHANNEL_MESSAGE_CREATED,
+	ON_CHANNEL_MESSAGE_CREATE,
 };
 
 using ForwardsMap = std::unordered_map<ForwardType, int>;

@@ -17,6 +17,175 @@
 #define _discordapibotguilds_included
 
 /*
+* Enums
+*
+*/
+
+// Used in SetGuildChannelMemberString native as second parameter.
+enum ChannelMemberString
+{
+	/**
+	 * @note The name of the channel.
+	 */
+	NAME,
+
+	/**
+	 * @note Parent of the channel.
+	 */
+	PARENT_ID,
+}
+
+// Used in SetGuildChannelMemberInt native as second parameter.
+enum ChannelMemberInt
+{
+	/**
+	 * @note Type of the channel, from ChannelType enum.
+	 */
+	TYPE,
+
+	/**
+	 * @note Flags of the channel, from ChannelFlag enum.
+	 */
+	FLAGS,
+
+	/**
+	 * @note User limit in a voice channel. Between 0 and 99.
+	 */
+	USER_LIMIT
+}
+
+#include <amxmodx>
+
+// Used in SetGuildChannelMemberInt third parameter.
+enum ChannelFlag
+{
+	/**
+	 * @note NSFW Gated Channel.
+	 */
+	NSFW                     = (1 << 4),  // 0b0000000000010000
+
+	/**
+	 * @note Video quality forced to 720p.
+	 */
+	VIDEO_QUALITY_720P       = (1 << 5),  // 0b0000000000100000
+
+	/**
+	 * @note Lock permissions (only used when updating channel positions).
+	 */
+	LOCK_PERMISSIONS         = (1 << 6),  // 0b0000000001000000
+
+	/**
+	 * @note Thread is pinned to the top of its parent forum or media channel.
+	 */
+	PINNED_THREAD            = (1 << 7),  // 0b0000000010000000
+
+	/**
+	 * @note Whether a tag is required to be specified when creating a thread in a forum or media channel.
+	 * Tags are specified in the thread's applied_tags field.
+	 */
+	REQUIRE_TAG              = (1 << 8),  // 0b0000000100000000
+
+	/**
+	 * @note When set hides the embedded media download options. Available only for media channels.
+	 */
+	HIDE_MEDIA_DOWNLOAD_OPTIONS = (1 << 12)  // 0b0001000000000000
+}
+
+/**
+ * Used in SetGuildChannelMemberInt third parameter. 
+ * Below channel type values are copied from DPP (v10.1.5)
+ */
+enum ChannelType
+{
+	/**
+	 * @note A text channel within a server.
+	 */
+	CHANNEL_TEXT = 0,
+
+	/**
+	 * @note A direct message between users.
+	 */
+	DM = 1,
+
+	/**
+	 * @note A voice channel within a server.
+	 */
+	CHANNEL_VOICE = 2,
+
+	/**
+	 * @note a direct message between multiple users
+	 * @deprecated this channel type was intended to be used with the now deprecated GameBridge SDK.
+	 * Existing group dms with bots will continue to function, but newly created channels will be unusable.
+	 */
+	GROUP_DM = 3,
+
+	/**
+	 * @note An organizational category that contains up to 50 channels.
+	 */
+	CHANNEL_CATEGORY = 4,
+
+	/**
+	 * @note A channel that users can follow and cross-post into their own server.
+	 */
+	CHANNEL_ANNOUNCEMENT = 5,
+
+	/**
+	 * @note A channel in which game developers can sell their game on Discord.
+	 * @deprecated Store channels are deprecated by Discord.
+	 */
+	CHANNEL_STORE = 6,
+
+	/**
+	 * @note A temporary sub-channel within a `GUILD_ANNOUNCEMENT` channel.
+	 */
+	CHANNEL_ANNOUNCEMENT_THREAD = 10,
+
+	/**
+	 * @note A temporary sub-channel within a `GUILD_TEXT` or `GUILD_FORUM` channel.
+	 */
+	CHANNEL_PUBLIC_THREAD = 11,
+
+	/**
+	 * @note A temporary sub-channel within a `GUILD_TEXT` channel
+	 * that is only viewable by those invited and those with the `MANAGE_THREADS` permission.
+	 */
+	CHANNEL_PRIVATE_THREAD = 12,
+
+	/**
+	 * @note A "stage" channel, like a voice channel with one authorised speaker.
+	 */
+	CHANNEL_STAGE = 13,
+
+	/**
+	 * @note The channel in a hub containing the listed servers.
+	 *
+	 * @see https://support.discord.com/hc/en-us/articles/4406046651927-Discord-Student-Hubs-FAQ
+	 */
+	CHANNEL_DIRECTORY = 14,
+
+	/**
+	 * @note Forum channel that can only contain threads.
+	 */
+	CHANNEL_FORUM = 15,
+
+	/**
+	 * @note Media channel that can only contain threads, similar to forum channels.
+	 */
+	CHANNEL_MEDIA = 16,
+}
+
+/*
+* Constants
+*
+*/
+
+/**
+ * Invalid channel handle value, returned by BeginCreateGuildChannel and BeginEditGuildChannel
+ * in case of failing to create a ChannelHandle
+ */
+const ChannelHandle:INVALID_CHANNEL_HANDLE = ChannelHandle:-1;
+
+/*
 * Forwards
 *
 */
@@ -48,6 +217,35 @@ forward OnGuildCreated(const identifier[], const guild_data[]);
 */
 forward OnGuildDeleted(const identifier[], const guild_data[]);
 
+/**
+* Triggered after a channel create response has been received.
+*
+* @param identifier         Bot identifier.
+* @param channel_handle		Channel handle returned by BeginCreateGuildChannel or INVALID_CHANNEL_HANDLE
+* 							if the channel has not been created by a request sent by EndCreateGuildChannel.
+* @param success			True if channel has been created successfully, false otherwise.
+* @param channel_id			Channel id if the channel has been created successfully, empty otherwise.
+*/
+forward OnGuildChannelCreate(const identifier[], const ChannelHandle:channel_handle, const bool:success, const channel_id[]);
+
+/**
+* Triggered when a channel delete response has been received.
+*
+* @param identifier         Bot identifier.
+* @param success			True if channel has been deleted successfully, false otherwise.
+* @param channel_id			Channel ID.
+*/
+forward OnGuildChannelDelete(const identifier[], const bool:success, const channel_id[]);
+
+/**
+* Triggered after a channel edit response has been received.
+*
+* @param identifier         Bot identifier.
+* @param success			True if channel has been edited successfully, false otherwise.
+* @param channel_id			Channel ID.
+*/
+forward OnGuildChannelEdit(const identifier[], const ChannelHandle:channel_handle, const bool:success, const channel_id[]);
+
 /*
 *
 * Natives
@@ -76,4 +274,111 @@ forward OnGuildDeleted(const identifier[], const guild_data[]);
 * @return 0 if bot does not exists or it's not ready, number of guilds otherwise.
 * @return 0 if buffer size is not > 2.
 */
-native GetGuilds(const identifier[], buffer[], const buffer_len);
+native any:GetGuilds(const identifier[], buffer[], const buffer_len);
+
+/**
+* Check if a channel exists in a guild searching by channel ID.
+*
+* @param identifier         			Bot identifier.
+* @param guild_id						Guild ID to check.
+* @param channel_id						Channel ID to search for.
+*
+* @return								True if bot it's in guild and channel has been found, false otherwise.					
+*/
+native bool:GuildChannelExists(const identifier[], const guild_id[], const channel_id[]);
+
+/**
+* Get a guild's channel name and parent id.
+*
+* @param identifier         			Bot identifier.
+* @param guild_id						Guild ID to check.
+* @param channel_id						Channel ID to search for.
+* @param name_buffer					Buffer to copy channel's name in.
+* @param name_buffer_len				Buffer size for name.
+* @param parent_id_buffer				Buffer to copy channel's parent id in.
+* @param parent_id_buffer_len			Buffer size for channel's parent id.
+*
+* @return								True if bot it's in guild and channel has been found, false otherwise.					
+*/
+native bool:GetGuildChannel(const identifier[], const guild_id[], const channel_id[], name_buffer[], name_buffer_len, parent_id_buffer[], parent_id_buffer_len);
+
+/**
+ * Begins creating a new channel.
+ *
+ * @param identifier    				Bot identifier.
+ * @param guild_id      				Guild ID in which the channel will be created.
+ *
+ * @return              				A ChannelHandle on success if bot it's added in the guild, or INVALID_CHANNEL_HANDLE on failure.
+ */
+native ChannelHandle:BeginCreateGuildChannel(const identifier[], const guild_id[]);
+
+/**
+ * Finalizes channel creation and sends the request to the Discord API.
+ *
+ * @note A response will be sent in OnGuildChannelCreate.
+ * @note The channel_handle passed here will later be passed to OnChannelCreateEvent.
+ *
+ * @param identifier     				Bot identifier.
+ * @param channel_handle 				Channel handle returned by BeginCreateGuildChannel.
+ *
+ * @return               				True if the request was successfully sent to the Discord API, false otherwise.
+ */
+native bool:EndCreateGuildChannel(const identifier[], ChannelHandle:channel_handle);
+
+/**
+ * Send a request to Discord API to delete a specific channel.
+ *
+ * @note A response will be sent in OnGuildChannelDelete.
+ * 
+ * @param channel_handle 				Channel handle returned by BeginCreateGuildChannel.
+ * @param member         				The member to set, from ChannelMemberString.
+ * @param buffer         				The value to assign to the member.
+ *
+ * @return               				True if , false if channel_handle is invalid.
+ */
+native bool:DeleteGuildChannel(const identifier[], const guild_id[], const channel_id[]);
+
+/**
+ * Sets a string member on a channel that is being created.
+ *
+ * @param channel_handle 				Channel handle returned by BeginCreateGuildChannel.
+ * @param member         				The member to set, from ChannelMemberString.
+ * @param buffer         				The value to assign to the member.
+ *
+ * @return               				True if the member was successfully set, false if channel_handle is invalid.
+ */
+native bool:SetGuildChannelMemberString(ChannelHandle:channel_handle, ChannelMemberString:member, const buffer[]);
+
+/**
+ * Sets an integer member on a channel that is being created.
+ *
+ * @param channel_handle 				Channel handle returned by BeginCreateGuildChannel.
+ * @param member         				The member to set, from ChannelMemberInt.
+ * @param value         				The value to assign to the member.
+ *
+ * @return               				True if the member was successfully set, false if channel_handle is invalid.
+ */
+native bool:SetGuildChannelMemberInt(ChannelHandle:channel_handle, ChannelMemberInt:member, { ChannelType, ChannelFlag, _}:value);
+
+/**
+ * Begins editing an existing channel.
+ *
+ * @param identifier    				Bot identifier.
+ * @param channel_id      				Guild ID in which the channel will be created.
+ *
+ * @return              				A ChannelHandle on success if bot it's added in the guild, or INVALID_CHANNEL_HANDLE on failure.
+ */
+native ChannelHandle:BeginEditGuildChannel(const identifier[], const channel_id[]);
+
+/**
+ * Finalizes channel editing and sends the request to the Discord API.
+ *
+ * @note A response will be sent in OnGuildChannelCreate.
+ * @note The channel_handle passed here will later be passed to OnChannelCreateEvent.
+ *
+ * @param identifier     				Bot identifier.
+ * @param channel_handle 				Channel handle returned by BeginC reateGuildChannel.
+ *
+ * @return               				True if the request was successfully sent to the Discord API, false otherwise.
+ */
+native bool:EndEditGuildChannel(const identifier[], ChannelHandle:channel_handle);
