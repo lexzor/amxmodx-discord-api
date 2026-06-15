@@ -228,40 +228,6 @@ cell AMX_NATIVE_CALL BeginCreateGuildChannel(AMX* amx, cell* params)
 	return handle;
 }
 
-cell AMX_NATIVE_CALL SetGuildChannelMemberString(AMX* amx, cell* params)
-{
-	cell channelHandle = params[1];
-	dpp::channel* channel = g_PendingAmxObjectStore->GetStoreObject<dpp::channel>(channelHandle);
-
-	if (channel == nullptr)
-	{
-		MF_LogError(amx, AMX_ERR_NATIVE, "(SetGuildChannelMemberString) Invalid channel handle %i", channelHandle);
-		return FALSE;
-	}
-
-	cell stringMemberType = params[2];
-	const char* buffer = MF_GetAmxString(amx, params[3], 2, nullptr);
-
-	enum class ChannelMemberString : uint32_t
-	{
-		NAME,
-		PARENT_ID
-	};
-
-	switch (static_cast<ChannelMemberString>(stringMemberType))
-	{
-	case ChannelMemberString::NAME:
-		channel->set_name(buffer);
-		break;
-
-	case ChannelMemberString::PARENT_ID:
-		channel->set_parent_id(dpp::snowflake(buffer));
-		break;
-	}
-
-	return TRUE;
-}
-
 cell AMX_NATIVE_CALL EndCreateGuildChannel(AMX* amx, cell* params)
 {
 	const char* identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
@@ -371,6 +337,100 @@ cell AMX_NATIVE_CALL DeleteGuildChannel(AMX* amx, cell* params)
 			});
 		}
 	});
+
+	return TRUE;
+}
+
+cell AMX_NATIVE_CALL SetGuildChannelMemberString(AMX* amx, cell* params)
+{
+	cell channelHandle = params[1];
+	dpp::channel* channel = g_PendingAmxObjectStore->GetStoreObject<dpp::channel>(channelHandle);
+
+	if (channel == nullptr)
+	{
+		MF_LogError(amx, AMX_ERR_NATIVE, "(SetGuildChannelMemberString) Invalid channel handle %i", channelHandle);
+		return FALSE;
+	}
+
+	cell stringMemberType = params[2];
+	const char* buffer = MF_GetAmxString(amx, params[3], 2, nullptr);
+
+	enum class ChannelMemberString : uint32_t
+	{
+		NAME,
+		PARENT_ID
+	};
+
+	switch (static_cast<ChannelMemberString>(stringMemberType))
+	{
+	case ChannelMemberString::NAME:
+		channel->set_name(buffer);
+		break;
+
+	case ChannelMemberString::PARENT_ID:
+		channel->set_parent_id(dpp::snowflake(buffer));
+		break;
+	}
+
+	return TRUE;
+}
+
+cell AMX_NATIVE_CALL SetGuildChannelMemberInt(AMX* amx, cell* params)
+{
+	cell channelHandle = params[1];
+	dpp::channel* channel = g_PendingAmxObjectStore->GetStoreObject<dpp::channel>(channelHandle);
+
+	if (channel == nullptr)
+	{
+		MF_LogError(amx, AMX_ERR_NATIVE, "(SetGuildChannelMemberInt) Invalid channel handle %i", channelHandle);
+		return FALSE;
+	}
+
+	cell intMemberType = params[2];
+	cell value = params[3];
+
+	enum class ChannelMemberInt : uint32_t
+	{
+		TYPE,
+		FLAGS,
+		USER_LIMIT
+	};
+
+	switch (static_cast<ChannelMemberInt>(intMemberType))
+	{
+	case ChannelMemberInt::TYPE:
+	{
+		channel->set_type(static_cast<dpp::channel_type>(value));
+		break;
+	}
+
+	case ChannelMemberInt::FLAGS:
+	{
+		auto applyFlag = [channel, value](const dpp::channel_flags flag) {
+			(value & static_cast<cell>(flag)) ? channel->add_flag(flag) : channel->remove_flag(flag);
+		};
+
+		applyFlag(dpp::c_nsfw);
+		applyFlag(dpp::c_video_quality_720p);
+		applyFlag(dpp::c_lock_permissions);
+		applyFlag(dpp::c_pinned_thread);
+		applyFlag(dpp::c_require_tag);
+		applyFlag(dpp::c_hide_media_download_options);
+		break;
+	}
+
+	case ChannelMemberInt::USER_LIMIT:
+	{
+		if (value < 0 || value > 99)
+		{
+			MF_LogError(amx, AMX_ERR_NATIVE, "(SetGuildChannelMemberInt) Invalid USER_LIMIT member value %i. Minimum value is 0, maximum value is 99", value);
+			return FALSE;
+		}
+
+		channel->set_user_limit(value);
+		break;
+	}
+	}
 
 	return TRUE;
 }

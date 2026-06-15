@@ -21,62 +21,80 @@
 *
 */
 
-// Used in SetGuildChannelMemberString native as second parameter
+// Used in SetGuildChannelMemberString native as second parameter.
 enum ChannelMemberString
 {
 	/**
-	 * @note The name of the channel
+	 * @note The name of the channel.
 	 */
 	NAME,
 
 	/**
-	 * @note Parent of the channel
+	 * @note Parent of the channel.
 	 */
 	PARENT_ID,
 }
 
-// Used in SetGuildChannelMemberInt native as second parameter
-enum ChannelMemberTypeInt
+// Used in SetGuildChannelMemberInt native as second parameter.
+enum ChannelMemberInt
 {
-	TYPE
+	/**
+	 * @note Type of the channel, from ChannelType enum.
+	 */
+	TYPE,
+
+	/**
+	 * @note Flags of the channel, from ChannelFlag enum.
+	 */
+	FLAGS,
+
+	/**
+	 * @note User limit in a voice channel. Between 0 and 99.
+	 */
+	USER_LIMIT
 }
 
-// Used in 
+#include <amxmodx>
+
+// Used in SetGuildChannelMemberInt third parameter.
 enum ChannelFlag
 {
 	/**
-	 * @note NSFW Gated Channel
+	 * @note NSFW Gated Channel.
 	 */
-	NSFW                     = (1 << 0),
+	NSFW                     = (1 << 4),  // 0b0000000000010000
 
 	/**
-	 * @note Video quality forced to 720p
+	 * @note Video quality forced to 720p.
 	 */
-	VIDEO_QUALITY_720P       = (1 << 1),
+	VIDEO_QUALITY_720P       = (1 << 5),  // 0b0000000000100000
 
 	/**
-	 * @note Lock permissions (only used when updating channel positions)
+	 * @note Lock permissions (only used when updating channel positions).
 	 */
-	LOCK_PERMISSIONS         = (1 << 2),
+	LOCK_PERMISSIONS         = (1 << 6),  // 0b0000000001000000
 
 	/**
-	 * @note Thread is pinned to the top of its parent forum or media channel
+	 * @note Thread is pinned to the top of its parent forum or media channel.
 	 */
-	PINNED_THREAD            = (1 << 3),
+	PINNED_THREAD            = (1 << 7),  // 0b0000000010000000
 
 	/**
 	 * @note Whether a tag is required to be specified when creating a thread in a forum or media channel.
 	 * Tags are specified in the thread's applied_tags field.
 	 */
-	REQUIRE_TAG              = (1 << 4),
+	REQUIRE_TAG              = (1 << 8),  // 0b0000000100000000
 
 	/**
-	 * @note When set hides the embedded media download options. Available only for media channels
+	 * @note When set hides the embedded media download options. Available only for media channels.
 	 */
-	HIDE_MEDIA_DOWNLOAD_OPTIONS = (1 << 5)
+	HIDE_MEDIA_DOWNLOAD_OPTIONS = (1 << 12)  // 0b0001000000000000
 }
 
-// Below channel type values are copied from DPP (v10.1.5)
+/**
+ * Used in SetGuildChannelMemberInt third parameter. 
+ * Below channel type values are copied from DPP (v10.1.5)
+ */
 enum ChannelType
 {
 	/**
@@ -156,14 +174,12 @@ enum ChannelType
 	CHANNEL_MEDIA = 16,
 }
 
-// enum ChannelMemberIntAcceptedIntValue { ChannelType, ChannelFlag }
-
 /*
 * Constants
 *
 */
 
-// Invalid channel handle value returned by BeginCreateGuildChannel
+// Invalid channel handle value, returned by BeginCreateGuildChannel in case of failing to create a CreateChannelHandle
 const ChannelCreateHandle:INVALID_CHANNEL_HANDLE = ChannelCreateHandle:-1;
 
 /*
@@ -280,13 +296,14 @@ native bool:GetGuildChannel(const identifier[], const guild_id[], const channel_
  * @param identifier    				Bot identifier.
  * @param guild_id      				Guild ID in which the channel will be created.
  *
- * @return              				A ChannelCreateHandle on success, or INVALID_CHANNEL_HANDLE on failure.
+ * @return              				A ChannelCreateHandle on success if bot it's added in the guild, or INVALID_CHANNEL_HANDLE on failure.
  */
 native ChannelCreateHandle:BeginCreateGuildChannel(const identifier[], const guild_id[]);
 
 /**
  * Finalizes channel creation and sends the request to the Discord API.
  *
+ * @note A response will be sent in OnGuildChannelCreate.
  * @note The channel_handle passed here will later be passed to OnChannelCreateEvent.
  *
  * @param identifier     				Bot identifier.
@@ -297,8 +314,10 @@ native ChannelCreateHandle:BeginCreateGuildChannel(const identifier[], const gui
 native bool:EndCreateGuildChannel(const identifier[], ChannelCreateHandle:channel_handle);
 
 /**
- * Send a request to Discord API to delete a specific channel
+ * Send a request to Discord API to delete a specific channel.
  *
+ * @note A response will be sent in OnGuildChannelDelete.
+ * 
  * @param channel_handle 				Channel handle returned by BeginCreateGuildChannel.
  * @param member         				The member to set, from ChannelMemberString.
  * @param buffer         				The value to assign to the member.
@@ -318,4 +337,13 @@ native bool:DeleteGuildChannel(const identifier[], const guild_id[], const chann
  */
 native bool:SetGuildChannelMemberString(ChannelCreateHandle:channel_handle, ChannelMemberString:member, const buffer[]);
 
-// native bool:SetGuildChannelMemberInt(ChannelCreateHandle:channel_handle, ChannelMemberInt:member, ChannelMemberIntAcceptedValues:value);
+/**
+ * Sets an integer member on a channel that is being created.
+ *
+ * @param channel_handle 				Channel handle returned by BeginCreateGuildChannel.
+ * @param member         				The member to set, from ChannelMemberInt.
+ * @param value         				The value to assign to the member.
+ *
+ * @return               				True if the member was successfully set, false if channel_handle is invalid.
+ */
+native bool:SetGuildChannelMemberInt(ChannelCreateHandle:channel_handle, ChannelMemberInt:member, { ChannelType, ChannelFlag, _}:value);

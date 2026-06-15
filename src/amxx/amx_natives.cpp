@@ -26,6 +26,7 @@ AMX_NATIVE_INFO g_DiscordBotNatives[] =
 		{ "EndCreateGuildChannel", EndCreateGuildChannel },
 		{ "DeleteGuildChannel", DeleteGuildChannel },
 		{ "SetGuildChannelMemberString", SetGuildChannelMemberString },
+		{ "SetGuildChannelMemberInt", SetGuildChannelMemberInt },
 
 		// channels.h
 		{ "SendMessageToChannel", SendMessageToChannel },
