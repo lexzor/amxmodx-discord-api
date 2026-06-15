@@ -1,3 +1,8 @@
+/**
+ * Please note this plugin it's used to test the module's channels API.
+ * Using this plugin on your server will hit Discord API rate limiting.
+ */
+
 #include <amxmodx>
 #include <discordapi>
 #include <discordapibotguilds>
@@ -57,9 +62,6 @@ public plugin_end()
     TrieDestroy(g_tPlayerChannelData);
 }
 
-/* =========================================================
-   JOIN
-========================================================= */
 public client_putinserver(id)
 {
     if(!IsBotReady(IDENTIFIER) || is_user_bot(id))
@@ -78,9 +80,6 @@ public client_putinserver(id)
     ArrayPushArray(g_aQueue, item);
 }
 
-/* =========================================================
-   LEAVE
-========================================================= */
 public client_disconnected(id)
 {
     if(!IsBotReady(IDENTIFIER))
@@ -104,9 +103,6 @@ public client_disconnected(id)
     }
 }
 
-/* =========================================================
-   CHANNEL CREATE CALLBACK
-========================================================= */
 public OnGuildChannelCreate(const identifier[], const ChannelHandle:handle, const bool:success, const channel_id[])
 {
     if(!equal(identifier, IDENTIFIER) || !success)
@@ -140,9 +136,6 @@ public OnGuildChannelCreate(const identifier[], const ChannelHandle:handle, cons
     TrieIterDestroy(iter);
 }
 
-/* =========================================================
-   QUEUE PROCESSOR (CRITICAL PART)
-========================================================= */
 public ProcessQueue()
 {
     if(!IsBotReady(IDENTIFIER))
@@ -194,9 +187,6 @@ public ProcessQueue()
     }
 }
 
-/* =========================================================
-   CATEGORY UPDATE (ONLY WHEN SAFE)
-========================================================= */
 UpdateCategory()
 {
     new players[MAX_PLAYERS], num;
