@@ -136,6 +136,8 @@ public client_putinserver(id)
 
     SetGuildChannelMemberString(channelHandle, NAME, fmt("%n", id));
     SetGuildChannelMemberString(channelHandle, PARENT_ID, STATUS_CATEGORY_ID);
+    SetGuildChannelMemberInt(channelHandle, TYPE, CHANNEL_VOICE);
+    SetGuildChannelMemberInt(channelHandle, USER_LIMIT, 0);
 
     if(!EndCreateGuildChannel(IDENTIFIER, channelHandle))
     {
