@@ -25,6 +25,9 @@
 /**
 * Triggered after a bot has been created in Discord API.
 *
+* @note This function will be called after plugin_init for every
+* 		bot which are already ready.
+*
 * @param identifier         Bot identifier.
 */
 forward OnBotReady(const identifier[]);
