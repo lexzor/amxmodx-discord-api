@@ -179,8 +179,11 @@ enum ChannelType
 *
 */
 
-// Invalid channel handle value, returned by BeginCreateGuildChannel in case of failing to create a CreateChannelHandle
-const ChannelCreateHandle:INVALID_CHANNEL_HANDLE = ChannelCreateHandle:-1;
+/**
+ * Invalid channel handle value, returned by BeginCreateGuildChannel and BeginEditGuildChannel
+ * in case of failing to create a ChannelHandle
+ */
+const ChannelHandle:INVALID_CHANNEL_HANDLE = ChannelHandle:-1;
 
 /*
 * Forwards
@@ -215,24 +218,33 @@ forward OnGuildCreated(const identifier[], const guild_data[]);
 forward OnGuildDeleted(const identifier[], const guild_data[]);
 
 /**
-* Triggered when a channel has been created.
+* Triggered after a channel create response has been received.
 *
 * @param identifier         Bot identifier.
-* @param channel_handle		Channel handle returned by BeginCreateGuildChannel 
-*							or INVALID_CHANNEL_HANDLE if the channel has not been created by a request sent by EndCreateGuildChannel.
-* @param success			True if channel has been created successfully, false otherwise
-* @param channel_id			Channel id if the channel has been created successfully, empty otherwise
+* @param channel_handle		Channel handle returned by BeginCreateGuildChannel or INVALID_CHANNEL_HANDLE
+* 							if the channel has not been created by a request sent by EndCreateGuildChannel.
+* @param success			True if channel has been created successfully, false otherwise.
+* @param channel_id			Channel id if the channel has been created successfully, empty otherwise.
 */
-forward OnGuildChannelCreate(const identifier[], const ChannelCreateHandle:channel_handle, const bool:success, const channel_id[]);
+forward OnGuildChannelCreate(const identifier[], const ChannelHandle:channel_handle, const bool:success, const channel_id[]);
 
 /**
-* Triggered when a channel has been deleted.
+* Triggered when a channel delete response has been received.
 *
 * @param identifier         Bot identifier.
+* @param success			True if channel has been deleted successfully, false otherwise.
 * @param channel_id			Channel ID.
-* @param success			True if channel has been deleted successfully, false otherwise
 */
 forward OnGuildChannelDelete(const identifier[], const bool:success, const channel_id[]);
+
+/**
+* Triggered after a channel edit response has been received.
+*
+* @param identifier         Bot identifier.
+* @param success			True if channel has been edited successfully, false otherwise.
+* @param channel_id			Channel ID.
+*/
+forward OnGuildChannelEdit(const identifier[], const ChannelHandle:channel_handle, const bool:success, const channel_id[]);
 
 /*
 *
@@ -296,9 +308,9 @@ native bool:GetGuildChannel(const identifier[], const guild_id[], const channel_
  * @param identifier    				Bot identifier.
  * @param guild_id      				Guild ID in which the channel will be created.
  *
- * @return              				A ChannelCreateHandle on success if bot it's added in the guild, or INVALID_CHANNEL_HANDLE on failure.
+ * @return              				A ChannelHandle on success if bot it's added in the guild, or INVALID_CHANNEL_HANDLE on failure.
  */
-native ChannelCreateHandle:BeginCreateGuildChannel(const identifier[], const guild_id[]);
+native ChannelHandle:BeginCreateGuildChannel(const identifier[], const guild_id[]);
 
 /**
  * Finalizes channel creation and sends the request to the Discord API.
@@ -311,7 +323,7 @@ native ChannelCreateHandle:BeginCreateGuildChannel(const identifier[], const gui
  *
  * @return               				True if the request was successfully sent to the Discord API, false otherwise.
  */
-native bool:EndCreateGuildChannel(const identifier[], ChannelCreateHandle:channel_handle);
+native bool:EndCreateGuildChannel(const identifier[], ChannelHandle:channel_handle);
 
 /**
  * Send a request to Discord API to delete a specific channel.
@@ -335,7 +347,7 @@ native bool:DeleteGuildChannel(const identifier[], const guild_id[], const chann
  *
  * @return               				True if the member was successfully set, false if channel_handle is invalid.
  */
-native bool:SetGuildChannelMemberString(ChannelCreateHandle:channel_handle, ChannelMemberString:member, const buffer[]);
+native bool:SetGuildChannelMemberString(ChannelHandle:channel_handle, ChannelMemberString:member, const buffer[]);
 
 /**
  * Sets an integer member on a channel that is being created.
@@ -346,4 +358,27 @@ native bool:SetGuildChannelMemberString(ChannelCreateHandle:channel_handle, Chan
  *
  * @return               				True if the member was successfully set, false if channel_handle is invalid.
  */
-native bool:SetGuildChannelMemberInt(ChannelCreateHandle:channel_handle, ChannelMemberInt:member, { ChannelType, ChannelFlag, _}:value);
+native bool:SetGuildChannelMemberInt(ChannelHandle:channel_handle, ChannelMemberInt:member, { ChannelType, ChannelFlag, _}:value);
+
+/**
+ * Begins editing an existing channel.
+ *
+ * @param identifier    				Bot identifier.
+ * @param channel_id      				Guild ID in which the channel will be created.
+ *
+ * @return              				A ChannelHandle on success if bot it's added in the guild, or INVALID_CHANNEL_HANDLE on failure.
+ */
+native ChannelHandle:BeginEditGuildChannel(const identifier[], const channel_id[]);
+
+/**
+ * Finalizes channel editing and sends the request to the Discord API.
+ *
+ * @note A response will be sent in OnGuildChannelCreate.
+ * @note The channel_handle passed here will later be passed to OnChannelCreateEvent.
+ *
+ * @param identifier     				Bot identifier.
+ * @param channel_handle 				Channel handle returned by BeginC reateGuildChannel.
+ *
+ * @return               				True if the request was successfully sent to the Discord API, false otherwise.
+ */
+native bool:EndEditGuildChannel(const identifier[], ChannelHandle:channel_handle);
