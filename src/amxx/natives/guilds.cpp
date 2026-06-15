@@ -434,3 +434,88 @@ cell AMX_NATIVE_CALL SetGuildChannelMemberInt(AMX* amx, cell* params)
 
 	return TRUE;
 }
+
+cell AMX_NATIVE_CALL BeginEditGuildChannel(AMX* amx, cell* params)
+{
+	const char* identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
+
+	DiscordBot* bot = g_DiscordBotsManager->GetBotRawPtrByIdentifier(identifier);
+
+	if (bot == nullptr)
+	{
+		MF_LogError(amx, AMX_ERR_NATIVE, "(BeginEditGuildChannel) Bot with identifier '%s' does not exists", identifier);
+		return -1;
+	}
+
+	if (!bot->IsStarted())
+	{
+		MF_LogError(amx, AMX_ERR_NATIVE, "(BeginEditGuildChannel) Bot with identifier '%s' is not ready", identifier);
+		return -1;
+	}
+
+	const char* channelIdentifier = MF_GetAmxString(amx, params[2], 1, nullptr);
+	
+	dpp::channel* channel = dpp::find_channel(dpp::snowflake(channelIdentifier));
+	
+	if (channel == nullptr)
+	{
+		MF_LogError(amx, AMX_ERR_NATIVE, "(BeginEditGuildChannel) Channel %s does not exists", channelIdentifier);
+		return -1;
+	}
+
+	return g_PendingAmxObjectStore->CreateObject<dpp::channel>(*channel);
+}
+
+cell AMX_NATIVE_CALL EndEditGuildChannel(AMX* amx, cell* params)
+{
+	const char* identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
+
+	DiscordBot* bot = g_DiscordBotsManager->GetBotRawPtrByIdentifier(identifier);
+
+	if (bot == nullptr)
+	{
+		MF_LogError(amx, AMX_ERR_NATIVE, "(EndEditGuildChannel) Bot with identifier '%s' does not exists", identifier);
+		return FALSE;
+	}
+
+	if (!bot->IsStarted())
+	{
+		MF_LogError(amx, AMX_ERR_NATIVE, "(EndEditGuildChannel) Bot with identifier '%s' is not ready", identifier);
+		return FALSE;
+	}
+
+	cell channelHandle = params[2];
+	dpp::channel* channel = g_PendingAmxObjectStore->GetStoreObject<dpp::channel>(channelHandle);
+
+	if (channel == nullptr)
+	{
+		MF_LogError(amx, AMX_ERR_NATIVE, "(EndEditGuildChannel) Invalid channel handle %i", channelHandle);
+		return FALSE;
+	}
+
+	bot->GetCluster().channel_edit(*channel, [bot, channelHandle](const dpp::confirmation_callback_t& cb) {
+		if (!cb.is_error())
+		{
+			const std::string channelId = cb.get<dpp::channel>().id.str();
+			g_EventsQueue->Push([bot, channelId, channelHandle]() {
+				ExecuteForward(ON_GUILD_CHANNEL_EDIT, bot->GetIdentifier().c_str(), channelHandle, true, channelId.c_str());
+			});
+		}
+		else
+		{
+			uint32_t errorCode = cb.get_error().code;
+			const std::string errorMessage = cb.get_error().message;
+
+			g_EventsQueue->Push([bot, errorCode, errorMessage, channelHandle]() {
+				ExecuteForward(ON_GUILD_CHANNEL_EDIT, bot->GetIdentifier().c_str(), channelHandle, false, "");
+
+				gpMetaUtilFuncs->pfnLogConsole(PLID, "[DiscordAPI] (%s) Failed to edit Discord channel. Code: %s", bot->GetIdentifier().c_str(), errorCode);
+				gpMetaUtilFuncs->pfnLogConsole(PLID, "[DiscordAPI] (%s) Message: %s", bot->GetIdentifier().c_str(), errorMessage.c_str());
+			});
+		}
+	});
+
+	g_PendingAmxObjectStore->RemoveObject(channelHandle);
+
+	return TRUE;
+}
