@@ -47,7 +47,7 @@ enum _:PlayerChannelData
 
 public plugin_init()
 {
-    register_plugin("[DiscordAPI] Queue Safe", "1.0", "lexzor");
+    register_plugin("[DiscordAPI] Online Players Category", "1.0", "lexzor + Claude Code");
 
     g_aQueue = ArrayCreate(QueueItem);
     g_tPlayerChannelData = TrieCreate();
