@@ -10,6 +10,7 @@ const char* g_ForwardsNames[] = {
 
 	{ "OnGuildChannelCreate" },
 	{ "OnGuildChannelDelete" },
+	{ "OnGuildChannelEdit" },
 
 	{ "OnChannelMessageCreated" },
 
@@ -27,6 +28,7 @@ void RegisterForwards()
 
 	g_Forwards[ON_GUILD_CHANNEL_CREATE]			= MF_RegisterForward(g_ForwardsNames[ON_GUILD_CHANNEL_CREATE], ET_IGNORE, FP_STRING, FP_CELL, FP_CELL, FP_STRING, FP_DONE);
 	g_Forwards[ON_GUILD_CHANNEL_DELETE]			= MF_RegisterForward(g_ForwardsNames[ON_GUILD_CHANNEL_DELETE], ET_IGNORE, FP_STRING, FP_CELL, FP_STRING, FP_DONE);
+	g_Forwards[ON_GUILD_CHANNEL_EDIT]			= MF_RegisterForward(g_ForwardsNames[ON_GUILD_CHANNEL_EDIT], ET_IGNORE, FP_STRING, FP_CELL, FP_CELL, FP_STRING, FP_DONE);
 
 	g_Forwards[ON_CHANNEL_MESSAGE_CREATE]		= MF_RegisterForward(g_ForwardsNames[ON_CHANNEL_MESSAGE_CREATE], ET_IGNORE, FP_STRING, FP_STRING, FP_STRING, FP_DONE);
 }

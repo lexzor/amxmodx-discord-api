@@ -8,184 +8,112 @@
 #define GUILD_ID "1415670271611768966"
 #define STATUS_CATEGORY_ID "1515621027688874166"
 
+#define TICK_RATE 1.0
+
+enum _:QueueType
+{
+    Q_CREATE,
+    Q_DELETE,
+    Q_RENAME_CATEGORY,
+    Q_RENAME_CHANNEL
+}
+
+enum _:QueueItem
+{
+    QueueType:QT_TYPE,
+    QT_ID[32],
+    QT_NAME[64],
+    ChannelHandle:QT_HANDLE,
+    QT_AUTH[32]
+}
+
+new Array:g_aQueue;
 new Trie:g_tPlayerChannelData;
-new Trie:g_tPendingChannelDeletes;
+
+new bool:g_bCategoryDirty;
+new g_iLastPlayers;
 
 enum _:PlayerChannelData
 {
     CHANNEL_ID[32],
-    ChannelCreateHandle:CHANNEL_HANDLE,
-    bool:RECEIVED_RESPONSE,
+    ChannelHandle:CHANNEL_HANDLE,
+    bool:RECEIVED_RESPONSE
 }
 
 public plugin_init()
 {
-    register_plugin("[DiscordAPI] Channels", "0.1", "lexzor");
+    register_plugin("[DiscordAPI] Queue Safe", "1.0", "lexzor");
 
-    if(IsBotReady(IDENTIFIER))
-    {
-        if(!GuildChannelExists(IDENTIFIER, GUILD_ID, STATUS_CATEGORY_ID))
-        {
-            log_amx("Channel does not exists");
-        }
-        else
-        {
-            new channelName[64];
-            new channelParentID[32];
-            if(!GetGuildChannel(IDENTIFIER, GUILD_ID, STATUS_CATEGORY_ID, channelName, charsmax(channelName), channelParentID, charsmax(channelParentID)))
-            {
-                set_fail_state("Category %s does not exists", STATUS_CATEGORY_ID);
-            }
-            else
-            {
-                log_amx("Channel found: name %s, parent_id: %s", channelName, channelParentID);
-            }
-        }
-    }
-    else log_amx("Bot %s not ready", IDENTIFIER);
-}
-
-public plugin_cfg()
-{
+    g_aQueue = ArrayCreate(QueueItem);
     g_tPlayerChannelData = TrieCreate();
-    g_tPendingChannelDeletes = TrieCreate();
+
+    set_task(TICK_RATE, "ProcessQueue", _, _, _, "b");
 }
 
 public plugin_end()
 {
+    ProcessQueue();
+    ArrayDestroy(g_aQueue);
     TrieDestroy(g_tPlayerChannelData);
-    TrieDestroy(g_tPendingChannelDeletes);
 }
 
+/* =========================================================
+   JOIN
+========================================================= */
+public client_putinserver(id)
+{
+    if(!IsBotReady(IDENTIFIER) || is_user_bot(id))
+        return;
+
+    new authid[32];
+    get_user_authid(id, authid, charsmax(authid));
+
+    g_bCategoryDirty = true;
+
+    new item[QueueItem];
+    item[QT_TYPE] = Q_CREATE;
+    copy(item[QT_AUTH], charsmax(item[QT_AUTH]), authid);
+    copy(item[QT_NAME], charsmax(item[QT_NAME]), fmt("%n", id));
+
+    ArrayPushArray(g_aQueue, item);
+}
+
+/* =========================================================
+   LEAVE
+========================================================= */
 public client_disconnected(id)
 {
     if(!IsBotReady(IDENTIFIER))
         return;
 
-    new authid[MAX_AUTHID_LENGTH];
+    new authid[32];
     get_user_authid(id, authid, charsmax(authid));
 
-    if(!TrieKeyExists(g_tPlayerChannelData, authid))
-        return;
+    g_bCategoryDirty = true;
 
-    new eData[PlayerChannelData];
-    TrieGetArray(g_tPlayerChannelData, authid, eData, sizeof(eData));
-    TrieDeleteKey(g_tPlayerChannelData, authid);
+    new data[PlayerChannelData];
 
-    if(eData[RECEIVED_RESPONSE] && eData[CHANNEL_ID][0])
+    if(TrieGetArray(g_tPlayerChannelData, authid, data, sizeof(data)))
     {
-        if(!DeleteGuildChannel(IDENTIFIER, GUILD_ID, eData[CHANNEL_ID]))
-        {
-            log_amx("Failed to delete channel %s for %n", eData[CHANNEL_ID], id);
-        }
-    }
-    else if(eData[CHANNEL_HANDLE] != INVALID_CHANNEL_HANDLE)
-    {
-        // Creation request is still in flight, mark it for deletion once OnGuildChannelCreate fires
-        new key[12];
-        num_to_str(_:eData[CHANNEL_HANDLE], key, charsmax(key));
-        TrieSetCell(g_tPendingChannelDeletes, key, true);
-    }
+        new item[QueueItem];
+        item[QT_TYPE] = Q_DELETE;
+        copy(item[QT_ID], charsmax(item[QT_ID]), data[CHANNEL_ID]);
 
-    return;
-}
-
-public client_putinserver(id)
-{
-    if(!IsBotReady(IDENTIFIER))
-    {
-        log_amx("Bot %s is not ready", IDENTIFIER);
-        return;
-    }
-
-    if(!is_user_connected(id) || is_user_bot(id))
-        return;
-
-    new authid[MAX_AUTHID_LENGTH];
-    get_user_authid(id, authid, charsmax(authid));
-
-    // Clean up any stale entry left over from a previous session before creating a new channel
-    if(TrieKeyExists(g_tPlayerChannelData, authid))
-    {
-        new eOld[PlayerChannelData];
-        TrieGetArray(g_tPlayerChannelData, authid, eOld, sizeof(eOld));
+        ArrayPushArray(g_aQueue, item);
         TrieDeleteKey(g_tPlayerChannelData, authid);
-
-        if(eOld[RECEIVED_RESPONSE] && eOld[CHANNEL_ID][0])
-        {
-            if(!DeleteGuildChannel(IDENTIFIER, GUILD_ID, eOld[CHANNEL_ID]))
-            {
-                log_amx("Failed to delete stale channel %s for %n", eOld[CHANNEL_ID], id);
-            }
-        }
-        else if(eOld[CHANNEL_HANDLE] != INVALID_CHANNEL_HANDLE)
-        {
-            new key[12];
-            num_to_str(_:eOld[CHANNEL_HANDLE], key, charsmax(key));
-            TrieSetCell(g_tPendingChannelDeletes, key, true);
-        }
     }
-
-    new const ChannelCreateHandle:channelHandle = BeginCreateGuildChannel(IDENTIFIER, GUILD_ID);
-
-    if(channelHandle == INVALID_CHANNEL_HANDLE)
-    {
-        log_amx("Player %n won't be shown in Discord guild channel due to failure of creating a channel handle");
-        return;
-    }
-
-    SetGuildChannelMemberString(channelHandle, NAME, fmt("%n", id));
-    SetGuildChannelMemberString(channelHandle, PARENT_ID, STATUS_CATEGORY_ID);
-    SetGuildChannelMemberInt(channelHandle, TYPE, CHANNEL_VOICE);
-    SetGuildChannelMemberInt(channelHandle, USER_LIMIT, 0);
-
-    if(!EndCreateGuildChannel(IDENTIFIER, channelHandle))
-    {
-        log_amx("Failed to create guild channel for player %n", id);
-        return;
-    }
-
-    new eData[PlayerChannelData];
-    eData[CHANNEL_HANDLE] = channelHandle;
-    eData[RECEIVED_RESPONSE] = false;
-
-    TrieSetArray(g_tPlayerChannelData, authid, eData, sizeof(eData));
-
-    return;
 }
 
-public OnGuildChannelCreate(const identifier[], const ChannelCreateHandle:channel_handle, const bool:success, const channel_id[])
+/* =========================================================
+   CHANNEL CREATE CALLBACK
+========================================================= */
+public OnGuildChannelCreate(const identifier[], const ChannelHandle:handle, const bool:success, const channel_id[])
 {
-    if(!equal(identifier, IDENTIFIER))
+    if(!equal(identifier, IDENTIFIER) || !success)
         return;
 
-    if(!success)
-    {
-        log_amx("Failed to create channel");
-        return;
-    }
-
-    if(channel_handle == INVALID_CHANNEL_HANDLE)
-    {
-        log_amx("OnGuildChannelCreate event received, but no channel_handle");
-        return;
-    }
-
-    // If the player already disconnected before this completed, delete the channel and stop
-    new pendingKey[12];
-    num_to_str(_:channel_handle, pendingKey, charsmax(pendingKey));
-
-    if(TrieKeyExists(g_tPendingChannelDeletes, pendingKey))
-    {
-        TrieDeleteKey(g_tPendingChannelDeletes, pendingKey);
-
-        if(!DeleteGuildChannel(IDENTIFIER, GUILD_ID, channel_id))
-        {
-            log_amx("Failed to delete channel %s for disconnected player", channel_id);
-        }
-
-        return;
-    }
+    new authid[32];
+    num_to_str(_:handle, authid, charsmax(authid));
 
     new data[PlayerChannelData];
     new TrieIter:iter = TrieIterCreate(g_tPlayerChannelData);
@@ -194,17 +122,15 @@ public OnGuildChannelCreate(const identifier[], const ChannelCreateHandle:channe
     {
         TrieIterGetArray(iter, data, sizeof(data));
 
-        if(data[CHANNEL_HANDLE] == channel_handle)
+        if(data[CHANNEL_HANDLE] == handle)
         {
-            data[RECEIVED_RESPONSE] = true;
             copy(data[CHANNEL_ID], charsmax(data[CHANNEL_ID]), channel_id);
-            data[CHANNEL_HANDLE] = INVALID_CHANNEL_HANDLE;
+            data[RECEIVED_RESPONSE] = true;
 
             new key[32];
             TrieIterGetKey(iter, key, charsmax(key));
 
             TrieSetArray(g_tPlayerChannelData, key, data, sizeof(data));
-
             break;
         }
 
@@ -212,22 +138,81 @@ public OnGuildChannelCreate(const identifier[], const ChannelCreateHandle:channe
     }
 
     TrieIterDestroy(iter);
-
-    return;
 }
 
-public OnGuildChannelDelete(const identifier[], const bool:success, const channel_id[])
+/* =========================================================
+   QUEUE PROCESSOR (CRITICAL PART)
+========================================================= */
+public ProcessQueue()
 {
-    if(!equal(identifier, IDENTIFIER))
+    if(!IsBotReady(IDENTIFIER))
         return;
 
-    if(!success)
+    new item[QueueItem];
+
+    if(ArraySize(g_aQueue) == 0)
     {
-        log_amx("Failed to delete channel %s", channel_id);
+        if(g_bCategoryDirty)
+        {
+            UpdateCategory();
+            g_bCategoryDirty = false;
+        }
         return;
     }
 
-    server_print("Channel %s deleted successfully", channel_id);
+    ArrayGetArray(g_aQueue, 0, item);
+    ArrayDeleteItem(g_aQueue, 0);
 
-    return;
+    switch(item[QT_TYPE])
+    {
+        case Q_CREATE:
+        {
+            new const ChannelHandle:handle =
+                BeginCreateGuildChannel(IDENTIFIER, GUILD_ID);
+
+            if(handle == INVALID_CHANNEL_HANDLE)
+                return;
+
+            SetGuildChannelMemberString(handle, NAME, item[QT_NAME]);
+            SetGuildChannelMemberString(handle, PARENT_ID, STATUS_CATEGORY_ID);
+            SetGuildChannelMemberInt(handle, TYPE, CHANNEL_VOICE);
+            SetGuildChannelMemberInt(handle, USER_LIMIT, 0);
+
+            if(!EndCreateGuildChannel(IDENTIFIER, handle))
+                return;
+
+            new data[PlayerChannelData];
+            data[CHANNEL_HANDLE] = handle;
+
+            TrieSetArray(g_tPlayerChannelData, item[QT_AUTH], data, sizeof(data));
+        }
+
+        case Q_DELETE:
+        {
+            DeleteGuildChannel(IDENTIFIER, GUILD_ID, item[QT_ID]);
+        }
+    }
+}
+
+/* =========================================================
+   CATEGORY UPDATE (ONLY WHEN SAFE)
+========================================================= */
+UpdateCategory()
+{
+    new players[MAX_PLAYERS], num;
+    get_players(players, num, "ch");
+
+    if(num == g_iLastPlayers)
+        return;
+
+    g_iLastPlayers = num;
+
+    new const ChannelHandle:cat =
+        BeginEditGuildChannel(IDENTIFIER, STATUS_CATEGORY_ID);
+
+    if(cat == INVALID_CHANNEL_HANDLE)
+        return;
+
+    SetGuildChannelMemberString(cat, NAME, fmt("Online Players - %d", num));
+    EndEditGuildChannel(IDENTIFIER, cat);
 }
