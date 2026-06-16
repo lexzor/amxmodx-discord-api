@@ -1,0 +1,74 @@
+---
+title: Bot Channels
+---
+
+# Bot Channels
+
+## Natives
+
+### `SendMessageToChannel`
+
+Send a message to a channel.
+
+#### Signature
+
+```c
+SendMessageToChannel(const identifier[], const channel_id[], const message[]);
+```
+
+#### Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `identifier` | Bot identifier. |
+| `channel_id` | Channel ID. |
+| `message | Text`	message to send. |
+
+#### Returns
+
+False if bot does not exists or is not ready, true otherwise.
+
+---
+
+## Forwards
+
+### `OnChannelMessageCreated`
+
+Triggered when a message is created.
+
+:::info Note
+
+This event is an interaction.
+Event JSON data:
+
+```json
+{
+"id": "80351110224678912",
+"content": "Hello world from Discord!",
+"guild_id": "302050872383242240",
+"author": {
+"id": "80351110224678912",
+"username": "lexzor"
+},
+"mentions": [{ author id and username strings }...],
+}
+```
+
+:::
+
+#### Signature
+
+```c
+OnChannelMessageCreated(const identifier[], const channel_id[], const event_data[]);
+```
+
+#### Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `identifier` | Bot identifier. |
+| `channel_id` | Channel structure where the message was created. |
+| `event_data` | Event JSON data string. |
+
+---
+

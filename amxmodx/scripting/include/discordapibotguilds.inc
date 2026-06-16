@@ -54,8 +54,6 @@ enum ChannelMemberInt
 	USER_LIMIT
 }
 
-#include <amxmodx>
-
 // Used in SetGuildChannelMemberInt third parameter.
 enum ChannelFlag
 {

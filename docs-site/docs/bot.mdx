@@ -1,0 +1,249 @@
+---
+title: Bot
+---
+
+# Bot
+
+## Natives
+
+### `CreateBot`
+
+Create a discord bot.
+
+#### Signature
+
+```c
+CreateBot(const identifier[], const token[]);
+```
+
+#### Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `identifier` | Bot identifier. |
+| `token` | Token string from Discord Developer Portal. |
+
+#### Returns
+
+False if any error it's encountered, true if the bot has been created or already exists.
+
+---
+
+### `SetBotOptions`
+
+Set bot options.
+
+#### Signature
+
+```c
+SetBotOptions(const identifier[], const array[Options]);
+```
+
+#### Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `identifier` | Bot identifier. |
+| `options` | Array of Options enum |
+
+#### Returns
+
+False if bot does not exists, true otherwise.
+
+---
+
+### `StartBot`
+
+Start a created bot.
+
+:::info Note
+
+This native can be called without mention any bot options.
+
+:::
+
+#### Signature
+
+```c
+StartBot(const identifier[]);
+```
+
+#### Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `identifier` | Bot identifier. |
+
+#### Returns
+
+True if started successfully, false otherwise.
+
+---
+
+### `BotExists`
+
+Check if a bot already exist for the provided identifier.
+
+#### Signature
+
+```c
+BotExists(const identifier[]);
+```
+
+#### Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `identifier` | Bot identifier. |
+
+#### Returns
+
+True if exists, false otherwise.
+
+---
+
+### `IsBotReady`
+
+Check if a bot it's connected to Discord API.
+
+#### Signature
+
+```c
+IsBotReady(const identifier[]);
+```
+
+#### Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `identifier` | Bot identifier. |
+
+#### Returns
+
+True if exists, false otherwise.
+
+---
+
+### `StopBot`
+
+Stop a bot.
+
+:::info Note
+
+Called to stop the bot, not to delete it.
+
+:::
+
+#### Signature
+
+```c
+StopBot(const identifier[]);
+```
+
+#### Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `identifier` | Bot identifier. |
+
+#### Returns
+
+True if stopped successfully, false otherwise.
+
+---
+
+### `DeleteBot`
+
+Delete a bot.
+
+:::info Note
+
+Calling this native will delete bot from module.
+
+:::
+
+#### Signature
+
+```c
+DeleteBot(const identifier[]);
+```
+
+#### Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `identifier` | Bot identifier. |
+
+#### Returns
+
+True if deleted successfully, false otherwise.
+
+---
+
+### `SendReply`
+
+Send reply on last slash command interaction.
+
+:::info Note
+
+This function it's used to reply to an interaction.
+
+:::
+
+#### Signature
+
+```c
+SendReply(const identifier[], const reply[]);
+```
+
+#### Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `identifier` | Bot identifier. |
+| `reply` | Text message to send. |
+
+#### Returns
+
+False if bot does not exists, is not ready or there is not any active interaction to reply at, true otherwise.
+
+---
+
+## Forwards
+
+### `OnBotReady`
+
+Triggered after a bot has been created in Discord API.
+
+#### Signature
+
+```c
+OnBotReady(const identifier[]);
+```
+
+#### Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `identifier` | Bot identifier. |
+
+---
+
+### `OnBotStopped`
+
+Triggered when a bot it's stopped.
+
+#### Signature
+
+```c
+OnBotStopped(const identifier[]);
+```
+
+#### Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `identifier` | Bot identifier. |
+
+---
+
