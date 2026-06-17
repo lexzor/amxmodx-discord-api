@@ -26,14 +26,26 @@ AMX_NATIVE_INFO g_DiscordBotNatives[] =
 		{ "EndCreateGuildChannel", EndCreateGuildChannel },
 		{ "DeleteGuildChannel", DeleteGuildChannel },
 		{ "SetGuildChannelMemberString", SetGuildChannelMemberString },
-		{ "SetGuildChannelMemberInt", SetGuildChannelMemberInt },
+		{ "SetGuildChannelMemberInteger", SetGuildChannelMemberInteger },
 		{ "BeginEditGuildChannel", BeginEditGuildChannel },
 		{ "EndEditGuildChannel", EndEditGuildChannel },
+		{ "GuildSlashCommandExists", GuildSlashCommandExists },
+		{ "BeginCreateGuildSlashCommand", BeginCreateGuildSlashCommand},
+		{ "EndCreateGuildSlashCommand", EndCreateGuildSlashCommand },
+		{ "AddSlashCommandOption", AddSlashCommandOption },
+		{ "BeginCreateSlashCommandOption", BeginCreateSlashCommandOption },
+		{ "EndCreateSlashCommandOption", EndCreateSlashCommandOption },
+		{ "AddSlashCommandOptionChoiceInteger", AddSlashCommandOptionChoiceInteger },
+		{ "AddSlashCommandOptionChoiceString", AddSlashCommandOptionChoiceString },
+		{ "AddSlashCommandOptionChoiceFloat", AddSlashCommandOptionChoiceFloat },
+		{ "CreateGuildSlashCommand", CreateGuildSlashCommand },
+		{ "DeleteGuildSlashCommand", DeleteGuildSlashCommand },
 
 		// channels.h
 		{ "SendMessageToChannel", SendMessageToChannel },
 
-		{NULL, NULL}};
+		{NULL, NULL}
+};
 
 void RegisterNatives()
 {
