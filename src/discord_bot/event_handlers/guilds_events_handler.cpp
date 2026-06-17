@@ -56,11 +56,55 @@ void GuildsEventsHandler::OnGuildCreate(const dpp::guild_create_t& cb)
     if (m_Bot->GetOptions().print_events_data || m_Bot->GetLogLevel() == LogLevel::VERBOSE)
         MF_PrintSrvConsole("%s OnGuildCreate: \n%s\n", m_Bot->GetConsolePrefix().c_str(), cb.created.to_json().dump(4).c_str());
 
+
+    const std::string guildId = cb.created.id.str();
+    const std::string guildName = cb.created.name;
+    
     const dpp::json guild =
     {
-        { "id", cb.created.id.str() },
-        { "name", cb.created.name }
+        { "id", guildId },
+        { "name", guildName }
     };
+
+    m_Bot->GetCluster().guild_commands_get(cb.created.id, [this, guildId, guildName](const dpp::confirmation_callback_t& cb) {
+        if (m_Bot == nullptr)
+            return;
+
+        if (cb.is_error())
+        {
+            const std::string errorMessage = cb.get_error().human_readable;
+
+            g_EventsQueue->Push([this, errorMessage, guildId, guildName]() {
+                if (m_Bot == nullptr)
+                    return;
+
+                MF_PrintSrvConsole("%s ERROR: Failed to retrieve guild %s (%s) slash commands from Discord API\n", m_Bot->GetConsolePrefix().c_str(), guildId.c_str(), guildName.c_str());
+                MF_PrintSrvConsole("%s Message: %s\n", m_Bot->GetConsolePrefix().c_str(), errorMessage.c_str());
+            });
+        }
+        else
+        {
+            dpp::slashcommand_map cmdsMap;
+            cmdsMap = std::get<dpp::slashcommand_map>(cb.value);
+
+            g_EventsQueue->Push([this, cmdsMap, guildId, guildName]() {
+                if (m_Bot == nullptr)
+                    return;
+
+                std::size_t slashCommandsCount = cmdsMap.size();
+
+                if (slashCommandsCount > 0)
+                {
+                    m_Bot->GetGuildsSlashCommandsMap()[dpp::snowflake(guildId)] = cmdsMap;
+
+                    if (m_Bot->GetLogLevel() == LogLevel::VERBOSE)
+                        MF_PrintSrvConsole("%s Retrieved %i guild slash command%s from Discord API for %s (%s)\n", m_Bot->GetConsolePrefix().c_str(), slashCommandsCount, slashCommandsCount == 1 ? "s" : "", guildId.c_str(), guildName.c_str());
+                }
+                else if (m_Bot->GetLogLevel() == LogLevel::VERBOSE)
+                    MF_PrintSrvConsole("%s No guild slash commands are registered for this bot on Discord API for %s (%s)\n", m_Bot->GetConsolePrefix().c_str(), guildId.c_str(), guildName.c_str());
+                });
+        }
+    });
 
     ExecuteForward(ON_GUILD_CREATED, m_Bot->GetIdentifier().c_str(), guild.dump().c_str());
 }

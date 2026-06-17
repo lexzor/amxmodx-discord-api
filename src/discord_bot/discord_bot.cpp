@@ -11,6 +11,7 @@ DiscordBot::DiscordBot(const std::string &identifier, const std::string &token)
     m_ReadyEventHandler = std::make_unique<ReadyEventHandler>(this);
     m_GuildEventsHandler = std::make_unique<GuildsEventsHandler>(this);
     m_MessagesEventsHandler = std::make_unique<MessagesEventsHandler>(this);
+    m_SlashCommandEventHandler = std::make_unique<SlashCommandEventHandler>(this);
 }
 
 DiscordBot::~DiscordBot() noexcept {}
@@ -152,9 +153,14 @@ DiscordBot::GuildsMap& DiscordBot::GetGuildsMap() noexcept
     return m_Guilds;
 }
 
-DiscordBot::SlashCommandsMap& DiscordBot::GetGlobalSlashCommandsMap() noexcept
+DiscordBot::GlobalSlashCommandsMap& DiscordBot::GetGlobalSlashCommandsMap() noexcept
 {
     return m_GlobalSlashCommands;
+}
+
+DiscordBot::GuildSlashCommandsMap& DiscordBot::GetGuildsSlashCommandsMap() noexcept
+{
+    return m_GuildSlashCommands;
 }
 
 void DiscordBot::SetInteractionReplyAbility(bool state)

@@ -168,8 +168,8 @@ public ProcessQueue()
 
             SetGuildChannelMemberString(handle, NAME, item[QT_NAME]);
             SetGuildChannelMemberString(handle, PARENT_ID, STATUS_CATEGORY_ID);
-            SetGuildChannelMemberInt(handle, TYPE, CHANNEL_VOICE);
-            SetGuildChannelMemberInt(handle, USER_LIMIT, 0);
+            SetGuildChannelMemberInteger(handle, TYPE, CHANNEL_VOICE);
+            SetGuildChannelMemberInteger(handle, USER_LIMIT, 0);
 
             if(!EndCreateGuildChannel(IDENTIFIER, handle))
                 return;
