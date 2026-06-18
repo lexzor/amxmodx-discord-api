@@ -145,19 +145,11 @@ cell AMX_NATIVE_CALL GuildChannelExistsByName(AMX* amx, cell* params)
 		return FALSE;
 	}
 
-	MF_PrintSrvConsole("\nGuild found: %s, channels: %zu\n",
-		guildsMapIt->second.name.c_str(),
-		guildsMapIt->second.channels.size());
-
 	const char* channelName = MF_GetAmxString(amx, params[3], 2, nullptr);
 
 	for (const dpp::snowflake channelId : guildsMapIt->second.channels)
 	{
 		const dpp::channel* channel = dpp::find_channel(channelId);
-
-		MF_PrintSrvConsole("  snowflake %s -> find_channel: %s\n",
-			channelId.str().c_str(),
-			channel ? channel->name.c_str() : "NULL");
 
 		if (channel && channel->name == std::string_view(channelName))
 		{
