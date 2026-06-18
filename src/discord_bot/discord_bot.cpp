@@ -12,6 +12,7 @@ DiscordBot::DiscordBot(const std::string &identifier, const std::string &token)
     m_GuildEventsHandler = std::make_unique<GuildsEventsHandler>(this);
     m_MessagesEventsHandler = std::make_unique<MessagesEventsHandler>(this);
     m_SlashCommandEventHandler = std::make_unique<SlashCommandEventHandler>(this);
+    m_ChannelsEventsHandlers = std::make_unique<ChannelsEventsHandler>(this);
 }
 
 DiscordBot::~DiscordBot() noexcept {}

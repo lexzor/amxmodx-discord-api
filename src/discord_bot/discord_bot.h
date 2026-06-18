@@ -12,6 +12,7 @@
 #include "event_handlers/ready_event_handler.h"
 #include "event_handlers/log_event_handler.h"
 #include "event_handlers/slash_command_event_handler.h"
+#include "event_handlers/channels_events_handler.h"
 
 class DiscordBot
 {
@@ -76,4 +77,5 @@ private:
 	std::unique_ptr<GuildsEventsHandler> m_GuildEventsHandler {};
 	std::unique_ptr<MessagesEventsHandler> m_MessagesEventsHandler {};
 	std::unique_ptr<SlashCommandEventHandler> m_SlashCommandEventHandler {};
+	std::unique_ptr<ChannelsEventsHandler> m_ChannelsEventsHandlers {};
 };
