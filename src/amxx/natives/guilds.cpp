@@ -73,7 +73,7 @@ cell AMX_NATIVE_CALL GetGuilds(AMX* amx, cell* params)
 	return static_cast<cell>(guilds.size());
 }
 
-cell AMX_NATIVE_CALL GuildChannelExists(AMX* amx, cell* params)
+cell AMX_NATIVE_CALL GuildChannelExistsById(AMX* amx, cell* params)
 {
 	const char* identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
 	
@@ -114,6 +114,57 @@ cell AMX_NATIVE_CALL GuildChannelExists(AMX* amx, cell* params)
 		}
 	}
 	
+	return FALSE;
+}
+
+cell AMX_NATIVE_CALL GuildChannelExistsByName(AMX* amx, cell* params)
+{
+	const char* identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
+
+	DiscordBot* bot = g_DiscordBotsManager->GetBotRawPtrByIdentifier(identifier);
+
+	if (bot == nullptr)
+	{
+		MF_LogError(amx, AMX_ERR_NATIVE, "(GuildChannelExistsByName) Bot with identifier '%s' does not exists", identifier);
+		return FALSE;
+	}
+
+	if (!bot->IsStarted())
+	{
+		MF_LogError(amx, AMX_ERR_NATIVE, "(GuildChannelExistsByName) Bot with identifier '%s' is not ready", identifier);
+		return FALSE;
+	}
+
+	const char* guildIdentifier = MF_GetAmxString(amx, params[2], 1, nullptr);
+
+	const DiscordBot::GuildsMap::iterator guildsMapIt = bot->GetGuildsMap().find(dpp::snowflake(guildIdentifier));
+
+	if (guildsMapIt == bot->GetGuildsMap().end())
+	{
+		MF_LogError(amx, AMX_ERR_NATIVE, "(GuildChannelExistsByName) Bot %s it is not added in guild %s", identifier, guildIdentifier);
+		return FALSE;
+	}
+
+	MF_PrintSrvConsole("\nGuild found: %s, channels: %zu\n",
+		guildsMapIt->second.name.c_str(),
+		guildsMapIt->second.channels.size());
+
+	const char* channelName = MF_GetAmxString(amx, params[3], 2, nullptr);
+
+	for (const dpp::snowflake channelId : guildsMapIt->second.channels)
+	{
+		const dpp::channel* channel = dpp::find_channel(channelId);
+
+		MF_PrintSrvConsole("  snowflake %s -> find_channel: %s\n",
+			channelId.str().c_str(),
+			channel ? channel->name.c_str() : "NULL");
+
+		if (channel && channel->name == std::string_view(channelName))
+		{
+			return TRUE;
+		}
+	}
+
 	return FALSE;
 }
 
@@ -259,9 +310,21 @@ cell AMX_NATIVE_CALL EndCreateGuildChannel(AMX* amx, cell* params)
 	bot->GetCluster().channel_create(*channel, [bot, channelHandle](const dpp::confirmation_callback_t& cb) {
 		if (!cb.is_error())
 		{
-			const std::string channelId = cb.get<dpp::channel>().id.str();
+			const dpp::channel createdChannel = cb.get<dpp::channel>();
+			const std::string channelId = createdChannel.id.str();
+
+			auto& guildsMap = bot->GetGuildsMap();
+			auto it = guildsMap.find(createdChannel.guild_id);
+				
+			if (it != guildsMap.end())
+				it->second.channels.push_back(createdChannel.id);
+
+			dpp::channel* cached = new dpp::channel(createdChannel);
+			dpp::get_channel_cache()->store(cached);
+
 			g_EventsQueue->Push([bot, channelId, channelHandle]() {
 				ExecuteForward(ON_GUILD_CHANNEL_CREATE, bot->GetIdentifier().c_str(), channelHandle, true, channelId.c_str());
+				g_PendingAmxObjectStore->RemoveObject(channelHandle);
 			});
 		}
 		else
@@ -276,11 +339,11 @@ cell AMX_NATIVE_CALL EndCreateGuildChannel(AMX* amx, cell* params)
 				gpMetaUtilFuncs->pfnLogConsole(PLID, "[DiscordAPI] (%s) Human readable error: %s", bot->GetIdentifier().c_str(), humanReadable.c_str());
 				
 				ExecuteForward(ON_GUILD_CHANNEL_CREATE, bot->GetIdentifier().c_str(), channelHandle, false, "");
+				g_PendingAmxObjectStore->RemoveObject(channelHandle);
 			});
 		}
-	});
 
-	g_PendingAmxObjectStore->RemoveObject(channelHandle);
+	});
 
 	return TRUE;
 }
@@ -317,9 +380,25 @@ cell AMX_NATIVE_CALL DeleteGuildChannel(AMX* amx, cell* params)
 	const char* channelIdentifier = MF_GetAmxString(amx, params[3], 2, nullptr);
 	const std::string channelId(channelIdentifier);
 
-	bot->GetCluster().channel_delete(dpp::snowflake(channelIdentifier), [bot, channelId](const dpp::confirmation_callback_t& cb) {
+	bot->GetCluster().channel_delete(channelId, [bot, channelId, guildId](const dpp::confirmation_callback_t& cb) {
 		if (!cb.is_error())
 		{
+			auto& guildsMap = bot->GetGuildsMap();
+			auto it = guildsMap.find(guildId);
+			
+			const dpp::snowflake channelSnowflakeId = dpp::snowflake(channelId);
+			
+			if (it != guildsMap.end())
+			{
+				auto& channels = it->second.channels;
+				channels.erase(
+					std::remove(channels.begin(), channels.end(), channelSnowflakeId),
+					channels.end()
+				);
+			}
+
+			dpp::get_channel_cache()->remove(dpp::find_channel(channelSnowflakeId));
+			
 			g_EventsQueue->Push([bot, channelId]() {
 				ExecuteForward(ON_GUILD_CHANNEL_DELETE, bot->GetIdentifier().c_str(), true, channelId.c_str());
 			});
@@ -505,9 +584,21 @@ cell AMX_NATIVE_CALL EndEditGuildChannel(AMX* amx, cell* params)
 	bot->GetCluster().channel_edit(*channel, [bot, channelHandle](const dpp::confirmation_callback_t& cb) {
 		if (!cb.is_error())
 		{
-			const std::string channelId = cb.get<dpp::channel>().id.str();
+			const dpp::channel updatedChannel = cb.get<dpp::channel>();
+			const std::string channelId = updatedChannel.id.str();
+
+			dpp::channel* cached = dpp::find_channel(updatedChannel.id);
+			if (cached)
+				*cached = updatedChannel;
+			else
+			{
+				dpp::channel* newCached = new dpp::channel(updatedChannel);
+				dpp::get_channel_cache()->store(newCached);
+			}
+			
 			g_EventsQueue->Push([bot, channelId, channelHandle]() {
 				ExecuteForward(ON_GUILD_CHANNEL_EDIT, bot->GetIdentifier().c_str(), channelHandle, true, channelId.c_str());
+				g_PendingAmxObjectStore->RemoveObject(channelHandle);
 			});
 		}
 		else
@@ -522,11 +613,10 @@ cell AMX_NATIVE_CALL EndEditGuildChannel(AMX* amx, cell* params)
 				gpMetaUtilFuncs->pfnLogConsole(PLID, "[DiscordAPI] (%s) Human readable error: %s", bot->GetIdentifier().c_str(), humanReadable.c_str());
 
 				ExecuteForward(ON_GUILD_CHANNEL_EDIT, bot->GetIdentifier().c_str(), channelHandle, false, "");
+				g_PendingAmxObjectStore->RemoveObject(channelHandle);
 			});
 		}
 	});
-
-	g_PendingAmxObjectStore->RemoveObject(channelHandle);
 
 	return TRUE;
 }
@@ -691,14 +781,15 @@ cell AMX_NATIVE_CALL EndCreateGuildSlashCommand(AMX* amx, cell* params)
 
 	const std::string slashCommandName = slashCommand->name;
 
-	bot->GetCluster().guild_command_create(*slashCommand, guildId, [bot, guildId, slashCommandName](const dpp::confirmation_callback_t& cb) {
+	bot->GetCluster().guild_command_create(*slashCommand, guildId, [bot, guildId, slashCommandName, slashCommandHandle](const dpp::confirmation_callback_t& cb) {
 		if (!cb.is_error())
 		{
 			const dpp::slashcommand slashCommand = cb.get<dpp::slashcommand>();
-			g_EventsQueue->Push([bot, slashCommand, guildId]() {
+			g_EventsQueue->Push([bot, slashCommand, guildId, slashCommandHandle]() {
 				bot->GetGuildsSlashCommandsMap()[guildId][slashCommand.id] = slashCommand;
 
 				ExecuteForward(ON_GUILD_SLASH_COMMAND_CREATE, bot->GetIdentifier().c_str(), true, slashCommand.name.c_str(), slashCommand.id.str().c_str());
+				g_PendingAmxObjectStore->RemoveObject(slashCommandHandle);
 			});
 		}
 		else
@@ -707,17 +798,16 @@ cell AMX_NATIVE_CALL EndCreateGuildSlashCommand(AMX* amx, cell* params)
 			const std::string errorMessage = cb.get_error().message;
 			const std::string humanReadable = cb.get_error().human_readable;
 
-			g_EventsQueue->Push([bot, errorCode, errorMessage, humanReadable, slashCommandName]() {
+			g_EventsQueue->Push([bot, errorCode, errorMessage, humanReadable, slashCommandName, slashCommandHandle]() {
 				gpMetaUtilFuncs->pfnLogConsole(PLID, "[DiscordAPI] (%s) Failed to create guild slash command %s. Code: %i", bot->GetIdentifier().c_str(), slashCommandName.c_str(), errorCode);
 				gpMetaUtilFuncs->pfnLogConsole(PLID, "[DiscordAPI] (%s) Message: %s", bot->GetIdentifier().c_str(), errorMessage.c_str());
 				gpMetaUtilFuncs->pfnLogConsole(PLID, "[DiscordAPI] (%s) Human readable error: %s", bot->GetIdentifier().c_str(), humanReadable.c_str());
 				
 				ExecuteForward(ON_GUILD_SLASH_COMMAND_CREATE, bot->GetIdentifier().c_str(), false, slashCommandName.c_str(), "");
+				g_PendingAmxObjectStore->RemoveObject(slashCommandHandle);
 			});
 		}
 	});
-
-	g_PendingAmxObjectStore->RemoveObject(slashCommandHandle);
 
 	return TRUE;
 }
