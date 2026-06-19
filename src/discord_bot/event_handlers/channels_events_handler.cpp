@@ -48,7 +48,7 @@ void ChannelsEventsHandler::RegisterListeners()
 
 void ChannelsEventsHandler::OnChannelCreate(const dpp::channel_create_t& cb)
 {
-    auto& guildsMap = m_Bot->GetGuildsMap();
+    auto& guildsMap = m_Bot->GetGuildsSet();
     auto it = guildsMap.find(cb.created.guild_id);
     if (it != guildsMap.end())
         it->second.channels.push_back(cb.created.id);
@@ -61,7 +61,7 @@ void ChannelsEventsHandler::OnChannelCreate(const dpp::channel_create_t& cb)
 
 void ChannelsEventsHandler::OnChannelDelete(const dpp::channel_delete_t& cb)
 {
-    auto& guildsMap = m_Bot->GetGuildsMap();
+    auto& guildsMap = m_Bot->GetGuildsSet();
     auto it = guildsMap.find(cb.deleted.guild_id);
     if (it != guildsMap.end())
     {
