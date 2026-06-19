@@ -48,7 +48,7 @@ void GuildsEventsHandler::RegisterListeners()
 
 void GuildsEventsHandler::OnGuildCreate(const dpp::guild_create_t& cb)
 {
-    m_Bot->GetGuildsMap().emplace(cb.created.id, cb.created);
+    m_Bot->GetGuildsSet().emplace(cb.created.id, cb.created);
 
     if (m_Bot->GetLogLevel() == LogLevel::VERBOSE)
         MF_PrintSrvConsole("%s Bot has been added in '%s' guild\n", m_Bot->GetConsolePrefix().c_str(), cb.created.name.c_str());
@@ -113,7 +113,7 @@ void GuildsEventsHandler::OnGuildDelete(const dpp::guild_delete_t& cb)
             MF_PrintSrvConsole("%s Bot was removed from '%s' guild\n", m_Bot->GetConsolePrefix().c_str(), cb.deleted.name.c_str());
 
     if (!cb.deleted.is_unavailable())
-        m_Bot->GetGuildsMap().erase(cb.deleted.id);
+        m_Bot->GetGuildsSet().erase(cb.deleted.id);
 
     if (m_Bot->GetOptions().print_events_data || m_Bot->GetLogLevel() == LogLevel::VERBOSE)
         MF_PrintSrvConsole("%s OnGuildDelete: \n%s\n", m_Bot->GetConsolePrefix().c_str(), cb.deleted.to_json().dump(4).c_str());
@@ -123,7 +123,7 @@ void GuildsEventsHandler::OnGuildDelete(const dpp::guild_delete_t& cb)
 
 void GuildsEventsHandler::OnGuildUpdate(const dpp::guild_update_t& cb)
 {
-    m_Bot->GetGuildsMap()[cb.updated.id] = cb.updated;
+    m_Bot->GetGuildsSet()[cb.updated.id] = cb.updated;
 
     if (m_Bot->GetOptions().print_events_data || m_Bot->GetLogLevel() == LogLevel::VERBOSE)
         MF_PrintSrvConsole("%s OnGuildUpdate: \n%s\n", m_Bot->GetConsolePrefix().c_str(), cb.updated.to_json().dump(4).c_str());
