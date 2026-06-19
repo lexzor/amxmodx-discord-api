@@ -19,15 +19,23 @@ ChannelsEventsHandler::~ChannelsEventsHandler()
 void ChannelsEventsHandler::RegisterListeners()
 {
     m_Bot->GetCluster().on_channel_create([this](dpp::channel_create_t cb) {
+        dpp::channel* newCached = new dpp::channel(cb.created);
+        dpp::get_channel_cache()->store(newCached);
+        
         g_EventsQueue->Push([this, cb]() {
             if (m_Bot == nullptr)
                 return;
+
 
             OnChannelCreate(cb);
         });
     });
 
     m_Bot->GetCluster().on_channel_delete([this](dpp::channel_delete_t cb) {
+        dpp::channel* cached = dpp::find_channel(cb.deleted.id);
+        if (cached)
+            dpp::get_channel_cache()->remove(cached);
+
         g_EventsQueue->Push([this, cb]() {
             if (m_Bot == nullptr)
                 return;
@@ -37,6 +45,15 @@ void ChannelsEventsHandler::RegisterListeners()
     });
 
     m_Bot->GetCluster().on_channel_update([this](dpp::channel_update_t cb) {
+        dpp::channel* cached = dpp::find_channel(cb.updated.id);
+        if (cached)
+            *cached = cb.updated;
+        else
+        {
+            dpp::channel* newCached = new dpp::channel(cb.updated);
+            dpp::get_channel_cache()->store(newCached);
+        }
+
         g_EventsQueue->Push([this, cb]() {
             if (m_Bot == nullptr)
                 return;
@@ -48,44 +65,16 @@ void ChannelsEventsHandler::RegisterListeners()
 
 void ChannelsEventsHandler::OnChannelCreate(const dpp::channel_create_t& cb)
 {
-    auto& guildsMap = m_Bot->GetGuildsSet();
-    auto it = guildsMap.find(cb.created.guild_id);
-    if (it != guildsMap.end())
-        it->second.channels.push_back(cb.created.id);
-
-    dpp::channel* newCached = new dpp::channel(cb.created);
-    dpp::get_channel_cache()->store(newCached);
-
     ExecuteForward(ON_GUILD_CHANNEL_CREATE, m_Bot->GetIdentifier().c_str(), -1, true, cb.created.id.str().c_str());
 }
 
 void ChannelsEventsHandler::OnChannelDelete(const dpp::channel_delete_t& cb)
 {
-    auto& guildsMap = m_Bot->GetGuildsSet();
-    auto it = guildsMap.find(cb.deleted.guild_id);
-    if (it != guildsMap.end())
-    {
-        auto& channels = it->second.channels;
-        channels.erase(std::remove(channels.begin(), channels.end(), cb.deleted.id), channels.end());
-    }
-
-    dpp::channel* cached = dpp::find_channel(cb.deleted.id);
-    if (cached)
-        dpp::get_channel_cache()->remove(cached);
 
     ExecuteForward(ON_GUILD_CHANNEL_DELETE, m_Bot->GetIdentifier().c_str(), true, cb.deleted.id.str().c_str());
 }
 
 void ChannelsEventsHandler::OnChannelUpdate(const dpp::channel_update_t& cb)
 {
-    dpp::channel* cached = dpp::find_channel(cb.updated.id);
-    if (cached)
-        *cached = cb.updated;
-    else
-    {
-        dpp::channel* newCached = new dpp::channel(cb.updated);
-        dpp::get_channel_cache()->store(newCached);
-    }
-
     ExecuteForward(ON_GUILD_CHANNEL_EDIT, m_Bot->GetIdentifier().c_str(), -1, true, cb.updated.id.str().c_str());
 }
