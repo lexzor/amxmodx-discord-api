@@ -51,7 +51,6 @@ void SlashCommandEventHandler::OnSlashCommand(const dpp::slashcommand_t cb)
 
     const std::string paramsJsonStr = paramsJson.dump();
 
-
     m_Bot->SetInteractionReplyAbility(true);
     ExecuteForward(ON_GUILD_SLASH_COMMAND,
         m_Bot->GetIdentifier().c_str(), // bot identifier
