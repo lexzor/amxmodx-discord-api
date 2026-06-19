@@ -201,7 +201,7 @@ cell AMX_NATIVE_CALL EndCreateGuildChannel(AMX* amx, cell* params)
 			g_EventsQueue->Push([bot, channelId, channelHandle]() {
 				ExecuteForward(ON_GUILD_CHANNEL_CREATE, bot->GetIdentifier().c_str(), channelHandle, true, channelId.c_str());
 				g_PendingAmxObjectStore->RemoveObject(channelHandle);
-				});
+			});
 		}
 		else
 		{
@@ -216,7 +216,7 @@ cell AMX_NATIVE_CALL EndCreateGuildChannel(AMX* amx, cell* params)
 
 				ExecuteForward(ON_GUILD_CHANNEL_CREATE, bot->GetIdentifier().c_str(), channelHandle, false, "");
 				g_PendingAmxObjectStore->RemoveObject(channelHandle);
-				});
+			});
 		}
 	});
 
@@ -239,7 +239,7 @@ cell AMX_NATIVE_CALL DeleteGuildChannel(AMX* amx, cell* params)
 
 			g_EventsQueue->Push([bot, channelId]() {
 				ExecuteForward(ON_GUILD_CHANNEL_DELETE, bot->GetIdentifier().c_str(), true, channelId.c_str());
-				});
+			});
 		}
 		else
 		{
@@ -253,7 +253,7 @@ cell AMX_NATIVE_CALL DeleteGuildChannel(AMX* amx, cell* params)
 				gpMetaUtilFuncs->pfnLogConsole(PLID, "[DiscordAPI] (%s) Human readable error: %s", bot->GetIdentifier().c_str(), humanReadable.c_str());
 
 				ExecuteForward(ON_GUILD_CHANNEL_DELETE, bot->GetIdentifier().c_str(), false, channelId.c_str());
-				});
+			});
 		}
 	});
 
@@ -383,7 +383,7 @@ cell AMX_NATIVE_CALL EndEditGuildChannel(AMX* amx, cell* params)
 
 				ExecuteForward(ON_GUILD_CHANNEL_EDIT, bot->GetIdentifier().c_str(), channelHandle, false, "");
 				g_PendingAmxObjectStore->RemoveObject(channelHandle);
-				});
+			});
 		}
 	});
 
@@ -480,7 +480,7 @@ cell AMX_NATIVE_CALL EndCreateGuildSlashCommand(AMX* amx, cell* params)
 				bot->GetGuildsSlashCommandsMap()[guildId][createdCommand.id] = createdCommand;
 				ExecuteForward(ON_GUILD_SLASH_COMMAND_CREATE, bot->GetIdentifier().c_str(), true, createdCommand.name.c_str(), createdCommand.id.str().c_str());
 				g_PendingAmxObjectStore->RemoveObject(slashCommandHandle);
-				});
+			});
 		}
 		else
 		{
@@ -495,7 +495,7 @@ cell AMX_NATIVE_CALL EndCreateGuildSlashCommand(AMX* amx, cell* params)
 
 				ExecuteForward(ON_GUILD_SLASH_COMMAND_CREATE, bot->GetIdentifier().c_str(), false, slashCommandName.c_str(), "");
 				g_PendingAmxObjectStore->RemoveObject(slashCommandHandle);
-				});
+			});
 		}
 	});
 
@@ -672,7 +672,7 @@ cell AMX_NATIVE_CALL CreateGuildSlashCommand(AMX* amx, cell* params)
 			g_EventsQueue->Push([bot, createdCommand, guildId]() {
 				bot->GetGuildsSlashCommandsMap()[guildId][createdCommand.id] = createdCommand;
 				ExecuteForward(ON_GUILD_SLASH_COMMAND_CREATE, bot->GetIdentifier().c_str(), true, createdCommand.name.c_str(), createdCommand.id.str().c_str());
-				});
+			});
 		}
 		else
 		{
@@ -685,7 +685,7 @@ cell AMX_NATIVE_CALL CreateGuildSlashCommand(AMX* amx, cell* params)
 				gpMetaUtilFuncs->pfnLogConsole(PLID, "[DiscordAPI] (%s) Failed to create guild slash command %s. Code: %u", bot->GetIdentifier().c_str(), slashCommandName.c_str(), errorCode);
 				gpMetaUtilFuncs->pfnLogConsole(PLID, "[DiscordAPI] (%s) Message: %s", bot->GetIdentifier().c_str(), errorMessage.c_str());
 				gpMetaUtilFuncs->pfnLogConsole(PLID, "[DiscordAPI] (%s) Human readable error: %s", bot->GetIdentifier().c_str(), humanReadable.c_str());
-				});
+			});
 		}
 	});
 
@@ -745,7 +745,7 @@ cell AMX_NATIVE_CALL DeleteGuildSlashCommand(AMX* amx, cell* params)
 				}
 
 				ExecuteForward(ON_GUILD_SLASH_COMMAND_DELETE, bot->GetIdentifier().c_str(), success, slashCommandIdentifier, slashCommandName.c_str());
-				});
+			});
 		}
 		else
 		{
@@ -758,7 +758,7 @@ cell AMX_NATIVE_CALL DeleteGuildSlashCommand(AMX* amx, cell* params)
 				gpMetaUtilFuncs->pfnLogConsole(PLID, "[DiscordAPI] (%s) Failed to delete guild slash command. Code: %u", bot->GetIdentifier().c_str(), errorCode);
 				gpMetaUtilFuncs->pfnLogConsole(PLID, "[DiscordAPI] (%s) Message: %s", bot->GetIdentifier().c_str(), errorMessage.c_str());
 				gpMetaUtilFuncs->pfnLogConsole(PLID, "[DiscordAPI] (%s) Human readable error: %s", bot->GetIdentifier().c_str(), humanReadable.c_str());
-				});
+			});
 		}
 	});
 
