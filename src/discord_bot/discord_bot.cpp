@@ -149,7 +149,7 @@ const std::string& DiscordBot::GetInteractionMessage() const noexcept
     return m_LastInteractionMessage;
 }
 
-DiscordBot::GuildsMap& DiscordBot::GetGuildsMap() noexcept
+DiscordBot::GuildsSet& DiscordBot::GetGuildsSet() noexcept
 {
     return m_Guilds;
 }

@@ -5,6 +5,7 @@
 #include <string>
 #include <functional>
 #include <atomic>
+#include <unordered_set>
 
 #include "discord_bot/discord_bot_options.h"
 #include "event_handlers/guilds_events_handler.h"
@@ -19,7 +20,7 @@ class DiscordBot
 public:
 	using GlobalSlashCommandsMap = std::unordered_map<dpp::snowflake, dpp::slashcommand>;
 	using GuildSlashCommandsMap = std::unordered_map<dpp::snowflake, dpp::slashcommand_map>;
-	using GuildsMap = std::unordered_map<dpp::snowflake, dpp::guild>;
+	using GuildsSet = std::unordered_set<dpp::snowflake>;
 
 	DiscordBot(const std::string &identifier, const std::string &token);
 	~DiscordBot() noexcept;
@@ -44,7 +45,7 @@ public:
 	[[nodiscard]] const DiscordBotOptions& GetOptions() const noexcept;
 	[[nodiscard]] const std::string& GetInteractionMessage() const noexcept;
 
-	[[nodiscard]] GuildsMap& GetGuildsMap() noexcept;
+	[[nodiscard]] GuildsSet& GetGuildsSet() noexcept;
 	[[nodiscard]] GlobalSlashCommandsMap& GetGlobalSlashCommandsMap() noexcept;
 	[[nodiscard]] GuildSlashCommandsMap& GetGuildsSlashCommandsMap() noexcept;
 
@@ -61,7 +62,7 @@ private:
 	std::string m_Identifier {};
 	GlobalSlashCommandsMap m_GlobalSlashCommands{};
 	GuildSlashCommandsMap m_GuildSlashCommands{};
-	GuildsMap m_Guilds {};
+	GuildsSet m_Guilds {};
 
 	DiscordBotOptions m_Options {};
 
