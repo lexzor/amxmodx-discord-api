@@ -20,7 +20,8 @@ AMX_NATIVE_INFO g_DiscordBotNatives[] =
 
 		// guilds.h
 		{ "GetGuilds", GetGuilds },
-		{ "GuildChannelExists", GuildChannelExists },
+		{ "GuildChannelExistsById", GuildChannelExistsById },
+		{ "GuildChannelExistsByName", GuildChannelExistsByName },
 		{ "GetGuildChannel", GetGuildChannel },
 		{ "BeginCreateGuildChannel", BeginCreateGuildChannel },
 		{ "EndCreateGuildChannel", EndCreateGuildChannel },

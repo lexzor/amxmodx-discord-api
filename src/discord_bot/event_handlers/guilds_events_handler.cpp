@@ -48,7 +48,7 @@ void GuildsEventsHandler::RegisterListeners()
 
 void GuildsEventsHandler::OnGuildCreate(const dpp::guild_create_t& cb)
 {
-    m_Bot->GetGuildsMap().emplace(cb.created.id, cb.created);
+    m_Bot->GetGuildsSet().insert(cb.created.id);
 
     if (m_Bot->GetLogLevel() == LogLevel::VERBOSE)
         MF_PrintSrvConsole("%s Bot has been added in '%s' guild\n", m_Bot->GetConsolePrefix().c_str(), cb.created.name.c_str());
@@ -60,12 +60,6 @@ void GuildsEventsHandler::OnGuildCreate(const dpp::guild_create_t& cb)
     const std::string guildId = cb.created.id.str();
     const std::string guildName = cb.created.name;
     
-    const dpp::json guild =
-    {
-        { "id", guildId },
-        { "name", guildName }
-    };
-
     m_Bot->GetCluster().guild_commands_get(cb.created.id, [this, guildId, guildName](const dpp::confirmation_callback_t& cb) {
         if (m_Bot == nullptr)
             return;
@@ -102,11 +96,12 @@ void GuildsEventsHandler::OnGuildCreate(const dpp::guild_create_t& cb)
                 }
                 else if (m_Bot->GetLogLevel() == LogLevel::VERBOSE)
                     MF_PrintSrvConsole("%s No guild slash commands are registered for this bot on Discord API for %s (%s)\n", m_Bot->GetConsolePrefix().c_str(), guildId.c_str(), guildName.c_str());
-                });
+                }
+            );
         }
+        
+        ExecuteForward(ON_GUILD_CREATED, m_Bot->GetIdentifier().c_str(), guildId.c_str(), guildName.c_str());
     });
-
-    ExecuteForward(ON_GUILD_CREATED, m_Bot->GetIdentifier().c_str(), guild.dump().c_str());
 }
 
 void GuildsEventsHandler::OnGuildDelete(const dpp::guild_delete_t& cb)
@@ -118,25 +113,16 @@ void GuildsEventsHandler::OnGuildDelete(const dpp::guild_delete_t& cb)
             MF_PrintSrvConsole("%s Bot was removed from '%s' guild\n", m_Bot->GetConsolePrefix().c_str(), cb.deleted.name.c_str());
 
     if (!cb.deleted.is_unavailable())
-        m_Bot->GetGuildsMap().erase(cb.deleted.id);
+        m_Bot->GetGuildsSet().erase(cb.deleted.id);
 
     if (m_Bot->GetOptions().print_events_data || m_Bot->GetLogLevel() == LogLevel::VERBOSE)
         MF_PrintSrvConsole("%s OnGuildDelete: \n%s\n", m_Bot->GetConsolePrefix().c_str(), cb.deleted.to_json().dump(4).c_str());
 
-    const dpp::json guild =
-    {
-        { "id", cb.deleted.id.str() },
-        { "name", cb.deleted.name },
-        { "unavailable", cb.deleted.is_unavailable() }
-    };
-
-    ExecuteForward(ON_GUILD_DELETED, m_Bot->GetIdentifier().c_str(), guild.dump().c_str());
+    ExecuteForward(ON_GUILD_DELETED, m_Bot->GetIdentifier().c_str(), cb.deleted.id.str().c_str(), cb.deleted.name.c_str(), cb.deleted.is_unavailable());
 }
 
 void GuildsEventsHandler::OnGuildUpdate(const dpp::guild_update_t& cb)
 {
-    m_Bot->GetGuildsMap()[cb.updated.id] = cb.updated;
-
     if (m_Bot->GetOptions().print_events_data || m_Bot->GetLogLevel() == LogLevel::VERBOSE)
         MF_PrintSrvConsole("%s OnGuildUpdate: \n%s\n", m_Bot->GetConsolePrefix().c_str(), cb.updated.to_json().dump(4).c_str());
 

@@ -3,7 +3,8 @@
 #include "precompiled.h"
 
 cell AMX_NATIVE_CALL GetGuilds(AMX* amx, cell* params);
-cell AMX_NATIVE_CALL GuildChannelExists(AMX* amx, cell* params);
+cell AMX_NATIVE_CALL GuildChannelExistsById(AMX* amx, cell* params);
+cell AMX_NATIVE_CALL GuildChannelExistsByName(AMX* amx, cell* params);
 cell AMX_NATIVE_CALL GetGuildChannel(AMX* amx, cell* params);
 cell AMX_NATIVE_CALL BeginCreateGuildChannel(AMX* amx, cell* params);
 cell AMX_NATIVE_CALL EndCreateGuildChannel(AMX* amx, cell* params);

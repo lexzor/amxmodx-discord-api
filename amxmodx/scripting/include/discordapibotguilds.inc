@@ -26,29 +26,21 @@
 /**
 * Triggered after a bot has been added in a guild.
 *
-* @note JSON guild data
-*{
-*	"id": "80351110224678913",
-*	"name": "Guild 2"
-*}
-*
 * @param identifier         Bot identifier.
+* @param guild_id			Created guild ID.
+* @param guild_name			Created guild name.
 */
-forward OnGuildCreated(const identifier[], const guild_data[]);
+forward OnGuildCreated(const identifier[], const guild_id[], const guild_name[]);
 
 /**
-* Triggered after a bot has been removed from a guild.
-*
-* @note JSON guild data
-*{
-*	"id": "80351110224678913",
-*	"name": "Guild 2"
-*	"unavailable": false
-*}
+* Triggered after a bot has been removed from a guild or a guild became unavailable.
 *
 * @param identifier         Bot identifier.
+* @param guild				Deleted guild ID.
+* @param guild_name			Deleted guild name.
+* @param unavailable		Bot removed or guild unavailable.
 */
-forward OnGuildDeleted(const identifier[], const guild_data[]);
+forward OnGuildDeleted(const identifier[], const guild_id[], const guild_name[], const bool:unavailable);
 
 /**
 * Triggered after a channel create response has been received.
@@ -153,7 +145,18 @@ native any:GetGuilds(const identifier[], buffer[], const buffer_len);
 *
 * @return								True if bot it's in specified guild and channel has been found, false otherwise.					
 */
-native bool:GuildChannelExists(const identifier[], const guild_id[], const channel_id[]);
+native bool:GuildChannelExistsById(const identifier[], const guild_id[], const channel_id[]);
+
+/**
+* Check if a channel exists in a guild searching by channel name.
+*
+* @param identifier         			Bot identifier.
+* @param guild_id						Guild ID to check.
+* @param channel_id						Channel name to search for.
+*
+* @return								True if bot it's in specified guild and channel has been found, false otherwise.					
+*/
+native bool:GuildChannelExistsByName(const identifier[], const guild_id[], const channel_name[]);
 
 /**
 * Get a guild's channel name and parent id.
