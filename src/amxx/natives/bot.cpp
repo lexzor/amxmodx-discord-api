@@ -47,7 +47,20 @@ cell AMX_NATIVE_CALL SetBotOptions(AMX *amx, cell *params)
 
 cell AMX_NATIVE_CALL StartBot(AMX *amx, cell *params)
 {
-	AMX_GET_BOT(FALSE)
+	const char* identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
+	DiscordBot* bot = g_DiscordBotsManager->GetBotRawPtrByIdentifier(identifier);
+
+	if (bot == nullptr)
+	{
+		MF_LogError(amx, AMX_ERR_NATIVE, "(StartBot) Bot with identifier '%s' does not exists", identifier);
+		return FALSE;
+	}
+
+	if (bot->IsStarted())
+	{
+		MF_LogError(amx, AMX_ERR_NATIVE, "(StartBot) Bot with identifier '%s' is ready", identifier);
+		return FALSE;
+	}
 
 	return static_cast<cell>(bot->Start());
 }
