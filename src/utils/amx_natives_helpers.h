@@ -1,7 +1,5 @@
 #pragma once
 
-#pragma once
-
 #define AMX_GET_BOT(ret_val)                                                                          \
     const char* identifier = MF_GetAmxString(amx, params[1], 0, nullptr);                             \
     DiscordBot* bot = g_DiscordBotsManager->GetBotRawPtrByIdentifier(identifier);                     \
