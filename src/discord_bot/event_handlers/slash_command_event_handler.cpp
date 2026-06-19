@@ -30,6 +30,8 @@ void SlashCommandEventHandler::RegisterListeners()
 
 void SlashCommandEventHandler::OnSlashCommand(const dpp::slashcommand_t cb)
 {
+    cb.thinking();
+
     nlohmann::json paramsJson;
 
     for (const dpp::command_data_option& opt : cb.command.get_command_interaction().options)
@@ -69,5 +71,9 @@ void SlashCommandEventHandler::OnSlashCommand(const dpp::slashcommand_t cb)
     {
         cb.reply(lastInteractionMessage.c_str());
         m_Bot->ClearInteractionMessage();
+    }
+    else
+    {
+        cb.reply("Bot failed to send a response");
     }
 }
