@@ -1,5 +1,5 @@
 /*
-* Discord API Module for AMX Mod X. Below you will find all the natives and forwards provided by the module. 
+* Discord API Module for AMX Mod X. Below you will find all the natives,forwards and constants provided by the module. 
 *
 * Author: lexzor
 * Website: https://github.com/lexzor/amxmodx-discord-api
@@ -24,6 +24,9 @@
 
 /**
 * Triggered after a bot has been created in Discord API.
+*
+* @note This function will be called after plugin_init for every
+* 		bot which are already ready.
 *
 * @param identifier         Bot identifier.
 */

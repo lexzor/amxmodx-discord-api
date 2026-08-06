@@ -1,21 +1,9 @@
 #include "channels.h"
+#include "amx_natives_helpers.h"
 
 cell AMX_NATIVE_CALL SendMessageToChannel(AMX* amx, cell* params)
 {
-	const char* identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
-	DiscordBot* bot = g_DiscordBotsManager->GetBotRawPtrByIdentifier(identifier);
-
-	if (bot == nullptr)
-	{
-		MF_LogError(amx, AMX_ERR_NATIVE, "(SendMessageToChannel) Bot with identifier '%s' does not exists", identifier);
-		return FALSE;
-	}
-
-	if (!bot->IsStarted())
-	{
-		MF_LogError(amx, AMX_ERR_NATIVE, "(SendMessageToChannel) Bot with identifier '%s' is ready", identifier);
-		return FALSE;
-	}
+	AMX_GET_BOT(FALSE)
 
 	const char* channelId = MF_GetAmxString(amx, params[2], 1, nullptr);
 	const char* message = MF_GetAmxString(amx, params[3], 2, nullptr);
