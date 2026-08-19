@@ -19,6 +19,8 @@ SlashCommandEventHandler::~SlashCommandEventHandler()
 void SlashCommandEventHandler::RegisterListeners()
 {
 	m_Bot->GetCluster().on_slashcommand([this](dpp::slashcommand_t cb) {
+        cb.thinking();
+
 		g_EventsQueue->Push([this, cb]() {
 			if (m_Bot == nullptr)
 				return;
@@ -30,8 +32,6 @@ void SlashCommandEventHandler::RegisterListeners()
 
 void SlashCommandEventHandler::OnSlashCommand(const dpp::slashcommand_t cb)
 {
-    cb.thinking();
-
     nlohmann::json paramsJson;
 
     for (const dpp::command_data_option& opt : cb.command.get_command_interaction().options)
