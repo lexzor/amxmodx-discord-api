@@ -18,16 +18,30 @@ SlashCommandEventHandler::~SlashCommandEventHandler()
 
 void SlashCommandEventHandler::RegisterListeners()
 {
-	m_Bot->GetCluster().on_slashcommand([this](dpp::slashcommand_t cb) {
-        cb.thinking();
+    m_Bot->GetCluster().on_slashcommand([this](dpp::slashcommand_t cb) {
+        cb.thinking(false, [this, cb](const dpp::confirmation_callback_t& callback) {
+            if (callback.is_error()) {
+                
+                const std::string errorMessage = callback.get_error().message;
 
-		g_EventsQueue->Push([this, cb]() {
-			if (m_Bot == nullptr)
-				return;
+                g_EventsQueue->Push([this, errorMessage]() {
+                    if (m_Bot == nullptr)
+                        return;
 
-			OnSlashCommand(cb);
-		});
-	});
+                    MF_PrintSrvConsole("[DiscordBOT] thinking() failed: %s", errorMessage.c_str());
+                });
+                
+                return;
+            }
+
+            g_EventsQueue->Push([this, cb]() {
+                if (m_Bot == nullptr)
+                    return;
+
+                OnSlashCommand(cb);
+            });
+        });
+    });
 }
 
 void SlashCommandEventHandler::OnSlashCommand(const dpp::slashcommand_t cb)
@@ -69,11 +83,23 @@ void SlashCommandEventHandler::OnSlashCommand(const dpp::slashcommand_t cb)
 
     if (!lastInteractionMessage.empty())
     {
-        cb.reply(lastInteractionMessage.c_str());
+        cb.edit_response(lastInteractionMessage.c_str(), [this](const dpp::confirmation_callback_t& c) {
+            if (c.is_error())
+            {
+                const std::string errorMessage = c.get_error().message;
+
+                g_EventsQueue->Push([this, errorMessage]() {
+                    if (m_Bot == nullptr)
+                        return;
+
+                    MF_PrintSrvConsole("[DiscordBOT] reply() failed: %s", errorMessage.c_str());
+                });
+            }
+        });
         m_Bot->ClearInteractionMessage();
     }
     else
     {
-        cb.reply("Bot failed to send a response");
+        cb.edit_response("Bot failed to send a response");
     }
 }
