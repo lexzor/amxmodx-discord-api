@@ -26,7 +26,6 @@ void ChannelsEventsHandler::RegisterListeners()
             if (m_Bot == nullptr)
                 return;
 
-
             OnChannelCreate(cb);
         });
     });
