@@ -38,7 +38,7 @@ echo "----- Building ZLIB -----"
 ./Configure linux-x86 no-shared no-docs --prefix="$VENDOR/openssl" CFLAGS="-m32" LDFLAGS="-m32"
 
  make -j$(nproc)
- make install
+ make install_sw
 
  echo "----- Building CURL 8.20.0 -----"
 
@@ -108,6 +108,7 @@ cp "$VENDOR/openssl/lib/libcrypto.a" "$BIN/"
 cp "$VENDOR/openssl/lib/libssl.a" "$BIN/"
 cp "$VENDOR/zlib/lib/libz.a" "$BIN/"
 cp -r "$VENDOR/libssrc/DPP/include/dpp" "$VENDOR/include"
+cp -r "$VENDOR/openssl/include/openssl" "$VENDOR/include/"
 
 echo "----- VERIFYING OUTPUT LIBS -----"
 
