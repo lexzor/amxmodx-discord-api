@@ -150,7 +150,10 @@ cell AMX_NATIVE_CALL GetGuildChannel(AMX* amx, cell* params)
 	}
 
 	for (size_t i = 0; i < channel->name.size(); i++)
+	{
 		channelNameBuffer[i] = static_cast<cell>(channel->name[i]);
+	}	
+
 	channelNameBuffer[channel->name.size()] = 0x0;
 
 	cell* channelParentIdBuffer = MF_GetAmxAddr(amx, params[6]);
@@ -165,7 +168,10 @@ cell AMX_NATIVE_CALL GetGuildChannel(AMX* amx, cell* params)
 	}
 
 	for (size_t i = 0; i < parentIdStr.size(); i++)
+	{
 		channelParentIdBuffer[i] = static_cast<cell>(parentIdStr[i]);
+	}
+
 	channelParentIdBuffer[parentIdStr.size()] = 0x0;
 
 	return TRUE;
@@ -174,19 +180,172 @@ cell AMX_NATIVE_CALL GetGuildChannel(AMX* amx, cell* params)
 cell AMX_NATIVE_CALL GetGuildChannelsCount(AMX* amx, cell* params)
 {
 	AMX_GET_BOT(FALSE)
-	AMX_GET_GUILD(2, 1, FALSE);
+	AMX_GET_GUILD(2, 1, FALSE)
+
+	const dpp::guild* guild = dpp::find_guild(guildId);
+
+	if (guild == nullptr)
+	{
+		MF_LogError(amx, AMX_ERR_NATIVE, "(%s) Guild %s not found in cache", __func__, guildIdentifier);
+		return FALSE;
+	}
+
+	return static_cast<cell>(guild->channels.size());
 }
 
 cell AMX_NATIVE_CALL GetGuildChannelStringMemberByIndex(AMX* amx, cell* params)
 {
 	AMX_GET_BOT(FALSE)
 	AMX_GET_GUILD(2, 1, FALSE)
+
+	const dpp::guild* guild = dpp::find_guild(guildId);
+
+	if (guild == nullptr)
+	{
+		MF_LogError(amx, AMX_ERR_NATIVE, "(%s) Guild %s not found in cache", __func__, guildIdentifier);
+		return FALSE;
+	}
+
+	const cell index = params[3];
+
+	if (index < 0 || static_cast<size_t>(index) >= guild->channels.size())
+	{
+		MF_LogError(amx, AMX_ERR_BOUNDS, "(%s) Channel index %i out of bounds", __func__, index);
+		return FALSE;
+	}
+
+	const dpp::channel* channel = nullptr;
+	size_t currentIndex = 0;
+
+	for (const dpp::snowflake& channelId : guild->channels)
+	{
+		if (currentIndex++ != static_cast<size_t>(index))
+			continue;
+
+		channel = dpp::find_channel(channelId);
+
+		if (channel == nullptr)
+		{
+			MF_LogError(amx, AMX_ERR_NATIVE, "(%s) Channel %s not found in cache", __func__, channelId.str().c_str());
+			return FALSE;
+		}
+
+		break;
+	}
+
+	if (channel == nullptr)
+	{
+		MF_LogError(amx, AMX_ERR_BOUNDS, "(%s) Channel index %i out of bounds", __func__, index);
+		return FALSE;
+	}
+
+	enum class ChannelMemberString : uint32_t { NAME, PARENT_ID };
+
+	std::string value;
+
+	switch (static_cast<ChannelMemberString>(params[4]))
+	{
+	case ChannelMemberString::NAME:
+		value = channel->name;
+		break;
+
+	case ChannelMemberString::PARENT_ID:
+		value = channel->parent_id.str();
+		break;
+
+	default:
+		MF_LogError(amx, AMX_ERR_NATIVE, "(%s) Invalid ChannelMemberString value %i", __func__, params[4]);
+		return FALSE;
+	}
+
+	cell* buffer = MF_GetAmxAddr(amx, params[5]);
+	const cell bufferLen = params[6];
+
+	if (bufferLen < 0)
+	{
+		MF_LogError(amx, AMX_ERR_BOUNDS, "(%s) Buffer length cannot be negative", __func__);
+		return FALSE;
+	}
+
+	if (value.size() > static_cast<size_t>(bufferLen))
+	{
+		MF_LogError(amx, AMX_ERR_BOUNDS, "(%s) Buffer too small", __func__);
+		return FALSE;
+	}
+
+	for (size_t i = 0; i < value.size(); i++)
+	{
+		buffer[i] = static_cast<cell>(value[i]);
+	}
+
+	buffer[value.size()] = 0x0;
+
+	return TRUE;
 }
 
 cell AMX_NATIVE_CALL GetGuildChannelIntegerMemberByIndex(AMX* amx, cell* params)
 {
 	AMX_GET_BOT(FALSE)
-		AMX_GET_GUILD(2, 1, FALSE)
+	AMX_GET_GUILD(2, 1, FALSE)
+
+	const dpp::guild* guild = dpp::find_guild(guildId);
+
+	if (guild == nullptr)
+	{
+		MF_LogError(amx, AMX_ERR_NATIVE, "(%s) Guild %s not found in cache", __func__, guildIdentifier);
+		return FALSE;
+	}
+
+	const cell index = params[3];
+
+	if (index < 0 || static_cast<size_t>(index) >= guild->channels.size())
+	{
+		MF_LogError(amx, AMX_ERR_BOUNDS, "(%s) Channel index %i out of bounds", __func__, index);
+		return FALSE;
+	}
+
+	const dpp::channel* channel = nullptr;
+	size_t currentIndex = 0;
+
+	for (const dpp::snowflake& channelId : guild->channels)
+	{
+		if (currentIndex++ != static_cast<size_t>(index))
+			continue;
+
+		channel = dpp::find_channel(channelId);
+
+		if (channel == nullptr)
+		{
+			MF_LogError(amx, AMX_ERR_NATIVE, "(%s) Channel %s not found in cache", __func__, channelId.str().c_str());
+			return FALSE;
+		}
+
+		break;
+	}
+
+	if (channel == nullptr)
+	{
+		MF_LogError(amx, AMX_ERR_BOUNDS, "(%s) Channel index %i out of bounds", __func__, index);
+		return FALSE;
+	}
+
+	enum class ChannelMemberInt : uint32_t { TYPE, FLAGS, USER_LIMIT };
+
+	switch (static_cast<ChannelMemberInt>(params[4]))
+	{
+	case ChannelMemberInt::TYPE:
+		return static_cast<cell>(channel->get_type());
+
+	case ChannelMemberInt::FLAGS:
+		return static_cast<cell>(channel->flags);
+
+	case ChannelMemberInt::USER_LIMIT:
+		return static_cast<cell>(channel->user_limit);
+
+	default:
+		MF_LogError(amx, AMX_ERR_NATIVE, "(%s) Invalid ChannelMemberInt value %i", __func__, params[4]);
+		return FALSE;
+	}
 }
 
 cell AMX_NATIVE_CALL BeginCreateGuildChannel(AMX* amx, cell* params)
