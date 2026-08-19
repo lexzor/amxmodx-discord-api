@@ -57,7 +57,7 @@ void MessagesEventsHandler::OnMessageCreate(const dpp::message_create_t& cb)
         dpp::json logEventData = eventData;
         logEventData["channel_id"] = cb.msg.channel_id;
 
-        MF_PrintSrvConsole("%s OnChannelMessageCreated: \n%s\n", m_Bot->GetConsolePrefix().c_str(), eventData.dump(4).c_str());
+        MF_PrintSrvConsole("%s OnChannelMessageCreated: \n%s\n", m_Bot->GetConsolePrefix().c_str(), logEventData.dump(4).c_str());
     }
 
     m_Bot->SetInteractionReplyAbility(true);
