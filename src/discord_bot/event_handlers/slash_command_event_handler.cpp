@@ -8,7 +8,7 @@
 SlashCommandEventHandler::SlashCommandEventHandler(DiscordBot* bot)
 	: m_Bot(bot)
 {
-	RegisterListeners();
+    RegisterListeners();
 }
 
 SlashCommandEventHandler::~SlashCommandEventHandler()
