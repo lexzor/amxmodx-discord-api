@@ -13,7 +13,7 @@ public:
 	struct Node
 	{
 		Func func;
-		std::shared_ptr<Node> next = nullptr;
+		std::atomic<std::shared_ptr<Node>> next = nullptr;
 	};
 
 	void Initialize()
@@ -34,21 +34,21 @@ public:
 	{
 		std::shared_ptr<Node> node = std::make_shared<Node>();
 		node->func = std::move(data);
-		
-		std::shared_ptr<Node> prev = m_Tail.exchange(node);
-		prev->next = node;
+
+		std::shared_ptr<Node> prev = m_Tail.exchange(node, std::memory_order_acq_rel);
+		prev->next.store(node, std::memory_order_release);
 	}
 
 	[[nodiscard]] std::shared_ptr<Node> Pop()
 	{
 		std::shared_ptr<Node> first = m_Head;
-		std::shared_ptr<Node> next = first->next;
+		std::shared_ptr<Node> next = first->next.load(std::memory_order_acquire);
 
 		if (next) {
 			m_Head = next;
 			return next;
 		}
-
+		
 		return nullptr;
 	}
 
