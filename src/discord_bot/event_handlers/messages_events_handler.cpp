@@ -53,7 +53,12 @@ void MessagesEventsHandler::OnMessageCreate(const dpp::message_create_t& cb)
     }
 
     if (m_Bot->GetOptions().print_events_data || m_Bot->GetLogLevel() == LogLevel::VERBOSE)
+    {
+        dpp::json logEventData = eventData;
+        logEventData["channel_id"] = cb.msg.channel_id;
+
         MF_PrintSrvConsole("%s OnChannelMessageCreated: \n%s\n", m_Bot->GetConsolePrefix().c_str(), eventData.dump(4).c_str());
+    }
 
     m_Bot->SetInteractionReplyAbility(true);
     ExecuteForward(ON_CHANNEL_MESSAGE_CREATE, m_Bot->GetIdentifier().c_str(), cb.msg.channel_id.str().c_str(), eventData.dump().c_str());
