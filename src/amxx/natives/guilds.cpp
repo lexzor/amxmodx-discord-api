@@ -171,6 +171,24 @@ cell AMX_NATIVE_CALL GetGuildChannel(AMX* amx, cell* params)
 	return TRUE;
 }
 
+cell AMX_NATIVE_CALL GetGuildChannelsCount(AMX* amx, cell* params)
+{
+	AMX_GET_BOT(FALSE)
+	AMX_GET_GUILD(2, 1, FALSE);
+}
+
+cell AMX_NATIVE_CALL GetGuildChannelStringMemberByIndex(AMX* amx, cell* params)
+{
+	AMX_GET_BOT(FALSE)
+	AMX_GET_GUILD(2, 1, FALSE)
+}
+
+cell AMX_NATIVE_CALL GetGuildChannelIntegerMemberByIndex(AMX* amx, cell* params)
+{
+	AMX_GET_BOT(FALSE)
+		AMX_GET_GUILD(2, 1, FALSE)
+}
+
 cell AMX_NATIVE_CALL BeginCreateGuildChannel(AMX* amx, cell* params)
 {
 	AMX_GET_BOT(-1)
@@ -455,7 +473,17 @@ cell AMX_NATIVE_CALL BeginCreateGuildSlashCommand(AMX* amx, cell* params)
 
 	const char* description = MF_GetAmxString(amx, params[3], 2, nullptr);
 
-	return g_PendingAmxObjectStore->CreateObject<dpp::slashcommand>(strtolower(name), description, bot->GetCluster().me.id);
+	const cell slashCommandHandle = g_PendingAmxObjectStore->CreateObject<dpp::slashcommand>(strtolower(name), description, bot->GetCluster().me.id);
+
+	if (slashCommandHandle == -1)
+		return -1;
+
+	dpp::slashcommand* slashCommand = g_PendingAmxObjectStore->GetStoreObject<dpp::slashcommand>(slashCommandHandle);
+
+	if (slashCommand != nullptr)
+		slashCommand->set_default_permissions(0);
+
+	return slashCommandHandle;
 }
 
 cell AMX_NATIVE_CALL EndCreateGuildSlashCommand(AMX* amx, cell* params)
