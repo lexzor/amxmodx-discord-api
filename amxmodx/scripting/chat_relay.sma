@@ -11,7 +11,7 @@
 enum CVARS
 {
     ID[64],
-    CHANNEL[64],
+    RELAY_CHANNEL[64],
     BLOCKED_MSGS_PREFIXES[64]
 }
 
@@ -45,8 +45,8 @@ public plugin_init()
             FCVAR_PROTECTED | FCVAR_SPONLY | FCVAR_SERVER,
             "Channel to send server chat messages"
 		),
-		g_eCvar[CHANNEL],
-        charsmax(g_eCvar[CHANNEL])
+		g_eCvar[RELAY_CHANNEL],
+        charsmax(g_eCvar[RELAY_CHANNEL])
 	);
 
     bind_pcvar_string(
@@ -98,14 +98,14 @@ public cmd_say(id)
     new discordMessage[128];
     formatex(discordMessage, charsmax(discordMessage), "[%s] %s: %s", get_user_team(id) == 1 ? "T" : "CT", name, message);
 
-    SendMessageToChannel(IDENTIFIER, g_eCvar[CHANNEL], discordMessage);
+    SendMessageToChannel(IDENTIFIER, g_eCvar[RELAY_CHANNEL], discordMessage);
 
     return PLUGIN_CONTINUE;
 }
 
 public OnChannelMessageCreated(const identifier[], const channel_id[], const event_data[])
 {
-    if(!equal(identifier, IDENTIFIER) || !equal(channel_id, g_eCvar[CHANNEL]))
+    if(!equal(identifier, IDENTIFIER) || !equal(channel_id, g_eCvar[RELAY_CHANNEL]))
         return;
 
     new JSON:jsonEvent = json_parse(event_data);
