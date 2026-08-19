@@ -36,8 +36,10 @@ void LogEventHandler::OnLog(const dpp::log_t& cb)
 
         MF_PrintSrvConsole("\n----------------------------------\n");
         MF_PrintSrvConsole("%s %s log! Identifier: %s\n", m_Bot->GetConsolePrefix().c_str(), level.c_str(), m_Bot->GetIdentifier().c_str());
-        MF_PrintSrvConsole("%s JSON log: %s\n", m_Bot->GetConsolePrefix().c_str(), cb.message.c_str());
+        MF_PrintSrvConsole("%s Message log: %s\n", m_Bot->GetConsolePrefix().c_str(), cb.message.c_str());
+        MF_PrintSrvConsole("%s Raw Event: %s\n", m_Bot->GetConsolePrefix().c_str(), cb.raw_event.c_str());
         MF_PrintSrvConsole("----------------------------------\n");
+
         return;
     }
 
