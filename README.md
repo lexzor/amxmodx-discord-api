@@ -4,7 +4,7 @@ A powerful library that brings the functionality of the **Discord API** directly
 
 ## 📋 Requirements
 
-* **AMX Mod X:** `v1.9.0.5294` or newer (includes the JSON module).
+* **AMX Mod X:** `v1.9.0.5294` or newer (includes the `JSON` module).
 * **Metamod-R:** `v1.3.0.149` or newer.
 
 > **Compatibility Note:** Other Metamod versions may work, but full stability is only guaranteed with the specified Metamod-R release. Furthermore, this project is built using **C++20**. If you are running your server in a Docker container (e.g., via Pterodactyl Panel), ensure your operating system is up-to-date. We recommend using the `ghcr.io/parkervcp/steamcmd:debian` image.
