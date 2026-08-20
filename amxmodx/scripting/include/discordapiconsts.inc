@@ -14,13 +14,14 @@
 #if defined _discordapiconsts_included
 	#endinput
 #endif
+
 #define _discordapiconsts_included
+
 
 #define DISCORD_API_AMXX_API_VERSION_STRING "1.4.5"
 
 const MAX_IDENTIFIER_LENGTH			= 32;
 const MAX_CONSOLE_PREFIX_LENGTH 	= 32;
-
 
 // Log level of the module
 enum LogLevel

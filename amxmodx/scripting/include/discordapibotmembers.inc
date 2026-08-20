@@ -14,9 +14,11 @@
 #if defined _discordapibotmembers_included
 	#endinput
 #endif
+
 #define _discordapibotmembers_included
 
 #include <discordapibotmembersconsts>
+
 
 /*
 *

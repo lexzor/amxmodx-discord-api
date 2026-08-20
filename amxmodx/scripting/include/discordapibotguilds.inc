@@ -14,9 +14,11 @@
 #if defined _discordapibotguilds_included
 	#endinput
 #endif
+
 #define _discordapibotguilds_included
 
 #include <discordapibotguildsconsts>
+
 
 /*
 * Forwards
