@@ -21,6 +21,8 @@
 #include <discordapibot>
 #include <discordapibotchannels>
 #include <discordapibotguilds>
+#include <discordapibotmembers>
+#include <discordapibotroles>
 
 /**
 * Get the module version string.
