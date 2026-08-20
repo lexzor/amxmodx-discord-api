@@ -19,6 +19,7 @@ ChannelsEventsHandler::~ChannelsEventsHandler()
 void ChannelsEventsHandler::RegisterListeners()
 {
     m_Bot->GetCluster().on_channel_create([this](dpp::channel_create_t cb) {
+        // TODO: It's this really needed? I don't remember, research.
         dpp::channel* newCached = new dpp::channel(cb.created);
         dpp::get_channel_cache()->store(newCached);
         
