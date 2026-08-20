@@ -67,11 +67,11 @@ echo "----- Building ZLIB -----"
  make -j$(nproc)
  make install
 
-echo "----- Building DPP (v10.1.5) -----"
+echo "----- Building DPP (v10.1.6) -----"
 
 cd "$ROOT/vendor/libssrc"
 if [ ! -d DPP ]; then
-    git clone --branch v10.1.5 --depth 1 https://github.com/brainboxdotcc/DPP.git
+    git clone --branch v10.1.6 --depth 1 https://github.com/brainboxdotcc/DPP.git
 fi
 cd DPP
 
