@@ -1,7 +1,9 @@
 #include "natives/module.h"
 #include "natives/bot.h"
 #include "natives/guilds.h"
+#include "natives/members.h"
 #include "natives/channels.h"
+#include "natives/roles.h"
 
 AMX_NATIVE_INFO g_DiscordBotNatives[] =
 	{	
@@ -26,6 +28,8 @@ AMX_NATIVE_INFO g_DiscordBotNatives[] =
 		{ "GetGuildChannelsCount", GetGuildChannelsCount },
 		{ "GetGuildChannelStringMemberByIndex", GetGuildChannelStringMemberByIndex },
 		{ "GetGuildChannelIntegerMemberByIndex", GetGuildChannelIntegerMemberByIndex },
+		{ "GetGuildChannelStringMemberById", GetGuildChannelStringMemberById },
+		{ "GetGuildChannelIntegerMemberById", GetGuildChannelIntegerMemberById },
 		{ "BeginCreateGuildChannel", BeginCreateGuildChannel },
 		{ "EndCreateGuildChannel", EndCreateGuildChannel },
 		{ "DeleteGuildChannel", DeleteGuildChannel },
@@ -44,6 +48,26 @@ AMX_NATIVE_INFO g_DiscordBotNatives[] =
 		{ "AddSlashCommandOptionChoiceFloat", AddSlashCommandOptionChoiceFloat },
 		{ "CreateGuildSlashCommand", CreateGuildSlashCommand },
 		{ "DeleteGuildSlashCommand", DeleteGuildSlashCommand },
+
+		// members.h
+		{ "GuildMemberExistsById", GuildMemberExistsById },
+		{ "GuildMemberExistsByUsername", GuildMemberExistsByUsername },
+		{ "GetGuildMemberIdByUsername", GetGuildMemberIdByUsername },
+		{ "GetGuildMemberStringMemberById", GetGuildMemberStringMemberById },
+		{ "GetGuildMemberIntegerMemberById", GetGuildMemberIntegerMemberById },
+		{ "GetGuildMembersCount", GetGuildMembersCount },
+		{ "GetGuildMemberStringMemberByIndex", GetGuildMemberStringMemberByIndex },
+		{ "GetGuildMemberIntegerMemberByIndex", GetGuildMemberIntegerMemberByIndex },
+		{ "GuildMemberHasRole", GuildMemberHasRole },
+		{ "AddGuildMemberRole", AddGuildMemberRole },
+		{ "RemoveGuildMemberRole", RemoveGuildMemberRole },
+		{ "FetchGuildUserById", FetchGuildUserById },
+		{ "FetchGuildUserByUsername", FetchGuildUserByUsername },
+
+		// roles.h
+		{ "GuildRoleExistsById", GuildRoleExistsById },
+		{ "GuildRoleExistsByName", GuildRoleExistsByName },
+		{ "GetGuildRoleIdByName", GetGuildRoleIdByName },
 
 		// channels.h
 		{ "SendMessageToChannel", SendMessageToChannel },
