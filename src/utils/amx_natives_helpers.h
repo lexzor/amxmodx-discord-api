@@ -36,7 +36,6 @@
         return ret_val;                                                                               \
     }
 
-
 #define AMX_GET_MEMBER(param_index, str_index, ret_val)                                               \
     const char* memberIdentifier = MF_GetAmxString(amx, params[param_index], str_index, nullptr);     \
     const dpp::snowflake memberId = dpp::snowflake(memberIdentifier);                                 \
