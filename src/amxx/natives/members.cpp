@@ -638,7 +638,7 @@ cell AMX_NATIVE_CALL FetchGuildUserByUsername(AMX* amx, cell* params)
 
 					g_EventsQueue->Push([bot, guildIdStr, userIdStr, foundUsername, nickname, displayName]() {
 						ExecuteForward(ON_GUILD_MEMBER_FETCH, bot->GetIdentifier().c_str(), guildIdStr.c_str(), true, userIdStr.c_str(), foundUsername.c_str(), nickname.c_str(), displayName.c_str());
-						});
+					});
 					return;
 				}
 

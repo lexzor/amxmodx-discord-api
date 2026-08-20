@@ -41,7 +41,7 @@ cell AMX_NATIVE_CALL GetGuilds(AMX* amx, cell* params)
 		jGuilds.push_back({
 			{ "id", guild->id.str() },
 			{ "name", guild->name }
-			});
+		});
 	}
 
 	const std::string guildsJSON = jGuilds.dump();
