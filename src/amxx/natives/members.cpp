@@ -458,29 +458,28 @@ cell AMX_NATIVE_CALL AddGuildMemberRole(AMX* amx, cell* params)
 	}
 
 	bot->GetCluster().guild_member_add_role(guildId, memberId, roleId, [bot, guildId, memberId, roleId](const dpp::confirmation_callback_t& cb) {
-			if (cb.is_error())
-			{
-				const uint32_t errorCode = cb.get_error().code;
-				const std::string errorMessage = cb.get_error().message;
-				const std::string humanReadable = cb.get_error().human_readable;
-				
-				g_EventsQueue->Push([bot, guildId, memberId, roleId, errorCode, errorMessage, humanReadable]() {
-					gpMetaUtilFuncs->pfnLogConsole(PLID, "[DiscordAPI] (%s) Failed to add role %s to member %s. Code: %u", bot->GetIdentifier().c_str(), roleId.str().c_str(), memberId.str().c_str(), errorCode);
-					gpMetaUtilFuncs->pfnLogConsole(PLID, "[DiscordAPI] (%s) Message: %s", bot->GetIdentifier().c_str(), errorMessage.c_str());
-					gpMetaUtilFuncs->pfnLogConsole(PLID, "[DiscordAPI] (%s) Human readable error: %s", bot->GetIdentifier().c_str(), humanReadable.c_str());
+		if (cb.is_error())
+		{
+			const uint32_t errorCode = cb.get_error().code;
+			const std::string errorMessage = cb.get_error().message;
+			const std::string humanReadable = cb.get_error().human_readable;
+			
+			g_EventsQueue->Push([bot, guildId, memberId, roleId, errorCode, errorMessage, humanReadable]() {
+				gpMetaUtilFuncs->pfnLogConsole(PLID, "[DiscordAPI] (%s) Failed to add role %s to member %s. Code: %u", bot->GetIdentifier().c_str(), roleId.str().c_str(), memberId.str().c_str(), errorCode);
+				gpMetaUtilFuncs->pfnLogConsole(PLID, "[DiscordAPI] (%s) Message: %s", bot->GetIdentifier().c_str(), errorMessage.c_str());
+				gpMetaUtilFuncs->pfnLogConsole(PLID, "[DiscordAPI] (%s) Human readable error: %s", bot->GetIdentifier().c_str(), humanReadable.c_str());
 
-					ExecuteForward(ON_GUILD_MEMBER_ROLE_ADD, bot->GetIdentifier().c_str(), guildId.str().c_str(), memberId.str().c_str(), roleId.str().c_str(), false);
-					return;
-				});
-			}
-			else 
-			{
-				g_EventsQueue->Push([bot, guildId, memberId, roleId]() {
-					ExecuteForward(ON_GUILD_MEMBER_ROLE_ADD, bot->GetIdentifier().c_str(), guildId.str().c_str(), memberId.str().c_str(), roleId.str().c_str(), true);
-				});
-			}
+				ExecuteForward(ON_GUILD_MEMBER_ROLE_ADD, bot->GetIdentifier().c_str(), guildId.str().c_str(), memberId.str().c_str(), roleId.str().c_str(), false);
+				return;
+			});
 		}
-	);
+		else 
+		{
+			g_EventsQueue->Push([bot, guildId, memberId, roleId]() {
+				ExecuteForward(ON_GUILD_MEMBER_ROLE_ADD, bot->GetIdentifier().c_str(), guildId.str().c_str(), memberId.str().c_str(), roleId.str().c_str(), true);
+			});
+		}
+	});
 
 	return TRUE;
 }
