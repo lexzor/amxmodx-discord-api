@@ -96,7 +96,7 @@ cp "$VENDOR/zlib/lib/libz.a" "$BIN/"
 cp -r "$VENDOR/dpp/include/"* "$VENDOR/include/"
 cp -r "$VENDOR/openssl/include/"* "$VENDOR/include/"
 cp -r "$VENDOR/curl/include/"* "$VENDOR/include/"
-cp -r "$VENDOR/zlib/include/"* "$VENDOR/include/"
+cp -r "$VENDOR/zlib/include/"* "$VENDOR/include/zlib"
 
 echo "----- VERIFYING OUTPUT LIBS -----"
 ls -lah "$BIN"
