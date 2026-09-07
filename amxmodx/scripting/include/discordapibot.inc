@@ -1,5 +1,5 @@
 /*
-* Discord API Module for AMX Mod X. Below you will find all the natives,forwards and constants provided by the module. 
+* Discord API Module for AMX Mod X. Below you will find all the natives, forwards and constants provided by the module. 
 *
 * Author: lexzor
 * Website: https://github.com/lexzor/amxmodx-discord-api
@@ -38,6 +38,21 @@ forward OnBotReady(const identifier[]);
 * @param identifier         Bot identifier.
 */
 forward OnBotStopped(const identifier[]);
+
+/**
+* Triggered when a bot receives a log message from Discord API.
+*
+* @note This forward is always called for WARNING, ERROR and CRITICAL severities,
+* 		regardless of the bot's configured LOG_LEVEL option. Below that (INFO, DEBUG,
+* 		TRACE), it's called following the same rules used for console printing:
+* 		not called at all if LOG_LEVEL is NONE, called only for INFO severity if
+* 		LOG_LEVEL is DEFAULT, and called for every severity if LOG_LEVEL is VERBOSE.
+*
+* @param identifier         Bot identifier.
+* @param severity           Log severity, a LogSeverity constant.
+* @param message            Log message.
+*/
+forward OnBotLog(const identifier[], LogSeverity:severity, const message[]);
 
 /*
 *

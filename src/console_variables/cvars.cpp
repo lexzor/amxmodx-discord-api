@@ -3,7 +3,7 @@
 #include "precompiled.h"
 #include "moduleconfig.h"
 
-cvar_t g_cvDiscordAPIVersion =
+const cvar_t g_cvDiscordAPIVersion =
 {
     .name  = const_cast<char*>("discordapi_version"),
     .string = const_cast<char*>(MODULE_VERSION),

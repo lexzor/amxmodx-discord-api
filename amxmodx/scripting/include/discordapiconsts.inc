@@ -14,13 +14,14 @@
 #if defined _discordapiconsts_included
 	#endinput
 #endif
+
 #define _discordapiconsts_included
+
 
 #define DISCORD_API_AMXX_API_VERSION_STRING "1.4.5"
 
 const MAX_IDENTIFIER_LENGTH			= 32;
 const MAX_CONSOLE_PREFIX_LENGTH 	= 32;
-
 
 // Log level of the module
 enum LogLevel
@@ -28,6 +29,17 @@ enum LogLevel
 	NONE,
 	DEFAULT,
 	VERBOSE
+}
+
+// Severity of a log message received from a bot, forwarded through OnLog.
+enum LogSeverity
+{
+	LOG_SEVERITY_TRACE,
+	LOG_SEVERITY_DEBUG,
+	LOG_SEVERITY_INFO,
+	LOG_SEVERITY_WARNING,
+	LOG_SEVERITY_ERROR,
+	LOG_SEVERITY_CRITICAL
 }
 
 // Enum used to create an array which will be passed to native SetBotOptions

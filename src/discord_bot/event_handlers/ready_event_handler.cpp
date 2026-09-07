@@ -78,7 +78,12 @@ void ReadyEventHandler::OnReady()
             });
         }
 
-        m_Bot->SetReadyState(true);
-        ExecuteForward(ON_BOT_READY, m_Bot->GetIdentifier().c_str());
+        g_EventsQueue->Push([this]() {
+            if (m_Bot == nullptr)
+                return;
+
+            m_Bot->SetReadyState(true);
+            ExecuteForward(ON_BOT_READY, m_Bot->GetIdentifier().c_str());
+        });
     });
 }

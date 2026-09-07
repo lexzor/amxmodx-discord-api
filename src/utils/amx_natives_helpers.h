@@ -35,3 +35,21 @@
             __func__, var_name##Handle);                                                              \
         return ret_val;                                                                               \
     }
+
+#define AMX_GET_MEMBER(param_index, str_index, ret_val)                                               \
+    const char* memberIdentifier = MF_GetAmxString(amx, params[param_index], str_index, nullptr);     \
+    const dpp::snowflake memberId = dpp::snowflake(memberIdentifier);                                 \
+    const dpp::guild_member* member = nullptr;                                                        \
+    {                                                                                                 \
+        auto memberIt = guild->members.find(memberId);                                                \
+        if (memberIt != guild->members.end())                                                         \
+        {                                                                                             \
+            member = &memberIt->second;                                                               \
+        }                                                                                             \
+    }                                                                                                 \
+    if (member == nullptr)                                                                            \
+    {                                                                                                 \
+        MF_LogError(amx, AMX_ERR_NATIVE, "(%s) Member '%s' not found in guild '%s'",                  \
+            __func__, memberIdentifier, guildIdentifier);                                             \
+        return ret_val;                                                                               \
+    }

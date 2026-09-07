@@ -1,5 +1,5 @@
 /*
-* Discord API Module for AMX Mod X. Below you will find all the natives,forwards and constants provided by the module. 
+* Discord API Module for AMX Mod X. Below you will find all the natives, forwards and constants provided by the module. 
 *
 * Author: lexzor
 * Website: https://github.com/lexzor/amxmodx-discord-api
@@ -14,7 +14,9 @@
 #if defined _discordapibotchannels_included
 	#endinput
 #endif
+
 #define _discordapibotchannels_included
+
 
 /*
 *

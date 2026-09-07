@@ -1,2 +1,6 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+vendor/include/openssl/** linguist-generated=true
+vendor/include/zlib/** linguist-generated=true
+vendor/include/curl/** linguist-generated=true

@@ -1,5 +1,5 @@
 /*
-* Discord API Module for AMX Mod X. Below you will find all the natives,forwards and constants provided by the module. 
+* Discord API Module for AMX Mod X. Below you will find all the natives, forwards and constants provided by the module. 
 *
 * Author: lexzor
 * Website: https://github.com/lexzor/amxmodx-discord-api
@@ -14,9 +14,11 @@
 #if defined _discordapibotguilds_included
 	#endinput
 #endif
+
 #define _discordapibotguilds_included
 
 #include <discordapibotguildsconsts>
+
 
 /*
 * Forwards
@@ -137,6 +139,73 @@ forward OnGuildSlashCommand(const identifier[], const guild_id[], const name[], 
 native any:GetGuilds(const identifier[], buffer[], const buffer_len);
 
 /**
+* Get the number of cached channels from a guild.
+*
+* @param identifier                     Bot identifier.
+* @param guild_id						Guild ID to check.
+*
+* @return Number of cached channels or 0 if bot does not exists, it's not ready,
+*		  guild is invalid or guild is not cached.
+*/
+native GetGuildChannelsCount(const identifier[], const guild_id[]);
+
+/**
+* Copy a string member from a guild channel found by index.
+*
+* @note Index is zero-based and follows the guild channels cache order.
+*
+* @param identifier                     Bot identifier.
+* @param guild_id                       Guild ID to check.
+* @param index                          Channel index in guild cache.
+* @param member                         Channel string member to copy, from ChannelMemberString.
+* @param buffer                         Buffer where member value will be copied.
+* @param buffer_len                     Buffer max index, usually passed with charsmax().
+*
+* @return True if channel has been found and member has been copied, false otherwise.
+*/
+native GetGuildChannelStringMemberByIndex(const identifier[], const guild_id[], index, ChannelMemberString:member, buffer[], buffer_len);
+
+/**
+* Get an integer member from a guild channel found by index.
+*
+* @note Index is zero-based and follows the guild channels cache order.
+*
+* @param identifier                     Bot identifier.
+* @param guild_id                       Guild ID to check.
+* @param index                          Channel index in guild cache.
+* @param member                         Channel integer member to get, from ChannelMemberInt.
+*
+* @return Requested integer value or 0 if bot does not exists, it's not ready, guild is invalid, channel is invalid or member is invalid.
+*/
+native GetGuildChannelIntegerMemberByIndex(const identifier[], const guild_id[], index, ChannelMemberInt:member);
+
+/**
+* Copy a string member from a guild channel found by ID.
+*
+* @param identifier                     Bot identifier.
+* @param guild_id                       Guild ID to check.
+* @param channel_id                     Channel ID to search for.
+* @param member                         Channel string member to copy, from ChannelMemberString.
+* @param buffer                         Buffer where member value will be copied.
+* @param buffer_len                     Buffer max index, usually passed with charsmax().
+*
+* @return True if channel has been found in the guild and member has been copied, false otherwise.
+*/
+native GetGuildChannelStringMemberById(const identifier[], const guild_id[], const channel_id[], ChannelMemberString:member, buffer[], buffer_len);
+
+/**
+* Get an integer member from a guild channel found by ID.
+*
+* @param identifier                     Bot identifier.
+* @param guild_id                       Guild ID to check.
+* @param channel_id                     Channel ID to search for.
+* @param member                         Channel integer member to get, from ChannelMemberInt.
+*
+* @return Requested integer value or 0 if bot does not exists, it's not ready, guild is invalid, channel is invalid, channel does not belong to the guild, or member is invalid.
+*/
+native GetGuildChannelIntegerMemberById(const identifier[], const guild_id[], const channel_id[], ChannelMemberInt:member);
+
+/**
 * Check if a channel exists in a guild searching by channel ID.
 *
 * @param identifier         			Bot identifier.
@@ -154,24 +223,10 @@ native bool:GuildChannelExistsById(const identifier[], const guild_id[], const c
 * @param guild_id						Guild ID to check.
 * @param channel_id						Channel name to search for.
 *
-* @return								True if bot it's in specified guild and channel has been found, false otherwise.					
+* @return								Number of occurences if bot it's in specified guild and more
+*										than 1 channel has been found, -1 otherwise.					
 */
-native bool:GuildChannelExistsByName(const identifier[], const guild_id[], const channel_name[]);
-
-/**
-* Get a guild's channel name and parent id.
-*
-* @param identifier         			Bot identifier.
-* @param guild_id						Guild ID to check.
-* @param channel_id						Channel ID to search for.
-* @param name_buffer					Buffer to copy channel's name in.
-* @param name_buffer_len				Buffer size for name.
-* @param parent_id_buffer				Buffer to copy channel's parent id in.
-* @param parent_id_buffer_len			Buffer size for channel's parent id.
-*
-* @return								True if bot it's in specified guild and channel has been found, false otherwise.					
-*/
-native bool:GetGuildChannel(const identifier[], const guild_id[], const channel_id[], name_buffer[], name_buffer_len, parent_id_buffer[], parent_id_buffer_len);
+native GuildChannelExistsByName(const identifier[], const guild_id[], const channel_name[]);
 
 /**
  * Begins creating a new channel.

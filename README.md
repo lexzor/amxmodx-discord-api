@@ -1,106 +1,79 @@
-# Discord API into Pawn
+# Discord API for AMXModX
 
-A library for AMX Mod X that provides some of the Discord API functionality to AMXX plugins.
+A powerful library that brings the functionality of the **Discord API** directly to **AMX Mod X** plugins. Powered by [D++ (DPP)](https://github.com/brainboxdotcc/DPP), this module exposes convenient natives and forwards so developers can seamlessly bridge their Counter-Strike 1.6 servers with Discord.
 
-It uses <a href="https://github.com/brainboxdotcc/DPP">D++ (DPP)</a> as the underlying C++ library to interface with <b>Discord API</b>, exposing convenient natives that plugin developers can call directly from their <b>AMX Mod X</b> scripts.
+## 📋 Requirements
 
-## Requirements
+* **AMX Mod X:** `v1.9.0.5294` or newer (includes the `JSON` module).
+* **Metamod-R:** `v1.3.0.149` or newer.
 
-* **AMX Mod X** `v1.9.0.5294^`
-  - **JSON Module** `v1.9.0.5294^`
-* **Metamod-R** `v1.3.0.149^`
+> **Compatibility Note:** Other Metamod versions may work, but full stability is only guaranteed with the specified Metamod-R release. Furthermore, this project is built using **C++20**. If you are running your server in a Docker container (e.g., via Pterodactyl Panel), ensure your operating system is up-to-date. We recommend using the `ghcr.io/parkervcp/steamcmd:debian` image.
 
-Note: Other Metamod projects or versions may work too, but full compatibility it's assured with the above Metamod project and version.
+---
 
-## Usage
-Before installing the module, you have to know it may not work on outdated operating system because the project uses <b>C++20</b>. If you use <a href="https://github.com/pterodactyl/panel">Pterodactyl Panel</a> to run your server in a <b>Docker container</b>, you may want to update the docker image to `ghcr.io/parkervcp/steamcmd:debian`.
+## 🚀 Getting Started
 
-#### Discord Bot Configuration
-First you have to create a bot in Discord Developer portal and copy it's token.
-Discord bots use <b>intents</b> to specify which events they receive. This module uses the `Message Content Intent` by default for message events. You must enable this intent in the <b>Discord Developer Portal</b>.
+### 1. Bot Configuration
+Before installing the module, you must properly configure your bot in the [Discord Developer Portal](https://discord.com/developers/applications):
+* **Copy the Token:** Generate and save your bot token.
+* **Enable Intents:** Turn on **Presence Intent**, **Server Members Intent**, and **Message Content Intent** to ensure message events are captured properly.
+* **Set Permissions:** Invite the bot to your guild with **Administrator** permissions to prevent `Insufficient permissions` API errors.
+* **Adjust Role Hierarchy:** If your bot will manage member roles, its assigned role must be positioned strictly *above* any roles it needs to assign or revoke.
 
-It is also recommended to <b>enable all other intents</b> from the portal to ensure the bot works correctly.
+### 2. Installation
+* Download the latest stable release.
+* Move the `discordapi_amxx_i386.so` file into `/cstrike/addons/amxmodx/modules/`.
+* Open `/cstrike/addons/amxmodx/configs/modules.ini` and add `discordapi` on a new line.
+* Restart your server and type `amxx modules` in the console to verify successful loading.
 
-#### Installation
-1. Download last stable release.
-2. Copy `discordapi_amxx_i386.so` to `/cstrike/addons/amxmodx/modules`.
-3. Enable module in `/cstrike/addons/amxmodx/configs/modules.ini` by typing a new line `discordapi`.
-4. Restart server and type in server console `amxx modules` to check if it was loaded properly.
+---
 
-## AMX Mod X Scripting
-All natives and forwards can be found in [include folder](https://github.com/lexzor/amxmodx-discord-api/tree/main/amxmodx/scripting/include).
-Plugin examples can be found in [scripting folder](https://github.com/lexzor/amxmodx-discord-api/tree/main/amxmodx/scripting).
+## ⚡ Features & API Reference
 
-<details>
-  <summary>1. General Informations</summary>
-  Almost all natives and forwards include a parameter called <b>identifier</b>, which must be unique. This is necessary because the module needs to know which bot the changes should apply to or which bot is emitting an event. It can also be used to split bot functionality across multiple plugins.
+### 🤖 Bot Lifecycle & Management
+* **Create & Start Bots:** Initialize and start Discord bot instances using tokens.
+* **Lifecycle Management:** Safely stop or completely remove bot instances from memory.
+* **Status Checks:** Verify bot existence (`BotExists`) or connection status (`IsBotReady`).
+* **Configuration:** Adjust custom console prefixes, log levels (`NONE`, `DEFAULT`, `VERBOSE`), and toggle event printing.
+* **Interaction Replies:** Respond directly to slash command interactions using `SendReply`.
 
-   The identifier is not validated by the module, so using duplicate identifiers can result in changes being applied to the wrong bot or events being captured incorrectly.
-</details>
+### 💬 Messaging & Channels
+* **Send Messages:** Post text messages directly to specific Discord channels.
+* **Event Listeners:** Intercept incoming channel messages with full JSON event payloads.
+* **Channel Operations:** Construct, edit, inspect, or delete guild channels asynchronously.
 
-<details>
-  <summary>2. Discord API Requests</summary>
-  Some natives send requests over HTTPS or WebSocket protocols to the Discord API, and the response cannot be returned in the same server frame. All asynchronous logic is mostly handled by the <b>DPP library</b> and the module itself, but if an error occurs, it will be printed in the console.
-  For example, the native <b>StartBot</b> will return an error if the bot does not exist. However, if the bot fails to connect to the Discord API, an error will be printed later in the console when a response is received.
-</details>
+### ⚡ Guild Slash Commands
+* **Command Registration:** Easily register simple or complex slash commands with string, integer, and float options.
+* **Command Management:** Query existing commands or remove them dynamically.
+* **Interaction Forwards:** Handle executed commands, reading parameters, caller IDs, and channel contexts.
 
-<details>
-  <summary>3. Interactions</summary>
-  A topic that should be mentioned is interactions. Some forwards may be marked with <b>Interaction</b>. In these cases, you can use the <b>SendReply</b> native.
-  For example, if you use it in the <b>OnChannelMessageCreated</b> forward, the bot will reply directly to the user’s message with the message you send.
-</details>
+### 👥 Guild Members & Roles
+* **Member Queries:** Search local guild caches by user ID or username.
+* **Data Inspection:** Read nicknames, join timestamps, timeout statuses, and boost dates.
+* **API Fetching:** Asynchronously fetch members outside the local cache directly from Discord.
+* **Role Management:** Verify, assign, or revoke roles from guild members dynamically.
 
-<details>
-  <summary>4. Discord API Events</summary>
-  Events are sent through forwards, and their data is provided in <b>JSON</b> format. To avoid runtime <b>stack error</b> in plugins due to AMX Mod X limitation, some event data may be minimized.
-  You can find the JSON data format in the include files, inside each native or forward’s body details.
-</details>
+---
 
-<details>
-  <summary>5. Debugging</summary>
-  You can set the log level to <b>VERBOSE</b> in the bot options (which can be changed at any time during the bot’s lifecycle). Note that the <b>VERBOSE</b> log level can be overwhelming, as it displays almost all HTTPS or WebSocket data received from the Discord API, but it may be useful when manipulating bot options (for example, global or guild slash commands) to catch errors.
-  To debug events without <b>VERBOSE</b> log level, you can use the <b>PRINTS_EVENT_DATA</b> option in the Options array with <b>SetBotOptions</b> (see <b>discordapi.inc</b>) to output the full <b>JSON</b> data received from the Discord API. Note that the printed values do not exactly represent the data passed to AMX Mod X forwards due to plugin limitations.
-  If you consider there is not enough data to develop your plugin, you can anytime open an issue or a PR.
-</details>
+## 💻 AMX Mod X Scripting Guidelines
 
-## Contribution
-Before diving into the build steps, it’s important to understand that the project is compiled inside a Docker container running a specific Unix-like distribution. This approach was adopted because Half-Life 1 game servers are hosted on a wide variety of operating systems. Currently, testing has only been performed on <a href="https://hostsrc.io/">Hostsrc.io</a> Counter-Strike 1.6 game servers running in a <b>Debian 12 Docker container</b>.
+All natives and forwards are documented in the [include folder](https://github.com/lexzor/amxmodx-discord-api/tree/main/amxmodx/scripting/include). Reference the [scripting folder](https://github.com/lexzor/amxmodx-discord-api/tree/main/amxmodx/scripting) for plugin examples.
 
-The project uses <a href="https://github.com/brainboxdotcc/DPP">D++ (DPP)</a> as the underlying C++ library, which requires at least <b>C++17</b>. This project itself is compiled with <b>C++20</b>. D++ relies on additional libraries such as <b>ZLib</b>, <b>OpenSSL</b>, and <b>cURL</b>, which are compiled and statically linked into the project to avoid issues with missing APIs on different operating systems.
+* **Unique Identifiers:** Almost all natives/forwards require a bot `identifier`. This allows you to run multiple bots or split logic across multiple plugins. Ensure identifiers remain consistent; they are not strictly validated by the module.
+* **Asynchronous Requests:** Actions interacting directly with the Discord API (HTTPS/WebSocket) cannot return responses in a single server frame. Background tasks are handled by the DPP library, and runtime errors will print directly to the server console.
+* **Handling Interactions:** If a forward is marked as an *Interaction* (e.g., `OnChannelMessageCreated`), you can use the `SendReply` native to have the bot reply directly to the triggering user.
+* **JSON Event Data:** Events push data via forwards in JSON format. To prevent AMX Mod X stack errors, some payload data is minimized.
+* **Debugging:** Change the bot's `LOG_LEVEL` option to `VERBOSE` to inspect raw HTTPS/WebSocket traffic. Alternatively, enable `PRINT_EVENT_DATA` to log incoming JSON payloads to the console without overwhelming it with full network traffic.
 
-> [!IMPORTANT]
-> All build steps are intended for Windows users, as they use PowerShell scripts; however, they can be easily converted to Bash scripts.
+---
 
-#### Build steps
+## 🛠️ Contribution & Building from Source
 
-<details>
-  <summary>1. Docker Setup</summary>
-  First, you need to <b>build the Docker container</b> that will be used to compile both project and libraries. Currently only <b>Debian12</b> is supported.
-  
-    1. Open Windows Powershell Terminal.
-    2. Navigate to amxmodx-discord-api\docker-images\debian12.
-    3. Run build_container.ps1.
-</details>
+This module statically links libraries (ZLib, OpenSSL, cURL, DPP) so it does not rely on the host OS at runtime. To ensure broad compatibility across Half-Life 1 game servers, the project is compiled inside a **Debian 12 Docker container**. 
 
-After this step, the Docker container should be installed on your computer.
+*The following steps utilize Windows PowerShell scripts, but they can be easily adapted to Bash.*
 
-<details>
-  <summary>2. Build Libraries</summary>
-  As mentioned earlier, the project statically links libraries so that the <b>AMXX module</b> does not depend on OS-installed libraries at runtime. This step only needs to be done <b>once per Docker container</b>.
-  
-    1. Open Windows Powershell Terminal.
-    2. Navigate to amxmodx-discord-api\docker-images\debian12.
-    3. Run build_libs.ps1.
-</details>
-
-After completion, all required libraries will be copied to the `amxmodx-discord-api\vendor\bin` directory.
-
-<details>  
-  <summary>3. Build Project</summary>
-  Finally, build the project itself:
-  
-    1. Open Windows Powershell Terminal.
-    2. Navigate to amxmodx-discord-api\docker-images\debian12.
-    3. Run build_project.ps1.
-</details>
-
+### Build Instructions
+* **Setup Docker:** Navigate to `docker-images\debian12` and run `build_container.ps1` to prepare the isolated compilation environment.
+* **Compile Dependencies:** Run `build_libs.ps1` inside the same directory. This compiles the static libraries and copies them to `vendor\bin` (only needs to be done once).
+* **Compile the Module:** Run `build_project.ps1` to compile the final AMXX module.

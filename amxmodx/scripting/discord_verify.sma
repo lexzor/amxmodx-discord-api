@@ -4,7 +4,7 @@
 #include <nvault>
 
 #define IDENTIFIER "discord_bot"
-#define GUILD_ID "1415670271611768966"
+#define GUILD_ID "1534568445176320161"
 
 #pragma semicolon 1
 
@@ -46,17 +46,18 @@ public OnBotReady(const identifier[])
         new const SlashCommandHandle:slashCommandHandle = BeginCreateGuildSlashCommand(IDENTIFIER, "verify", "Link Discord account to SteamID.");
         AddSlashCommandOption(
             slashCommandHandle,
-            STRING,
+            DAPI_STRING,
             "steamid",
             "Your SteamID. You can take it by typing 'status' in console. Must be online on server!",
             true
         );
 
-        new const SlashCommandOptionHandle:slashCommandOptionHandle = BeginCreateSlashCommandOption(STRING, "origin", "Where have you heard about us?", true);
+        new const SlashCommandOptionHandle:slashCommandOptionHandle = BeginCreateSlashCommandOption(DAPI_STRING, "origin", "Where have you heard about us?", true);
         AddSlashCommandOptionChoiceString(slashCommandOptionHandle, "Youtube", "Youtube");
         AddSlashCommandOptionChoiceString(slashCommandOptionHandle, "Tiktok", "Tiktok");
         AddSlashCommandOptionChoiceString(slashCommandOptionHandle, "Kick", "Kick");
         AddSlashCommandOptionChoiceString(slashCommandOptionHandle, "GameTracker", "GameTracker");
+        AddSlashCommandOptionChoiceString(slashCommandOptionHandle, "Other", "Other");
         EndCreateSlashCommandOption(slashCommandOptionHandle, slashCommandHandle);
 
         EndCreateGuildSlashCommand(IDENTIFIER, slashCommandHandle, GUILD_ID);
