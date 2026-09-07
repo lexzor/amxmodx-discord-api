@@ -1,4 +1,4 @@
-# Discord API for AMX Mod X
+# Discord API for AMXModX
 
 A powerful library that brings the functionality of the **Discord API** directly to **AMX Mod X** plugins. Powered by [D++ (DPP)](https://github.com/brainboxdotcc/DPP), this module exposes convenient natives and forwards so developers can seamlessly bridge their Counter-Strike 1.6 servers with Discord.
 
