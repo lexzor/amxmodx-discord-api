@@ -80,8 +80,7 @@ cell AMX_NATIVE_CALL GetGuildMemberIdByUsername(AMX* amx, cell* params)
 
 	if (found == nullptr)
 	{
-		MF_LogError(amx, AMX_ERR_NATIVE, "(%s) Member with username '%s' not found in guild '%s'",
-			__func__, username, guildIdentifier);
+		MF_LogError(amx, AMX_ERR_NATIVE, "(%s) Member with username '%s' not found in guild '%s'", __func__, username, guildIdentifier);
 		return FALSE;
 	}
 
