@@ -31,6 +31,17 @@ enum LogLevel
 	VERBOSE
 }
 
+// Severity of a log message received from a bot, forwarded through OnLog.
+enum LogSeverity
+{
+	LOG_SEVERITY_TRACE,
+	LOG_SEVERITY_DEBUG,
+	LOG_SEVERITY_INFO,
+	LOG_SEVERITY_WARNING,
+	LOG_SEVERITY_ERROR,
+	LOG_SEVERITY_CRITICAL
+}
+
 // Enum used to create an array which will be passed to native SetBotOptions
 enum Options
 {
