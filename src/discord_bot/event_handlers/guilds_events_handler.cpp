@@ -102,7 +102,12 @@ void GuildsEventsHandler::OnGuildCreate(const dpp::guild_create_t& cb)
             );
         }
         
-        ExecuteForward(ON_GUILD_CREATED, m_Bot->GetIdentifier().c_str(), guildId.c_str(), guildName.c_str());
+        g_EventsQueue->Push([this, guildId, guildName]() {
+            if (m_Bot == nullptr)
+                return;
+
+            ExecuteForward(ON_GUILD_CREATED, m_Bot->GetIdentifier().c_str(), guildId.c_str(), guildName.c_str());
+        });
     });
 }
 
