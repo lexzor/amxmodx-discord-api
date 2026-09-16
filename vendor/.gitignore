@@ -1,4 +1,4 @@
-zlib
-curl
-dpp
-openssl
+/zlib
+/curl
+/dpp
+/openssl

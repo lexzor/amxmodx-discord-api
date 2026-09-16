@@ -41,7 +41,7 @@ cell AMX_NATIVE_CALL GetGuilds(AMX* amx, cell* params)
 		jGuilds.push_back({
 			{ "id", guild->id.str() },
 			{ "name", guild->name }
-			});
+		});
 	}
 
 	const std::string guildsJSON = jGuilds.dump();
@@ -135,8 +135,7 @@ cell AMX_NATIVE_CALL GetGuildChannel(AMX* amx, cell* params)
 
 	if (channel->guild_id != guildId)
 	{
-		MF_LogError(amx, AMX_ERR_NATIVE, "(%s) Channel %s exists but not in guild %s (belongs to guild %s)",
-			__func__, channelIdentifier, guildIdentifier, channel->guild_id.str().c_str());
+		MF_LogError(amx, AMX_ERR_NATIVE, "(%s) Channel %s exists but not in guild %s (belongs to guild %s)", __func__, channelIdentifier, guildIdentifier, channel->guild_id.str().c_str());
 		return FALSE;
 	}
 
@@ -150,7 +149,10 @@ cell AMX_NATIVE_CALL GetGuildChannel(AMX* amx, cell* params)
 	}
 
 	for (size_t i = 0; i < channel->name.size(); i++)
+	{
 		channelNameBuffer[i] = static_cast<cell>(channel->name[i]);
+	}	
+
 	channelNameBuffer[channel->name.size()] = 0x0;
 
 	cell* channelParentIdBuffer = MF_GetAmxAddr(amx, params[6]);
@@ -165,10 +167,307 @@ cell AMX_NATIVE_CALL GetGuildChannel(AMX* amx, cell* params)
 	}
 
 	for (size_t i = 0; i < parentIdStr.size(); i++)
+	{
 		channelParentIdBuffer[i] = static_cast<cell>(parentIdStr[i]);
+	}
+
 	channelParentIdBuffer[parentIdStr.size()] = 0x0;
 
 	return TRUE;
+}
+
+cell AMX_NATIVE_CALL GetGuildChannelsCount(AMX* amx, cell* params)
+{
+	AMX_GET_BOT(FALSE)
+	AMX_GET_GUILD(2, 1, FALSE)
+
+	const dpp::guild* guild = dpp::find_guild(guildId);
+
+	if (guild == nullptr)
+	{
+		MF_LogError(amx, AMX_ERR_NATIVE, "(%s) Guild %s not found in cache", __func__, guildIdentifier);
+		return FALSE;
+	}
+
+	return static_cast<cell>(guild->channels.size());
+}
+
+cell AMX_NATIVE_CALL GetGuildChannelStringMemberByIndex(AMX* amx, cell* params)
+{
+	AMX_GET_BOT(FALSE)
+	AMX_GET_GUILD(2, 1, FALSE)
+
+	const dpp::guild* guild = dpp::find_guild(guildId);
+
+	if (guild == nullptr)
+	{
+		MF_LogError(amx, AMX_ERR_NATIVE, "(%s) Guild %s not found in cache", __func__, guildIdentifier);
+		return FALSE;
+	}
+
+	const cell index = params[3];
+
+	if (index < 0 || static_cast<size_t>(index) >= guild->channels.size())
+	{
+		MF_LogError(amx, AMX_ERR_BOUNDS, "(%s) Channel index %i out of bounds", __func__, index);
+		return FALSE;
+	}
+
+	const dpp::channel* channel = nullptr;
+	size_t currentIndex = 0;
+
+	for (const dpp::snowflake& channelId : guild->channels)
+	{
+		if (currentIndex++ != static_cast<size_t>(index))
+			continue;
+
+		channel = dpp::find_channel(channelId);
+
+		if (channel == nullptr)
+		{
+			MF_LogError(amx, AMX_ERR_NATIVE, "(%s) Channel %s not found in cache", __func__, channelId.str().c_str());
+			return FALSE;
+		}
+
+		break;
+	}
+
+	if (channel == nullptr)
+	{
+		MF_LogError(amx, AMX_ERR_BOUNDS, "(%s) Channel index %i out of bounds", __func__, index);
+		return FALSE;
+	}
+
+	enum class ChannelMemberString : uint32_t { NAME, PARENT_ID };
+
+	std::string value;
+
+	switch (static_cast<ChannelMemberString>(params[4]))
+	{
+	case ChannelMemberString::NAME:
+		value = channel->name;
+		break;
+
+	case ChannelMemberString::PARENT_ID:
+		value = channel->parent_id.str();
+		break;
+
+	default:
+		MF_LogError(amx, AMX_ERR_NATIVE, "(%s) Invalid ChannelMemberString value %i", __func__, params[4]);
+		return FALSE;
+	}
+
+	cell* buffer = MF_GetAmxAddr(amx, params[5]);
+	const cell bufferLen = params[6];
+
+	if (bufferLen < 0)
+	{
+		MF_LogError(amx, AMX_ERR_BOUNDS, "(%s) Buffer length cannot be negative", __func__);
+		return FALSE;
+	}
+
+	if (value.size() > static_cast<size_t>(bufferLen))
+	{
+		MF_LogError(amx, AMX_ERR_BOUNDS, "(%s) Buffer too small", __func__);
+		return FALSE;
+	}
+
+	for (size_t i = 0; i < value.size(); i++)
+	{
+		buffer[i] = static_cast<cell>(value[i]);
+	}
+
+	buffer[value.size()] = 0x0;
+
+	return TRUE;
+}
+
+cell AMX_NATIVE_CALL GetGuildChannelIntegerMemberByIndex(AMX* amx, cell* params)
+{
+	AMX_GET_BOT(FALSE)
+	AMX_GET_GUILD(2, 1, FALSE)
+
+	const dpp::guild* guild = dpp::find_guild(guildId);
+
+	if (guild == nullptr)
+	{
+		MF_LogError(amx, AMX_ERR_NATIVE, "(%s) Guild %s not found in cache", __func__, guildIdentifier);
+		return FALSE;
+	}
+
+	const cell index = params[3];
+
+	if (index < 0 || static_cast<size_t>(index) >= guild->channels.size())
+	{
+		MF_LogError(amx, AMX_ERR_BOUNDS, "(%s) Channel index %i out of bounds", __func__, index);
+		return FALSE;
+	}
+
+	const dpp::channel* channel = nullptr;
+	size_t currentIndex = 0;
+
+	for (const dpp::snowflake& channelId : guild->channels)
+	{
+		if (currentIndex++ != static_cast<size_t>(index))
+			continue;
+
+		channel = dpp::find_channel(channelId);
+
+		if (channel == nullptr)
+		{
+			MF_LogError(amx, AMX_ERR_NATIVE, "(%s) Channel %s not found in cache", __func__, channelId.str().c_str());
+			return FALSE;
+		}
+
+		break;
+	}
+
+	if (channel == nullptr)
+	{
+		MF_LogError(amx, AMX_ERR_BOUNDS, "(%s) Channel index %i out of bounds", __func__, index);
+		return FALSE;
+	}
+
+	enum class ChannelMemberInt : uint32_t { TYPE, FLAGS, USER_LIMIT };
+
+	switch (static_cast<ChannelMemberInt>(params[4]))
+	{
+	case ChannelMemberInt::TYPE:
+		return static_cast<cell>(channel->get_type());
+
+	case ChannelMemberInt::FLAGS:
+		return static_cast<cell>(channel->flags);
+
+	case ChannelMemberInt::USER_LIMIT:
+		return static_cast<cell>(channel->user_limit);
+
+	default:
+		MF_LogError(amx, AMX_ERR_NATIVE, "(%s) Invalid ChannelMemberInt value %i", __func__, params[4]);
+		return FALSE;
+	}
+}
+
+cell AMX_NATIVE_CALL GetGuildChannelStringMemberById(AMX* amx, cell* params)
+{
+	AMX_GET_BOT(FALSE)
+	AMX_GET_GUILD(2, 1, FALSE)
+
+	const dpp::guild* guild = dpp::find_guild(guildId);
+
+	if (guild == nullptr)
+	{
+		MF_LogError(amx, AMX_ERR_NATIVE, "(%s) Guild %s not found in cache", __func__, guildIdentifier);
+		return FALSE;
+	}
+
+	const char* channelIdentifier = MF_GetAmxString(amx, params[3], 2, nullptr);
+	const dpp::snowflake channelId(channelIdentifier);
+
+	const dpp::channel* channel = dpp::find_channel(channelId);
+
+	if (channel == nullptr)
+	{
+		MF_LogError(amx, AMX_ERR_NATIVE, "(%s) Channel %s not found in cache", __func__, channelIdentifier);
+		return FALSE;
+	}
+
+	if (channel->guild_id != guildId)
+	{
+		MF_LogError(amx, AMX_ERR_NATIVE, "(%s) Channel %s exists but does not belong to guild %s", __func__, channelIdentifier, guildIdentifier);
+		return FALSE;
+	}
+
+	enum class ChannelMemberString : uint32_t { NAME, PARENT_ID };
+
+	std::string value;
+
+	switch (static_cast<ChannelMemberString>(params[4]))
+	{
+	case ChannelMemberString::NAME:
+		value = channel->name;
+		break;
+
+	case ChannelMemberString::PARENT_ID:
+		value = channel->parent_id.str();
+		break;
+
+	default:
+		MF_LogError(amx, AMX_ERR_NATIVE, "(%s) Invalid ChannelMemberString value %i", __func__, params[4]);
+		return FALSE;
+	}
+
+	cell* buffer = MF_GetAmxAddr(amx, params[5]);
+	const cell bufferLen = params[6];
+
+	if (bufferLen < 0)
+	{
+		MF_LogError(amx, AMX_ERR_BOUNDS, "(%s) Buffer length cannot be negative", __func__);
+		return FALSE;
+	}
+
+	if (value.size() > static_cast<size_t>(bufferLen))
+	{
+		MF_LogError(amx, AMX_ERR_BOUNDS, "(%s) Buffer too small", __func__);
+		return FALSE;
+	}
+
+	for (size_t i = 0; i < value.size(); i++)
+	{
+		buffer[i] = static_cast<cell>(value[i]);
+	}
+
+	buffer[value.size()] = 0x0;
+
+	return TRUE;
+}
+
+cell AMX_NATIVE_CALL GetGuildChannelIntegerMemberById(AMX* amx, cell* params)
+{
+	AMX_GET_BOT(FALSE)
+		AMX_GET_GUILD(2, 1, FALSE)
+
+		const dpp::guild* guild = dpp::find_guild(guildId);
+
+	if (guild == nullptr)
+	{
+		MF_LogError(amx, AMX_ERR_NATIVE, "(%s) Guild %s not found in cache", __func__, guildIdentifier);
+		return FALSE;
+	}
+
+	const char* channelIdentifier = MF_GetAmxString(amx, params[3], 2, nullptr);
+	const dpp::snowflake channelId(channelIdentifier);
+
+	const dpp::channel* channel = dpp::find_channel(channelId);
+
+	if (channel == nullptr)
+	{
+		MF_LogError(amx, AMX_ERR_NATIVE, "(%s) Channel %s not found in cache", __func__, channelIdentifier);
+		return FALSE;
+	}
+
+	if (channel->guild_id != guildId)
+	{
+		MF_LogError(amx, AMX_ERR_NATIVE, "(%s) Channel %s exists but does not belong to guild %s", __func__, channelIdentifier, guildIdentifier);
+		return FALSE;
+	}
+
+	enum class ChannelMemberInt : uint32_t { TYPE, FLAGS, USER_LIMIT };
+
+	switch (static_cast<ChannelMemberInt>(params[4]))
+	{
+	case ChannelMemberInt::TYPE:
+		return static_cast<cell>(channel->get_type());
+
+	case ChannelMemberInt::FLAGS:
+		return static_cast<cell>(channel->flags);
+
+	case ChannelMemberInt::USER_LIMIT:
+		return static_cast<cell>(channel->user_limit);
+
+	default:
+		MF_LogError(amx, AMX_ERR_NATIVE, "(%s) Invalid ChannelMemberInt value %i", __func__, params[4]);
+		return FALSE;
+	}
 }
 
 cell AMX_NATIVE_CALL BeginCreateGuildChannel(AMX* amx, cell* params)
@@ -201,7 +500,7 @@ cell AMX_NATIVE_CALL EndCreateGuildChannel(AMX* amx, cell* params)
 			g_EventsQueue->Push([bot, channelId, channelHandle]() {
 				ExecuteForward(ON_GUILD_CHANNEL_CREATE, bot->GetIdentifier().c_str(), channelHandle, true, channelId.c_str());
 				g_PendingAmxObjectStore->RemoveObject(channelHandle);
-				});
+			});
 		}
 		else
 		{
@@ -216,7 +515,7 @@ cell AMX_NATIVE_CALL EndCreateGuildChannel(AMX* amx, cell* params)
 
 				ExecuteForward(ON_GUILD_CHANNEL_CREATE, bot->GetIdentifier().c_str(), channelHandle, false, "");
 				g_PendingAmxObjectStore->RemoveObject(channelHandle);
-				});
+			});
 		}
 	});
 
@@ -239,7 +538,7 @@ cell AMX_NATIVE_CALL DeleteGuildChannel(AMX* amx, cell* params)
 
 			g_EventsQueue->Push([bot, channelId]() {
 				ExecuteForward(ON_GUILD_CHANNEL_DELETE, bot->GetIdentifier().c_str(), true, channelId.c_str());
-				});
+			});
 		}
 		else
 		{
@@ -253,7 +552,7 @@ cell AMX_NATIVE_CALL DeleteGuildChannel(AMX* amx, cell* params)
 				gpMetaUtilFuncs->pfnLogConsole(PLID, "[DiscordAPI] (%s) Human readable error: %s", bot->GetIdentifier().c_str(), humanReadable.c_str());
 
 				ExecuteForward(ON_GUILD_CHANNEL_DELETE, bot->GetIdentifier().c_str(), false, channelId.c_str());
-				});
+			});
 		}
 	});
 
@@ -368,7 +667,7 @@ cell AMX_NATIVE_CALL EndEditGuildChannel(AMX* amx, cell* params)
 			g_EventsQueue->Push([bot, channelId, channelHandle]() {
 				ExecuteForward(ON_GUILD_CHANNEL_EDIT, bot->GetIdentifier().c_str(), channelHandle, true, channelId.c_str());
 				g_PendingAmxObjectStore->RemoveObject(channelHandle);
-				});
+			});
 		}
 		else
 		{
@@ -383,7 +682,7 @@ cell AMX_NATIVE_CALL EndEditGuildChannel(AMX* amx, cell* params)
 
 				ExecuteForward(ON_GUILD_CHANNEL_EDIT, bot->GetIdentifier().c_str(), channelHandle, false, "");
 				g_PendingAmxObjectStore->RemoveObject(channelHandle);
-				});
+			});
 		}
 	});
 
@@ -433,6 +732,7 @@ cell AMX_NATIVE_CALL GuildSlashCommandExists(AMX* amx, cell* params)
 
 		for (size_t i = 0; i < slashCommandId.size(); i++)
 			slashCommandBuffer[i] = static_cast<cell>(slashCommandId[i]);
+
 		slashCommandBuffer[slashCommandId.size()] = 0x0;
 
 		return TRUE;
@@ -455,7 +755,17 @@ cell AMX_NATIVE_CALL BeginCreateGuildSlashCommand(AMX* amx, cell* params)
 
 	const char* description = MF_GetAmxString(amx, params[3], 2, nullptr);
 
-	return g_PendingAmxObjectStore->CreateObject<dpp::slashcommand>(strtolower(name), description, bot->GetCluster().me.id);
+	const cell slashCommandHandle = g_PendingAmxObjectStore->CreateObject<dpp::slashcommand>(strtolower(name), description, bot->GetCluster().me.id);
+
+	if (slashCommandHandle == -1)
+		return -1;
+
+	dpp::slashcommand* slashCommand = g_PendingAmxObjectStore->GetStoreObject<dpp::slashcommand>(slashCommandHandle);
+
+	if (slashCommand != nullptr)
+		slashCommand->set_default_permissions(0);
+
+	return slashCommandHandle;
 }
 
 cell AMX_NATIVE_CALL EndCreateGuildSlashCommand(AMX* amx, cell* params)
@@ -466,8 +776,7 @@ cell AMX_NATIVE_CALL EndCreateGuildSlashCommand(AMX* amx, cell* params)
 
 	for (auto& opt : slashCommand->options)
 	{
-		gpMetaUtilFuncs->pfnLogConsole(PLID, "OPT name=%s type=%d choices=%zu",
-			opt.name.c_str(), (int)opt.type, opt.choices.size());
+		gpMetaUtilFuncs->pfnLogConsole(PLID, "OPT name=%s type=%d choices=%zu", opt.name.c_str(), (int)opt.type, opt.choices.size());
 	}
 
 	const std::string slashCommandName = slashCommand->name;
@@ -476,11 +785,12 @@ cell AMX_NATIVE_CALL EndCreateGuildSlashCommand(AMX* amx, cell* params)
 		if (!cb.is_error())
 		{
 			const dpp::slashcommand createdCommand = cb.get<dpp::slashcommand>();
+
 			g_EventsQueue->Push([bot, createdCommand, guildId, slashCommandHandle]() {
 				bot->GetGuildsSlashCommandsMap()[guildId][createdCommand.id] = createdCommand;
 				ExecuteForward(ON_GUILD_SLASH_COMMAND_CREATE, bot->GetIdentifier().c_str(), true, createdCommand.name.c_str(), createdCommand.id.str().c_str());
 				g_PendingAmxObjectStore->RemoveObject(slashCommandHandle);
-				});
+			});
 		}
 		else
 		{
@@ -495,7 +805,7 @@ cell AMX_NATIVE_CALL EndCreateGuildSlashCommand(AMX* amx, cell* params)
 
 				ExecuteForward(ON_GUILD_SLASH_COMMAND_CREATE, bot->GetIdentifier().c_str(), false, slashCommandName.c_str(), "");
 				g_PendingAmxObjectStore->RemoveObject(slashCommandHandle);
-				});
+			});
 		}
 	});
 
@@ -672,7 +982,7 @@ cell AMX_NATIVE_CALL CreateGuildSlashCommand(AMX* amx, cell* params)
 			g_EventsQueue->Push([bot, createdCommand, guildId]() {
 				bot->GetGuildsSlashCommandsMap()[guildId][createdCommand.id] = createdCommand;
 				ExecuteForward(ON_GUILD_SLASH_COMMAND_CREATE, bot->GetIdentifier().c_str(), true, createdCommand.name.c_str(), createdCommand.id.str().c_str());
-				});
+			});
 		}
 		else
 		{
@@ -681,11 +991,12 @@ cell AMX_NATIVE_CALL CreateGuildSlashCommand(AMX* amx, cell* params)
 			const std::string humanReadable = cb.get_error().human_readable;
 
 			g_EventsQueue->Push([bot, errorCode, errorMessage, humanReadable, slashCommandName]() {
-				ExecuteForward(ON_GUILD_SLASH_COMMAND_CREATE, bot->GetIdentifier().c_str(), false, slashCommandName.c_str(), "");
 				gpMetaUtilFuncs->pfnLogConsole(PLID, "[DiscordAPI] (%s) Failed to create guild slash command %s. Code: %u", bot->GetIdentifier().c_str(), slashCommandName.c_str(), errorCode);
 				gpMetaUtilFuncs->pfnLogConsole(PLID, "[DiscordAPI] (%s) Message: %s", bot->GetIdentifier().c_str(), errorMessage.c_str());
 				gpMetaUtilFuncs->pfnLogConsole(PLID, "[DiscordAPI] (%s) Human readable error: %s", bot->GetIdentifier().c_str(), humanReadable.c_str());
-				});
+				
+				ExecuteForward(ON_GUILD_SLASH_COMMAND_CREATE, bot->GetIdentifier().c_str(), false, slashCommandName.c_str(), "");
+			});
 		}
 	});
 
@@ -728,8 +1039,7 @@ cell AMX_NATIVE_CALL DeleteGuildSlashCommand(AMX* amx, cell* params)
 
 					if (guildSlashCommandsMapIt == bot->GetGuildsSlashCommandsMap().end())
 					{
-						gpMetaUtilFuncs->pfnLogConsole(PLID, "[DiscordAPI] (%s) Slash command %s deleted in API but guild %s not found in map",
-							bot->GetIdentifier().c_str(), slashCommandName.c_str(), guildId.str().c_str());
+						gpMetaUtilFuncs->pfnLogConsole(PLID, "[DiscordAPI] (%s) Slash command %s deleted in API but guild %s not found in map", bot->GetIdentifier().c_str(), slashCommandName.c_str(), guildId.str().c_str());
 					}
 					else
 					{
@@ -737,15 +1047,14 @@ cell AMX_NATIVE_CALL DeleteGuildSlashCommand(AMX* amx, cell* params)
 						dpp::slashcommand_map::iterator it = guildSlashCommandsMapIt->second.find(slashCommandId);
 
 						if (it == guildSlashCommandsMapIt->second.end())
-							gpMetaUtilFuncs->pfnLogConsole(PLID, "[DiscordAPI] (%s) Slash command %s deleted in API but not found in guild %s map",
-								bot->GetIdentifier().c_str(), slashCommandName.c_str(), guildId.str().c_str());
+							gpMetaUtilFuncs->pfnLogConsole(PLID, "[DiscordAPI] (%s) Slash command %s deleted in API but not found in guild %s map", bot->GetIdentifier().c_str(), slashCommandName.c_str(), guildId.str().c_str());
 						else
 							guildSlashCommandsMapIt->second.erase(it);
 					}
 				}
 
 				ExecuteForward(ON_GUILD_SLASH_COMMAND_DELETE, bot->GetIdentifier().c_str(), success, slashCommandIdentifier, slashCommandName.c_str());
-				});
+			});
 		}
 		else
 		{
@@ -754,11 +1063,12 @@ cell AMX_NATIVE_CALL DeleteGuildSlashCommand(AMX* amx, cell* params)
 			const std::string humanReadable = cb.get_error().human_readable;
 
 			g_EventsQueue->Push([bot, errorCode, errorMessage, humanReadable, slashCommandIdentifier, slashCommandName]() {
-				ExecuteForward(ON_GUILD_SLASH_COMMAND_DELETE, bot->GetIdentifier().c_str(), false, slashCommandIdentifier, slashCommandName.c_str());
 				gpMetaUtilFuncs->pfnLogConsole(PLID, "[DiscordAPI] (%s) Failed to delete guild slash command. Code: %u", bot->GetIdentifier().c_str(), errorCode);
 				gpMetaUtilFuncs->pfnLogConsole(PLID, "[DiscordAPI] (%s) Message: %s", bot->GetIdentifier().c_str(), errorMessage.c_str());
 				gpMetaUtilFuncs->pfnLogConsole(PLID, "[DiscordAPI] (%s) Human readable error: %s", bot->GetIdentifier().c_str(), humanReadable.c_str());
-				});
+				
+				ExecuteForward(ON_GUILD_SLASH_COMMAND_DELETE, bot->GetIdentifier().c_str(), false, slashCommandIdentifier, slashCommandName.c_str());
+			});
 		}
 	});
 

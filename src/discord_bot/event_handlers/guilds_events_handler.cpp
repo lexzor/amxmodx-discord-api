@@ -56,7 +56,6 @@ void GuildsEventsHandler::OnGuildCreate(const dpp::guild_create_t& cb)
     if (m_Bot->GetOptions().print_events_data || m_Bot->GetLogLevel() == LogLevel::VERBOSE)
         MF_PrintSrvConsole("%s OnGuildCreate: \n%s\n", m_Bot->GetConsolePrefix().c_str(), cb.created.to_json().dump(4).c_str());
 
-
     const std::string guildId = cb.created.id.str();
     const std::string guildName = cb.created.name;
     
@@ -87,9 +86,12 @@ void GuildsEventsHandler::OnGuildCreate(const dpp::guild_create_t& cb)
 
                 std::size_t slashCommandsCount = cmdsMap.size();
 
+                DiscordBot::GuildSlashCommandsMap& botCmdsMap = m_Bot->GetGuildsSlashCommandsMap();
+                botCmdsMap[dpp::snowflake(guildId)] = {};
+
                 if (slashCommandsCount > 0)
                 {
-                    m_Bot->GetGuildsSlashCommandsMap()[dpp::snowflake(guildId)] = cmdsMap;
+                    botCmdsMap[dpp::snowflake(guildId)] = cmdsMap;
 
                     if (m_Bot->GetLogLevel() == LogLevel::VERBOSE)
                         MF_PrintSrvConsole("%s Retrieved %i guild slash command%s from Discord API for %s (%s)\n", m_Bot->GetConsolePrefix().c_str(), slashCommandsCount, slashCommandsCount == 1 ? "s" : "", guildId.c_str(), guildName.c_str());
@@ -100,7 +102,12 @@ void GuildsEventsHandler::OnGuildCreate(const dpp::guild_create_t& cb)
             );
         }
         
-        ExecuteForward(ON_GUILD_CREATED, m_Bot->GetIdentifier().c_str(), guildId.c_str(), guildName.c_str());
+        g_EventsQueue->Push([this, guildId, guildName]() {
+            if (m_Bot == nullptr)
+                return;
+
+            ExecuteForward(ON_GUILD_CREATED, m_Bot->GetIdentifier().c_str(), guildId.c_str(), guildName.c_str());
+        });
     });
 }
 

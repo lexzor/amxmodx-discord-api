@@ -1,5 +1,5 @@
 /*
-* Discord API Module for AMX Mod X. Below you will find all the natives,forwards and constants provided by the module. 
+* Discord API Module for AMX Mod X. Below you will find all the natives, forwards and constants provided by the module. 
 *
 * Author: lexzor
 * Website: https://github.com/lexzor/amxmodx-discord-api
@@ -14,7 +14,9 @@
 #if defined _discordapiutils_included
 	#endinput
 #endif
+
 #define _discordapiutils_included
+
 
 #include <amxmodx>
 #include <amxmisc>
@@ -24,6 +26,8 @@
 * Checks if the plugin API have same version as module.
 *
 * @note If versions does not correspond a log it's printed to console.
+*
+* @param log_error              True to log error in console and log files, false otherwise.
 *
 * @return True if version matches or false otherwise 
 */

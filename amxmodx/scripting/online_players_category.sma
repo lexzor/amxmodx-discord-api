@@ -166,10 +166,10 @@ public ProcessQueue()
             if(handle == INVALID_CHANNEL_HANDLE)
                 return;
 
-            SetGuildChannelMemberString(handle, NAME, item[QT_NAME]);
-            SetGuildChannelMemberString(handle, PARENT_ID, STATUS_CATEGORY_ID);
-            SetGuildChannelMemberInteger(handle, TYPE, CHANNEL_VOICE);
-            SetGuildChannelMemberInteger(handle, USER_LIMIT, 0);
+            SetGuildChannelMemberString(handle, DAPI_NAME, item[QT_NAME]);
+            SetGuildChannelMemberString(handle, DAPI_PARENT_ID, STATUS_CATEGORY_ID);
+            SetGuildChannelMemberInteger(handle, DAPI_TYPE, DAPI_CHANNEL_VOICE);
+            SetGuildChannelMemberInteger(handle, DAPI_USER_LIMIT, 0);
 
             if(!EndCreateGuildChannel(IDENTIFIER, handle))
                 return;
@@ -203,6 +203,6 @@ UpdateCategory()
     if(cat == INVALID_CHANNEL_HANDLE)
         return;
 
-    SetGuildChannelMemberString(cat, NAME, fmt("Online Players - %d", num));
+    SetGuildChannelMemberString(cat, DAPI_NAME, fmt("Online Players - %d", num));
     EndEditGuildChannel(IDENTIFIER, cat);
 }

@@ -36,6 +36,7 @@ void OnPluginsUnloading()
 
 void OnMetaAttach(PLUG_LOADTIME current_phase)
 {
+	SetupOpenSSLCertPaths();
 	InitializeDiscordBotsManager();
 	InitializeEventsQueue();
 	RegisterConsoleCommands();
@@ -51,4 +52,38 @@ void OnMetaDetach(PLUG_LOADTIME iCurrentPhase, PL_UNLOAD_REASON iReason)
 	DeinitializeDiscordBotsManager();
 
 	gpMetaUtilFuncs->pfnLogConsole(PLID, "[DiscordAPI] Module detached");
+}
+
+inline void SetupOpenSSLCertPaths()
+{
+    if (getenv("SSL_CERT_FILE") == nullptr) {
+        static constexpr std::array<const char*, 5> certFiles = {
+            "/etc/ssl/certs/ca-certificates.crt",                  // Debian / Ubuntu / Arch
+            "/etc/pki/tls/certs/ca-bundle.crt",                    // CentOS / RHEL / Fedora
+            "/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem",   // CentOS 7+ / RHEL 7+
+            "/etc/ssl/ca-bundle.pem",                              // OpenSUSE
+            "/var/lib/ca-certificates/ca-bundle.pem"
+        };
+
+        for (const char* path : certFiles) {
+            if (std::filesystem::exists(path)) {
+                setenv("SSL_CERT_FILE", path, 1);
+                break;
+            }
+        }
+    }
+
+    if (getenv("SSL_CERT_DIR") == nullptr) {
+        static constexpr std::array<const char*, 2> certDirs = {
+            "/etc/ssl/certs",
+            "/etc/pki/tls/certs"
+        };
+
+        for (const char* path : certDirs) {
+            if (std::filesystem::exists(path)) {
+                setenv("SSL_CERT_DIR", path, 1);
+                break;
+            }
+        }
+    }
 }
