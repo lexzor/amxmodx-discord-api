@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include "parse_discord_bot_options.h"
+#include "amx_natives_helpers.h"
 
 cell AMX_NATIVE_CALL CreateBot(AMX *amx, cell *params)
 {
@@ -46,8 +47,8 @@ cell AMX_NATIVE_CALL SetBotOptions(AMX *amx, cell *params)
 
 cell AMX_NATIVE_CALL StartBot(AMX *amx, cell *params)
 {
-	const char *identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
-	DiscordBot *bot = g_DiscordBotsManager->GetBotRawPtrByIdentifier(identifier);
+	const char* identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
+	DiscordBot* bot = g_DiscordBotsManager->GetBotRawPtrByIdentifier(identifier);
 
 	if (bot == nullptr)
 	{
@@ -87,20 +88,7 @@ cell AMX_NATIVE_CALL IsBotReady(AMX *amx, cell *params)
 
 cell AMX_NATIVE_CALL StopBot(AMX *amx, cell *params)
 {
-	const char *identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
-	DiscordBot *bot = g_DiscordBotsManager->GetBotRawPtrByIdentifier(identifier);
-
-	if (bot == nullptr)
-	{
-		MF_LogError(amx, AMX_ERR_NATIVE, "(StopBot) Bot with identifier '%s' does not exists", identifier);
-		return FALSE;
-	}
-
-	if (!bot->IsStarted())
-	{
-		MF_LogError(amx, AMX_ERR_NATIVE, "(StopBot) Bot with identifier '%s' is not ready yet", identifier);
-		return FALSE;
-	}
+	AMX_GET_BOT(FALSE)
 
 	return static_cast<cell>(bot->Stop());
 }
@@ -114,20 +102,7 @@ cell AMX_NATIVE_CALL DeleteBot(AMX *amx, cell *params)
 
 cell AMX_NATIVE_CALL SendReply(AMX *amx, cell *params)
 {
-	const char *identifier = MF_GetAmxString(amx, params[1], 0, nullptr);
-	DiscordBot *bot = g_DiscordBotsManager->GetBotRawPtrByIdentifier(identifier);
-
-	if (bot == nullptr)
-	{
-		MF_LogError(amx, AMX_ERR_NATIVE, "(SendReply) Bot with identifier '%s' does not exists", identifier);
-		return FALSE;
-	}
-
-	if (!bot->IsStarted())
-	{
-		MF_LogError(amx, AMX_ERR_NATIVE, "(SendReply) Bot with identifier '%s' is ready", identifier);
-		return FALSE;
-	}
+	AMX_GET_BOT(FALSE)
 
 	const char *replyMessage = MF_GetAmxString(amx, params[2], 1, nullptr);
 

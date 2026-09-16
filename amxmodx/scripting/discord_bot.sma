@@ -119,64 +119,21 @@ public bot_guilds(id)
     return PLUGIN_HANDLED;
 }
 
-public OnGuildCreated(const identifier[], const guild_data[])
+public OnGuildCreated(const identifier[], const guild_name[], const guild_id[])
 {
     if(!equal(identifier, IDENTIFIER))
         return;
-#if defined DEBUG
-    else log_amx("OnBotReady received for %s, but it's not plugin's bot %s", identifier, IDENTIFIER);
-#endif
 
-    new JSON:guild = json_parse(guild_data);
-
-    if(guild == Invalid_JSON)
-    {
-        log_amx("Failed to parse OnGuildCreated guild data: %s", guild_data);
-        return;
-    }
-
-    enum OnGuildCreatedData
-    {
-        Id[64],
-        Name[64]
-    }
-
-    new eData[OnGuildCreatedData];
-
-    json_object_get_string(guild, "id", eData[Id], charsmax(eData[Id]));
-    json_object_get_string(guild, "name", eData[Name], charsmax(eData[Name]));
-
-    log_amx("Bot %s has been added in guild %s (%s)", identifier, eData[Name], eData[Id]);
+    server_print("Bot %s has been added in guild %s (%s)", identifier, guild_name, guild_id);
 }
 
-public OnGuildDeleted(const identifier[], const guild_data[])
+public OnGuildDeleted(const identifier[], const guild_name[], const guild_id[], const bool:unavailable)
 {
     if(equal(identifier, IDENTIFIER))
         return;
 
-    new JSON:guild = json_parse(guild_data);
-
-    if(guild == Invalid_JSON)
-    {
-        log_amx("Failed to parse OnGuildCreated guild data: %s", guild_data);
-        return;
-    }
-
-    enum OnGuildDeletedData
-    {
-        Id[64],
-        Name[64],
-        bool:Unavailable
-    }
-
-    new eData[OnGuildDeletedData];
-
-    json_object_get_string(guild, "id", eData[Id], charsmax(eData[Id]));
-    json_object_get_string(guild, "name", eData[Name], charsmax(eData[Name]));
-    eData[Unavailable] = json_object_get_bool(guild, "unavailable");
-
-    if(!eData[Unavailable])
-        log_amx("Bot has been added in guild %s (%s)", identifier, eData[Name], eData[Id]);
+    if(!unavailable)
+        log_amx("Bot has been added in guild %s (%s)", identifier, guild_name, guild_id);
     else 
-        log_amx("Server %s (%s) has become temporarly unavailable for bot %s", eData[Name], eData[Id], identifier);
+        log_amx("Server %s (%s) has become temporarly unavailable for bot %s", guild_name, guild_id , identifier);
 }

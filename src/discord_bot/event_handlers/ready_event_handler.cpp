@@ -48,7 +48,7 @@ void ReadyEventHandler::OnReady()
                     return;
 
                 MF_PrintSrvConsole("%s ERROR: Failed to retrieve global slash commands from Discord API\n", m_Bot->GetConsolePrefix().c_str());
-                MF_PrintSrvConsole("%s %s\n", m_Bot->GetConsolePrefix().c_str(), errorMessage.c_str());
+                MF_PrintSrvConsole("%s Message: %s\n", m_Bot->GetConsolePrefix().c_str(), errorMessage.c_str());
             });
         }
         else
@@ -67,7 +67,7 @@ void ReadyEventHandler::OnReady()
                     for (const auto& [key, value] : cmdsMap)
                     {
 						auto& botCmdsMap= m_Bot->GetGlobalSlashCommandsMap();
-                        botCmdsMap.emplace(key, SlashCommand(value, INVALID_SLASH_COMMAND_AMXX_FW_HANDLE));
+                        botCmdsMap.emplace(key, value);
                     }
 
                     if (m_Bot->GetLogLevel() == LogLevel::VERBOSE)
@@ -78,7 +78,12 @@ void ReadyEventHandler::OnReady()
             });
         }
 
-        m_Bot->SetReadyState(true);
-        ExecuteForward(ON_BOT_READY, m_Bot->GetIdentifier().c_str());
+        g_EventsQueue->Push([this]() {
+            if (m_Bot == nullptr)
+                return;
+
+            m_Bot->SetReadyState(true);
+            ExecuteForward(ON_BOT_READY, m_Bot->GetIdentifier().c_str());
+        });
     });
 }
