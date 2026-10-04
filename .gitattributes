@@ -1,6 +1,9 @@
 # Auto detect text files and perform LF normalization
 * text=auto
 
+# Shell scripts run inside Linux containers: always LF
+*.sh text eol=lf
+
 vendor/include/openssl/** linguist-generated=true
 vendor/include/zlib/** linguist-generated=true
 vendor/include/curl/** linguist-generated=true
